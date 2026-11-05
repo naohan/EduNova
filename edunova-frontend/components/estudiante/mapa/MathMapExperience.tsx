@@ -34,14 +34,6 @@ const GeometryExplorer = dynamic(
   { ssr: false },
 );
 
-const topNav = [
-  { href: "/estudiante", label: "Inicio" },
-  { href: "/estudiante/ruta", label: "Aprender", on: true },
-  { href: "/estudiante/juegos", label: "Juegos" },
-  { href: "/estudiante/aula", label: "Aula" },
-  { href: "/estudiante/progreso", label: "Mi progreso" },
-];
-
 export function MathMapExperience() {
   const [progress, setProgress] = useState<MathProgress>({
     completedIds: [],
@@ -124,86 +116,38 @@ export function MathMapExperience() {
   );
 
   return (
-    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#B8D4FF]">
-      {/* Header desktop */}
-      <header className="absolute inset-x-0 top-0 z-20 hidden px-4 pt-4 lg:block">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          <Link href="/estudiante" className="flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 shadow">
-            <Image src="/assets/Logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
-            <span className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-[#17164F]">
-              EduNova
-            </span>
-          </Link>
-          <nav className="flex gap-1 rounded-full bg-white/95 p-1 shadow">
-            {topNav.map((n) => (
-              <Link
-                key={n.label}
-                href={n.href}
-                className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
-                  n.on ? "bg-[#5636D9] text-white" : "text-[#17164F]/70"
-                }`}
-              >
-                {n.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-2 text-sm font-semibold text-[#17164F]">
-            <span className="rounded-full bg-white/95 px-3 py-1.5 shadow">🔥 3 días</span>
-            <span className="rounded-full bg-white/95 px-3 py-1.5 shadow">⭐ 120 XP</span>
-            <span className="rounded-full bg-white/95 px-3 py-1.5 shadow">💎 5</span>
-            <Image
-              src="/assets/usuario.png"
-              alt="usuario"
-              width={36}
-              height={36}
-              className="h-9 w-9 rounded-full object-cover ring-2 ring-white"
-            />
-          </div>
-        </div>
-        <div className="mx-auto mt-3 flex max-w-6xl justify-center">
-          <div className="rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-[#17164F] shadow">
-            {MATH_COURSE.titulo} — {MATH_COURSE.nivelLabel}
-          </div>
-        </div>
-      </header>
-
-      {/* Header mobile */}
-      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-3 pt-3 lg:hidden">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#C9B8F5]">
+      {/* Header */}
+      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-2 px-3 pt-3 sm:px-4 lg:px-6 lg:pt-4">
         <Link
-          href="/estudiante/curso/matematica"
-          className="flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 shadow"
+          href="/estudiante/ruta"
+          className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-bold text-[#17164F] shadow-lg"
+          aria-label="Volver a cursos"
         >
-          <span className="text-[#17164F]">←</span>
-          <Image src="/assets/Logo.png" alt="" width={24} height={24} className="h-6 w-6" />
-          <span className="font-[family-name:var(--font-fredoka)] text-sm font-semibold text-[#17164F]">
-            EduNova
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F2EEFF] text-[#5636D9]">
+            ←
           </span>
+          <span className="hidden pr-1 sm:inline">Volver</span>
         </Link>
-        <div className="flex items-center gap-1.5 text-[10px] font-semibold">
-          <span className="rounded-full bg-white/90 px-2 py-1 shadow">🔥 3</span>
-          <span className="rounded-full bg-white/90 px-2 py-1 shadow">⭐ 120</span>
+        <div className="rounded-full bg-white px-3 py-2 text-center text-[11px] font-semibold text-[#17164F] shadow sm:text-sm">
+          {MATH_COURSE.titulo}: {MATH_COURSE.nivelLabel}
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] font-semibold sm:gap-2 sm:text-sm">
+          <span className="rounded-full bg-white px-2 py-1 shadow sm:px-3 sm:py-1.5">🔥 3</span>
+          <span className="hidden rounded-full bg-white px-3 py-1.5 shadow sm:inline">⭐ 120</span>
           <Image
             src="/assets/usuario.png"
-            alt=""
-            width={28}
-            height={28}
-            className="h-7 w-7 rounded-full object-cover"
+            alt="usuario"
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-full object-cover ring-2 ring-white sm:h-9 sm:w-9"
           />
         </div>
       </header>
 
-      {/* Stage pills overlay */}
-      <div className="pointer-events-none absolute inset-x-0 top-20 z-10 hidden justify-center gap-2 lg:flex">
-        {MATH_STAGES.map((s) => (
-          <span
-            key={s.id}
-            className="rounded-full px-3 py-1 text-xs font-bold text-white shadow"
-            style={{ backgroundColor: s.color }}
-          >
-            {s.nombre} · {s.subtitle}
-          </span>
-        ))}
-      </div>
+      <p className="pointer-events-none absolute inset-x-0 top-[4.25rem] z-10 text-center text-[11px] font-semibold text-[#17164F]/70 lg:top-[4.75rem]">
+        Toca una estación del camino · arrastra para girar el mapa
+      </p>
 
       {/* 3D Map */}
       <div className="absolute inset-0 z-0">
@@ -217,35 +161,26 @@ export function MathMapExperience() {
         )}
       </div>
 
-      {/* Bottom station card */}
-      <div className="absolute inset-x-0 bottom-0 z-20 p-3 sm:p-4 lg:bottom-4 lg:px-6">
-        <div className="mx-auto max-w-4xl rounded-[28px] border border-white/60 bg-white/95 p-3 shadow-2xl backdrop-blur sm:p-4">
+      {/* Bottom station card (estilo mockup) */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#C9B8F5]/80 to-transparent p-3 pt-10 sm:p-4 lg:bottom-5 lg:px-6">
+        <div className="pointer-events-auto mx-auto max-w-4xl rounded-[28px] border border-white/60 bg-white/92 p-3 shadow-2xl backdrop-blur-md sm:p-4">
           <div className="flex gap-3">
-            <div className="relative hidden h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#17164F] sm:block">
-              <div className="absolute inset-0 flex items-center justify-center text-3xl">
-                {selected.geometry === "cube"
-                  ? "🧊"
-                  : selected.geometry === "sphere"
-                    ? "🔵"
-                    : selected.geometry === "cone"
-                      ? "🔺"
-                      : selected.geometry === "cylinder"
-                        ? "🥫"
-                        : selected.geometry === "pyramid"
-                          ? "⛰️"
-                          : "📐"}
-              </div>
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#17164F] sm:h-20 sm:w-20">
+              <Image
+                src={selected.icon}
+                alt=""
+                fill
+                className="object-contain p-1.5"
+                sizes="80px"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#5636D9]">
-                    {stage.nombre} · {stage.nivel}
-                  </p>
                   <h2 className="font-[family-name:var(--font-fredoka)] text-base font-semibold text-[#17164F] sm:text-lg">
                     {selected.title}
                   </h2>
-                  <p className="mt-0.5 hidden text-xs text-[#5B5678] sm:block">
+                  <p className="mt-0.5 text-xs text-[#5B5678] sm:text-sm">
                     {selected.description}
                   </p>
                 </div>
@@ -262,7 +197,7 @@ export function MathMapExperience() {
                 </button>
               </div>
 
-              <div className="mt-2 hidden flex-wrap gap-2 lg:flex">
+              <div className="mt-3 hidden flex-wrap items-center gap-2 lg:flex">
                 {secondary.map((b) => (
                   <button
                     key={b.label}
@@ -278,28 +213,20 @@ export function MathMapExperience() {
                   type="button"
                   disabled={!canStart}
                   onClick={startActivity}
-                  className="ml-auto rounded-full bg-[#5636D9] px-5 py-2 text-sm font-bold text-white disabled:bg-[#9CA3AF]"
+                  className="ml-auto rounded-full bg-[#5636D9] px-5 py-2.5 text-sm font-bold text-white disabled:bg-[#9CA3AF]"
                 >
-                  {status === "completed" ? "Repasar →" : "Continuar →"}
+                  Continuar →
                 </button>
               </div>
 
-              <div className="mt-2">
+              <div className="mt-3">
                 <div className="mb-1 flex justify-between text-[10px] font-semibold text-[#6B7280]">
                   <span>
                     {done} de {MATH_STATIONS.length} lecciones
                   </span>
-                  <span>
-                    {status === "locked"
-                      ? "Bloqueada"
-                      : status === "completed"
-                        ? "Completada"
-                        : status === "current"
-                          ? "Actual"
-                          : "Disponible"}
-                  </span>
+                  <span className="text-[#5636D9]">{stage.nombre}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[#E8E0FF]">
+                <div className="h-2.5 overflow-hidden rounded-full bg-[#E8E0FF]">
                   <div
                     className="h-full rounded-full bg-[#5636D9] transition-all"
                     style={{

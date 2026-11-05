@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Float, Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -12,223 +12,216 @@ import {
   getStationStatus,
 } from "./mathMapData";
 import { StationMarker } from "./StationMarker";
-import { RobotMascot } from "./RobotMascot";
+import { GeometryIcons } from "./GeometryIcons";
+import {
+  WorldEnvironment,
+  StylizedIsland,
+  WaterPlane,
+  LearningPath,
+  StylizedTree,
+  FlowerPatch,
+  Bush,
+  StoneBridge,
+  DistantMountains,
+  Waterfall,
+  TreasureChest,
+  type DeviceQuality,
+} from "./world";
 
 type Props = {
   progress: MathProgress;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  quality: DeviceQuality;
 };
 
-function PathRibbon() {
-  const points = useMemo(() => {
-    const pts = MATH_STATIONS.map(
-      (s) => new THREE.Vector3(s.position[0], 0.12, s.position[2]),
-    );
-    const curve = new THREE.CatmullRomCurve3(pts);
-    return curve.getPoints(64);
-  }, []);
-
-  const geometry = useMemo(() => {
-    const curve = new THREE.CatmullRomCurve3(
-      MATH_STATIONS.map(
-        (s) => new THREE.Vector3(s.position[0], 0.12, s.position[2]),
-      ),
-    );
-    return new THREE.TubeGeometry(curve, 64, 0.22, 8, false);
-  }, []);
+function HeroCube() {
+  const ref = useRef<THREE.Mesh>(null);
+  useFrame((_, dt) => {
+    if (ref.current) {
+      ref.current.rotation.y += dt * 0.55;
+      ref.current.rotation.x = Math.sin(performance.now() / 1200) * 0.12;
+    }
+  });
 
   return (
-    <mesh geometry={geometry} receiveShadow>
-      <meshStandardMaterial color="#F8F6FF" roughness={0.85} />
-      {/* invisible helper for tube - stars along path */}
-      {points
-        .filter((_, i) => i % 8 === 0)
-        .map((p, i) => (
-          <mesh key={i} position={[p.x, p.y + 0.25, p.z]}>
-            <octahedronGeometry args={[0.08, 0]} />
-            <meshStandardMaterial
-              color="#FFC928"
-              emissive="#FFC928"
-              emissiveIntensity={0.4}
-            />
-          </mesh>
-        ))}
-    </mesh>
-  );
-}
-
-function Island({
-  center,
-  color,
-  label,
-  scale = 1,
-  height = 0.6,
-}: {
-  center: [number, number, number];
-  color: string;
-  label: string;
-  scale?: number;
-  height?: number;
-}) {
-  return (
-    <group position={center}>
-      <mesh position={[0, height * 0.5, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[3.4 * scale, 4.2 * scale, height, 8]} />
-        <meshStandardMaterial color={color} roughness={0.9} />
-      </mesh>
-      <mesh position={[0, height + 0.08, 0]} receiveShadow>
-        <cylinderGeometry args={[3.2 * scale, 3.2 * scale, 0.18, 8]} />
-        <meshStandardMaterial color="#6BCB77" roughness={1} />
-      </mesh>
-      {/* trees */}
-      {[
-        [1.6, 0.9],
-        [-1.8, 1.1],
-        [0.4, -1.5],
-        [-0.8, -1.2],
-      ].map(([x, z], i) => (
-        <group key={i} position={[x * scale, height + 0.1, z * scale]}>
-          <mesh position={[0, 0.25, 0]} castShadow>
-            <cylinderGeometry args={[0.08, 0.1, 0.5, 6]} />
-            <meshStandardMaterial color="#8B5A2B" />
-          </mesh>
-          <mesh position={[0, 0.7, 0]} castShadow>
-            <coneGeometry args={[0.45, 0.9, 7]} />
-            <meshStandardMaterial color="#2F9E44" />
-          </mesh>
-        </group>
-      ))}
-      <Float speed={1.2} floatIntensity={0.35} rotationIntensity={0.1}>
-        <Html position={[0, height + 2.0, 0]} center distanceFactor={12} zIndexRange={[5, 0]}>
-          <div className="whitespace-nowrap rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-[#17164F] shadow">
-            {label}
-          </div>
-        </Html>
-      </Float>
-    </group>
+    <Float speed={1.3} floatIntensity={0.4}>
+      <group position={[-2.2, 1.85, 1.1]}>
+        <mesh position={[0, -0.55, 0]} receiveShadow>
+          <cylinderGeometry args={[0.75, 0.9, 0.2, 28]} />
+          <meshStandardMaterial
+            color="#5636D9"
+            emissive="#5636D9"
+            emissiveIntensity={0.4}
+            metalness={0.45}
+            roughness={0.3}
+          />
+        </mesh>
+        <mesh ref={ref} castShadow>
+          <boxGeometry args={[0.95, 0.95, 0.95]} />
+          <meshPhysicalMaterial
+            color="#C4B5FD"
+            transmission={0.5}
+            thickness={0.9}
+            roughness={0.1}
+            metalness={0.05}
+            transparent
+            opacity={0.92}
+          />
+        </mesh>
+        <pointLight color="#A78BFA" intensity={1.3} distance={4.5} />
+      </group>
+    </Float>
   );
 }
 
 function DecorShapes() {
-  const cube = useRef<THREE.Mesh>(null);
   const cone = useRef<THREE.Mesh>(null);
-  const pyramid = useRef<THREE.Mesh>(null);
+  const cyl = useRef<THREE.Mesh>(null);
+  const pyr = useRef<THREE.Mesh>(null);
 
   useFrame((_, dt) => {
-    if (cube.current) cube.current.rotation.y += dt * 0.4;
-    if (cone.current) cone.current.rotation.y -= dt * 0.35;
-    if (pyramid.current) pyramid.current.rotation.y += dt * 0.3;
+    if (cone.current) cone.current.rotation.y -= dt * 0.4;
+    if (cyl.current) cyl.current.rotation.y += dt * 0.35;
+    if (pyr.current) pyr.current.rotation.y += dt * 0.3;
   });
 
   return (
     <group>
-      <Float speed={1.5} floatIntensity={0.5}>
-        <mesh ref={cube} position={[-6.5, 1.8, 0.2]} castShadow>
-          <boxGeometry args={[0.7, 0.7, 0.7]} />
+      <Float speed={1.2} floatIntensity={0.45}>
+        <mesh ref={cone} position={[0.8, 2.55, -2.6]} castShadow>
+          <coneGeometry args={[0.5, 1.0, 28]} />
           <meshPhysicalMaterial
-            color="#A78BFA"
-            transmission={0.35}
-            thickness={0.6}
-            roughness={0.15}
-            metalness={0.1}
+            color="#5636D9"
+            roughness={0.2}
+            metalness={0.15}
+            clearcoat={0.4}
           />
         </mesh>
       </Float>
-      <Float speed={1.2} floatIntensity={0.4}>
-        <mesh ref={cone} position={[0.5, 2.1, -2.8]} castShadow>
-          <coneGeometry args={[0.45, 0.9, 24]} />
-          <meshStandardMaterial color="#5636D9" roughness={0.35} />
+      <Float speed={1.35} floatIntensity={0.45}>
+        <mesh ref={cyl} position={[8.2, 3.15, 2.6]} castShadow>
+          <cylinderGeometry args={[0.34, 0.34, 0.9, 24]} />
+          <meshPhysicalMaterial color="#FF6B9D" roughness={0.22} clearcoat={0.5} />
         </mesh>
       </Float>
-      <Float speed={1.4} floatIntensity={0.45}>
-        <mesh ref={pyramid} position={[9.2, 2.6, -0.8]} castShadow>
-          <coneGeometry args={[0.55, 0.85, 4]} />
-          <meshStandardMaterial color="#4C9EFF" roughness={0.3} />
+      <Float speed={1.25} floatIntensity={0.45}>
+        <mesh ref={pyr} position={[10.4, 3.25, -0.6]} castShadow>
+          <coneGeometry args={[0.58, 0.95, 4]} />
+          <meshPhysicalMaterial color="#4C9EFF" roughness={0.2} clearcoat={0.45} />
         </mesh>
       </Float>
-      <mesh position={[11.2, 1.55, 3.2]} castShadow>
-        <boxGeometry args={[0.7, 0.55, 0.5]} />
-        <meshStandardMaterial
-          color="#FFC928"
-          emissive="#FFC928"
-          emissiveIntensity={0.25}
-          metalness={0.4}
-          roughness={0.3}
-        />
-      </mesh>
+      <TreasureChest position={[11.4, 1.95, 3.0]} />
     </group>
   );
 }
 
-function Water() {
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.35, 0]} receiveShadow>
-      <circleGeometry args={[22, 48]} />
-      <meshStandardMaterial
-        color="#4C9EFF"
-        transparent
-        opacity={0.55}
-        roughness={0.2}
-        metalness={0.15}
-      />
-    </mesh>
-  );
-}
+export function IslandScene({
+  progress,
+  selectedId,
+  onSelect,
+  quality,
+}: Props) {
+  const density = quality.decorDensity;
 
-function MountainRange() {
-  return (
-    <group position={[12, 0, -6]}>
-      {[
-        [0, 2.2, 0, 2.8],
-        [2.5, 1.6, -1, 2],
-        [-2.2, 1.8, -0.5, 2.2],
-      ].map(([x, h, z, r], i) => (
-        <mesh key={i} position={[x, h / 2, z]} castShadow>
-          <coneGeometry args={[r, h, 5]} />
-          <meshStandardMaterial color="#7C6BB5" roughness={0.95} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-export function IslandScene({ progress, selectedId, onSelect }: Props) {
   return (
     <group>
-      <color attach="background" args={["#B8D4FF"]} />
-      <fog attach="fog" args={["#C9DCFF", 18, 42]} />
+      <WorldEnvironment quality={quality} fogColor="#C9B8F5" accent="math" />
 
-      <ambientLight intensity={0.55} />
-      <hemisphereLight args={["#E8F0FF", "#6BCB77", 0.65]} />
-      <directionalLight
-        castShadow
-        position={[8, 14, 6]}
-        intensity={1.35}
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-far={40}
-        shadow-camera-left={-18}
-        shadow-camera-right={18}
-        shadow-camera-top={18}
-        shadow-camera-bottom={-18}
+      <WaterPlane color="#5BA8F5" />
+      <DistantMountains position={[14, 0.1, -8]} color="#8B7EC8" />
+
+      <StylizedIsland
+        position={[-8, 0, 2]}
+        radius={5.2}
+        height={0.55}
+        cliffColor="#D4B896"
+        grassColor="#7DCE82"
+        sandColor="#E8D5A3"
+      />
+      <StylizedIsland
+        position={[0, 0.15, -0.5]}
+        radius={5.5}
+        height={0.85}
+        cliffColor="#5F8F5E"
+        grassColor="#4CAF50"
+        sandColor="#A3C48A"
+      />
+      <StylizedIsland
+        position={[9.2, 0.35, 1.2]}
+        radius={4.9}
+        height={1.25}
+        cliffColor="#7C6BB5"
+        grassColor="#9B8AD4"
+        sandColor="#B8A9E0"
       />
 
-      <Water />
-      <MountainRange />
+      <LearningPath
+        points={MATH_STATIONS.map((s) => s.position)}
+        yOffset={0.28}
+      />
 
-      {MATH_STAGES.map((stage, i) => (
-        <Island
-          key={stage.id}
-          center={stage.islandCenter}
-          color={i === 0 ? "#E8D5A3" : i === 1 ? "#8FBF7A" : "#9B8EC4"}
-          label={stage.nombre}
-          scale={i === 1 ? 1.05 : 1}
-          height={0.55 + i * 0.25}
-        />
+      <StoneBridge from={[-4.2, 0, 1.2]} to={[-2.2, 0, 0.2]} y={0.55} />
+      <StoneBridge from={[3.2, 0, -0.8]} to={[5.4, 0, 0.4]} y={0.95} />
+      <Waterfall position={[-5.8, 1.1, 4.6]} />
+
+      {/* Vegetación */}
+      <StylizedTree position={[-10.2, 0.55, 0.4]} variant="pine" scale={1.1} />
+      <StylizedTree position={[-6.2, 0.55, 3.8]} variant="round" />
+      {density > 0.7 && (
+        <StylizedTree position={[-11.0, 0.55, 3.2]} variant="pine" scale={0.85} />
+      )}
+      <StylizedTree position={[-1.8, 1.0, 1.5]} variant="pine" />
+      <StylizedTree position={[1.6, 1.0, -2.8]} variant="round" scale={1.15} />
+      <StylizedTree position={[7.2, 1.7, -1.2]} variant="pine" scale={0.95} />
+      <StylizedTree position={[10.8, 1.7, 0.2]} variant="round" />
+
+      <Bush position={[-9.0, 0.55, 4.0]} />
+      <Bush position={[-7.4, 0.55, 0.6]} color="#2F9E44" />
+      <Bush position={[0.8, 1.0, 1.8]} />
+      <Bush position={[8.4, 1.7, 2.8]} color="#6D28D9" />
+
+      {density > 0.5 && (
+        <>
+          <FlowerPatch center={[-8.2, 0.55, 2.2]} count={Math.round(16 * density)} />
+          <FlowerPatch
+            center={[0.2, 1.0, -0.2]}
+            count={Math.round(14 * density)}
+            palette={["#A78BFA", "#FBBF24", "#34D399"]}
+          />
+          <FlowerPatch
+            center={[9.0, 1.7, 1.0]}
+            count={Math.round(12 * density)}
+            palette={["#C4B5FD", "#F9A8D4", "#FDE68A"]}
+          />
+        </>
+      )}
+
+      {MATH_STAGES.map((stage) => (
+        <Float key={stage.id} speed={1.1} floatIntensity={0.25}>
+          <Html
+            position={[
+              stage.islandCenter[0],
+              stage.islandCenter[1] + (stage.id === "creadores" ? 3.6 : 2.9),
+              stage.islandCenter[2],
+            ]}
+            center
+            distanceFactor={14}
+            zIndexRange={[4, 0]}
+          >
+            <div
+              className="pointer-events-none whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold text-white shadow-lg"
+              style={{ backgroundColor: stage.color }}
+            >
+              {stage.nombre}
+            </div>
+          </Html>
+        </Float>
       ))}
 
-      <PathRibbon />
+      <HeroCube />
       <DecorShapes />
+      <GeometryIcons />
 
       {MATH_STATIONS.map((station: MathStation) => (
         <StationMarker
@@ -239,8 +232,6 @@ export function IslandScene({ progress, selectedId, onSelect }: Props) {
           onSelect={onSelect}
         />
       ))}
-
-      <RobotMascot position={[-11.5, 0.55, 5.2]} />
     </group>
   );
 }

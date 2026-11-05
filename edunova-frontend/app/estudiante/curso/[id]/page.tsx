@@ -1,5 +1,4 @@
-import { notFound } from "next/navigation";
-import { CursoAventuraView } from "@/components/estudiante/CursoAventuraView";
+import { notFound, redirect } from "next/navigation";
 import { cursosAprender, getCurso } from "@/components/estudiante/data";
 
 export function generateStaticParams() {
@@ -14,5 +13,6 @@ export default async function Page({
   const { id } = await params;
   const curso = getCurso(id);
   if (!curso) notFound();
-  return <CursoAventuraView curso={curso} />;
+  // Ir directo al mapa / experiencia 3D (sin pantalla intermedia)
+  redirect(curso.ctaHref);
 }

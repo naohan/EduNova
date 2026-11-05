@@ -12,9 +12,7 @@ type Props = {
 };
 
 /**
- * Visor 3D de órganos con Three.js + GLTFLoader
- * (misma pila que el modo Estudio de jceronch1/Cuerpo-humano_3D).
- * El repo original usa también <model-viewer> en la galería principal.
+ * Laboratorio de anatomía 3D — conserva GLB existentes + OrbitControls.
  */
 export default function OrganViewer({ selectedId, className }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -33,15 +31,18 @@ export default function OrganViewer({ selectedId, className }: Props) {
     const height = mount.clientHeight || 420;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf4f0ff);
+    scene.background = new THREE.Color(0x1a1458);
+    scene.fog = new THREE.FogExp2(0x1a1458, 0.045);
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.01, 100);
-    camera.position.set(0, 0.15, 2.4);
+    camera.position.set(0, 0.35, 2.6);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
     mount.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -50,16 +51,90 @@ export default function OrganViewer({ selectedId, className }: Props) {
     controls.minDistance = 0.6;
     controls.maxDistance = 6;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 1.2;
-    controls.target.set(0, 0, 0);
+    controls.autoRotateSpeed = 0.9;
+    controls.target.set(0, 0.15, 0);
+    controls.enablePan = false;
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d0f0, 1.4));
-    const key = new THREE.DirectionalLight(0xffffff, 2.2);
-    key.position.set(2.2, 3.2, 2.5);
+    // Luces de laboratorio
+    scene.add(new THREE.AmbientLight(0xb8c4ff, 0.45));
+    scene.add(new THREE.HemisphereLight(0xe0d4ff, 0x2a1f7a, 0.7));
+
+    const key = new THREE.DirectionalLight(0xfff8ef, 1.55);
+    key.position.set(2.4, 3.4, 2.2);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0xb8c8ff, 1.1);
-    fill.position.set(-2.4, 1.2, -1.5);
+
+    const fill = new THREE.DirectionalLight(0x7dd3fc, 0.7);
+    fill.position.set(-2.6, 1.4, -1.2);
     scene.add(fill);
+
+    const rim = new THREE.DirectionalLight(0xf9a8d4, 0.45);
+    rim.position.set(0, -1.2, -2.4);
+    scene.add(rim);
+
+    const spot = new THREE.SpotLight(0xffffff, 1.8, 12, Math.PI / 5, 0.45, 1);
+    spot.position.set(0, 3.2, 1.5);
+    spot.target.position.set(0, 0.2, 0);
+    scene.add(spot);
+    scene.add(spot.target);
+
+    // Plataforma holográfica
+    const lab = new THREE.Group();
+    scene.add(lab);
+
+    const base = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.15, 1.25, 0.12, 48),
+      new THREE.MeshStandardMaterial({
+        color: 0x312e81,
+        metalness: 0.55,
+        roughness: 0.35,
+        emissive: 0x5636d9,
+        emissiveIntensity: 0.25,
+      }),
+    );
+    base.position.y = -0.35;
+    lab.add(base);
+
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(1.05, 0.035, 12, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0x25cfe0,
+        emissive: 0x25cfe0,
+        emissiveIntensity: 0.7,
+        metalness: 0.4,
+        roughness: 0.3,
+      }),
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = -0.28;
+    lab.add(ring);
+
+    const ring2 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.78, 0.02, 10, 48),
+      new THREE.MeshBasicMaterial({
+        color: 0xa78bfa,
+        transparent: true,
+        opacity: 0.55,
+      }),
+    );
+    ring2.rotation.x = Math.PI / 2;
+    ring2.position.y = -0.26;
+    lab.add(ring2);
+
+    // Partículas suaves
+    const sparkGeo = new THREE.BufferGeometry();
+    const sparkPos = new Float32Array(90);
+    for (let i = 0; i < 90; i++) sparkPos[i] = (Math.random() - 0.5) * 4;
+    sparkGeo.setAttribute("position", new THREE.BufferAttribute(sparkPos, 3));
+    const sparks = new THREE.Points(
+      sparkGeo,
+      new THREE.PointsMaterial({
+        color: 0xc4b5fd,
+        size: 0.035,
+        transparent: true,
+        opacity: 0.65,
+      }),
+    );
+    scene.add(sparks);
 
     const root = new THREE.Group();
     scene.add(root);
@@ -67,6 +142,9 @@ export default function OrganViewer({ selectedId, className }: Props) {
     const loader = new GLTFLoader();
     let alive = true;
     let frame = 0;
+    let enterT = 0;
+    let entering = false;
+
     function clearRoot() {
       while (root.children.length) {
         const child = root.children[0];
@@ -87,17 +165,25 @@ export default function OrganViewer({ selectedId, className }: Props) {
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
       object.position.sub(center);
+      object.position.y += 0.15;
 
       const maxDim = Math.max(size.x, size.y, size.z, 0.001);
-      const dist = maxDim * 2.4;
+      const dist = maxDim * 2.55;
       camera.near = Math.max(dist / 100, 0.01);
       camera.far = dist * 40;
       camera.updateProjectionMatrix();
-      camera.position.set(dist * 0.55, dist * 0.35, dist);
-      controls.target.set(0, 0, 0);
-      controls.minDistance = maxDim * 0.8;
+      camera.position.set(dist * 0.55, dist * 0.4, dist);
+      controls.target.set(0, 0.15, 0);
+      controls.minDistance = maxDim * 0.85;
       controls.maxDistance = maxDim * 8;
       controls.update();
+    }
+
+    function playEntrance() {
+      enterT = 0;
+      entering = true;
+      root.scale.setScalar(0.15);
+      root.rotation.y = -0.8;
     }
 
     function showFallback(id: OrganId) {
@@ -108,19 +194,25 @@ export default function OrganViewer({ selectedId, className }: Props) {
         new THREE.SphereGeometry(0.55, 48, 48),
         new THREE.MeshStandardMaterial({
           color,
-          roughness: 0.45,
-          metalness: 0.08,
+          roughness: 0.4,
+          metalness: 0.12,
+          emissive: color,
+          emissiveIntensity: 0.15,
         }),
       );
       root.add(mesh);
-      // soft accent rings for “ficha” look
-      const ring = new THREE.Mesh(
+      const halo = new THREE.Mesh(
         new THREE.TorusGeometry(0.72, 0.035, 16, 64),
-        new THREE.MeshBasicMaterial({ color: 0x5636d9, transparent: true, opacity: 0.35 }),
+        new THREE.MeshBasicMaterial({
+          color: 0x25cfe0,
+          transparent: true,
+          opacity: 0.4,
+        }),
       );
-      ring.rotation.x = Math.PI / 2.4;
-      root.add(ring);
+      halo.rotation.x = Math.PI / 2.4;
+      root.add(halo);
       fitCamera(root);
+      playEntrance();
       setStatus("fallback");
     }
 
@@ -128,15 +220,18 @@ export default function OrganViewer({ selectedId, className }: Props) {
       const organ = ORGANOS.find((o) => o.id === id);
       if (!organ) return;
 
+      // Tinte de spotlight según órgano
+      const accent = new THREE.Color(organ.color);
+      spot.color.copy(accent).lerp(new THREE.Color(0xffffff), 0.55);
+
       if (!organ.modelo) {
         showFallback(id);
         return;
       }
 
       setStatus("loading");
-      const url = organ.modelo;
       loader.load(
-        url,
+        organ.modelo,
         (gltf) => {
           if (!alive) return;
           clearRoot();
@@ -149,6 +244,7 @@ export default function OrganViewer({ selectedId, className }: Props) {
           });
           root.add(model);
           fitCamera(model);
+          playEntrance();
           setStatus("ready");
         },
         undefined,
@@ -162,9 +258,25 @@ export default function OrganViewer({ selectedId, className }: Props) {
     apiRef.current = { load };
     load(selectedId);
 
+    const clock = new THREE.Clock();
     const animate = () => {
       if (!alive) return;
       frame = requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+
+      ring.rotation.z += dt * 0.35;
+      ring2.rotation.z -= dt * 0.55;
+      sparks.rotation.y += dt * 0.08;
+
+      if (entering) {
+        enterT += dt;
+        const t = Math.min(1, enterT / 0.55);
+        const ease = 1 - Math.pow(1 - t, 3);
+        root.scale.setScalar(0.15 + ease * 0.85);
+        root.rotation.y = -0.8 + ease * 0.8;
+        if (t >= 1) entering = false;
+      }
+
       controls.update();
       renderer.render(scene, camera);
     };
@@ -193,7 +305,7 @@ export default function OrganViewer({ selectedId, className }: Props) {
       }
       apiRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount once; selection via apiRef
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -204,18 +316,18 @@ export default function OrganViewer({ selectedId, className }: Props) {
     <div className={`relative ${className ?? "h-full min-h-[320px] w-full"}`}>
       <div
         ref={mountRef}
-        className="h-full w-full"
+        className="h-full w-full touch-none"
         role="img"
-        aria-label="Visor 3D de órganos del cuerpo humano"
+        aria-label="Laboratorio 3D de órganos del cuerpo humano"
       />
       {status === "loading" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#F4F0FF]/80 text-sm text-[#17164F]">
-          Cargando modelo 3D…
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#1a1458]/55 text-sm font-semibold text-white">
+          Cargando órgano 3D…
         </div>
       )}
       {status === "fallback" && (
-        <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg bg-white/90 px-2.5 py-1 text-[10px] font-medium text-[#5636D9] shadow">
-          Vista esquemática · ficha completa a la derecha
+        <div className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold text-[#5636D9] shadow">
+          Vista esquemática · modelo 3D en órganos principales
         </div>
       )}
     </div>

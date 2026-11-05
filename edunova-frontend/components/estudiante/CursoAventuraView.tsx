@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
@@ -13,11 +12,13 @@ import {
 /** Quita el negro de los PNG de personaje (fondo #000). */
 const imgKnockout = "mix-blend-screen";
 
+function destinoAventura(curso: CursoAprender) {
+  // Matemática, Comunicación, Ciencia y Sociales → aventura directa
+  return curso.ctaHref;
+}
+
 export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
-  const [aventura, setAventura] = useState<(typeof tiposAventura)[number]["id"]>(
-    "aventureros",
-  );
-  const selected = tiposAventura.find((t) => t.id === aventura) ?? tiposAventura[1];
+  const destino = destinoAventura(curso);
   const isCiencia = curso.id === "ciencia";
 
   return (
@@ -254,97 +255,79 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
               <span aria-hidden className="text-[#FFC928]">✦</span>
             </h2>
 
-            {/* Mobile cards: personaje completo arriba, texto abajo (sin tapar) */}
+            {/* Mobile: toca la tarjeta → entra de frente a la aventura */}
             <div className="space-y-3 lg:hidden">
-              {tiposAventura.map((tipo) => {
-                const on = aventura === tipo.id;
-                return (
-                  <button
-                    key={tipo.id}
-                    type="button"
-                    onClick={() => setAventura(tipo.id)}
-                    className={`flex w-full flex-col overflow-hidden rounded-[24px] text-left shadow-md transition ${tipo.cardBg} ${
-                      on ? "ring-2 ring-[#5636D9] ring-offset-2" : ""
-                    }`}
-                  >
-                    <div className="relative z-10 flex h-[148px] items-end justify-center px-3 pt-3">
-                      <Image
-                        src={tipo.imagen}
-                        alt=""
-                        width={160}
-                        height={148}
-                        className={`h-[140px] w-auto max-w-full object-contain object-bottom drop-shadow-md ${imgKnockout}`}
-                      />
+              {tiposAventura.map((tipo) => (
+                <Link
+                  key={tipo.id}
+                  href={destino}
+                  className={`flex w-full flex-col overflow-hidden rounded-[24px] text-left shadow-md transition ${tipo.cardBg}`}
+                >
+                  <div className="relative z-10 flex h-[148px] items-end justify-center px-3 pt-3">
+                    <Image
+                      src={tipo.imagen}
+                      alt=""
+                      width={160}
+                      height={148}
+                      className={`h-[140px] w-auto max-w-full object-contain object-bottom drop-shadow-md ${imgKnockout}`}
+                    />
+                  </div>
+                  <div className="relative z-0 flex items-center gap-2 rounded-t-[28px] bg-white px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-[family-name:var(--font-fredoka)] text-base font-semibold text-[#17164F]">
+                        {tipo.nombre}
+                      </h3>
+                      <p className="mt-0.5 text-[11px] leading-snug text-[#5B5678]">
+                        {tipo.desc}
+                      </p>
                     </div>
-                    <div className="relative z-0 flex items-center gap-2 rounded-t-[28px] bg-white px-4 py-3">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-[family-name:var(--font-fredoka)] text-base font-semibold text-[#17164F]">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5636D9] text-white shadow">
+                      <ArrowIcon />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop: misma acción — de frente a la aventura */}
+            <div className="hidden gap-5 lg:grid lg:grid-cols-3">
+              {tiposAventura.map((tipo) => (
+                <Link
+                  key={tipo.id}
+                  href={destino}
+                  className={`group relative flex flex-col overflow-hidden rounded-[32px] text-left shadow-lg transition hover:-translate-y-1 ${tipo.cardBg}`}
+                >
+                  <div className="relative z-10 flex h-[230px] items-end justify-center px-4 pt-5">
+                    <Image
+                      src={tipo.imagen}
+                      alt=""
+                      width={240}
+                      height={220}
+                      className={`h-[210px] w-auto max-w-[95%] object-contain object-bottom drop-shadow-lg ${imgKnockout}`}
+                    />
+                  </div>
+                  <div className="relative z-0 rounded-t-[36px] bg-white px-5 pb-5 pt-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
                           {tipo.nombre}
                         </h3>
-                        <p className="mt-0.5 text-[11px] leading-snug text-[#5B5678]">
+                        <p className="mt-1 text-sm leading-relaxed text-[#5B5678]">
                           {tipo.desc}
                         </p>
                       </div>
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5636D9] text-white shadow">
+                      <span className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5636D9] text-white shadow-md transition group-hover:scale-105">
                         <ArrowIcon />
                       </span>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Desktop cards: ilustración visible; pie blanco solo debajo */}
-            <div className="hidden gap-5 lg:grid lg:grid-cols-3">
-              {tiposAventura.map((tipo) => {
-                const on = aventura === tipo.id;
-                return (
-                  <button
-                    key={tipo.id}
-                    type="button"
-                    onClick={() => setAventura(tipo.id)}
-                    className={`group relative flex flex-col overflow-hidden rounded-[32px] text-left shadow-lg transition hover:-translate-y-1 ${tipo.cardBg} ${
-                      on ? "ring-2 ring-[#5636D9] ring-offset-2" : ""
-                    }`}
-                  >
-                    <div className="relative z-10 flex h-[230px] items-end justify-center px-4 pt-5">
-                      <Image
-                        src={tipo.imagen}
-                        alt=""
-                        width={240}
-                        height={220}
-                        className={`h-[210px] w-auto max-w-[95%] object-contain object-bottom drop-shadow-lg ${imgKnockout}`}
-                      />
-                    </div>
-                    <div className="relative z-0 rounded-t-[36px] bg-white px-5 pb-5 pt-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
-                            {tipo.nombre}
-                          </h3>
-                          <p className="mt-1 text-sm leading-relaxed text-[#5B5678]">
-                            {tipo.desc}
-                          </p>
-                        </div>
-                        <span className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5636D9] text-white shadow-md transition group-hover:scale-105">
-                          <ArrowIcon />
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                  </div>
+                </Link>
+              ))}
             </div>
 
             <div className="mt-6 flex justify-center lg:mt-10">
-            <Link
-              href={
-                curso.id === "matematica"
-                  ? curso.ctaHref
-                  : isCiencia && aventura === "exploradores"
-                    ? curso.ctaHref
-                    : selected.href
-              }
+              <Link
+                href={destino}
                 className="inline-flex w-full max-w-md items-center justify-between gap-3 rounded-full bg-gradient-to-r from-[#5636D9] to-[#4C9EFF] px-5 py-3.5 text-white shadow-xl shadow-[#5636D9]/35 transition hover:brightness-110 sm:w-auto sm:min-w-[300px]"
               >
                 <span className="flex items-center gap-3">
@@ -356,7 +339,7 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
                     className="h-8 w-8 object-contain"
                   />
                   <span className="font-[family-name:var(--font-fredoka)] text-sm font-semibold sm:text-base">
-                    Elegir aventura
+                    Ir a la aventura
                   </span>
                 </span>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">

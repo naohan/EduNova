@@ -93,7 +93,7 @@ export default function Page() {
               href={curso.href}
               className={`group flex flex-col rounded-[22px] ${curso.tint} border border-white/70 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-4`}
             >
-              <div className="relative mx-auto mb-2 h-[88px] w-full sm:h-[110px]">
+                  <div className="relative mx-auto mb-2 h-[88px] w-full sm:h-[110px]">
                 <Image
                   src={curso.imagen}
                   alt=""
@@ -119,7 +119,7 @@ export default function Page() {
 
         {/* CTA */}
         <Link
-          href="/estudiante/leccion"
+          href="/estudiante/matematica/mapa"
           className="mt-6 flex w-full items-center justify-between gap-3 rounded-full bg-[#5636D9] px-4 py-3.5 text-white shadow-lg shadow-[#5636D9]/30 transition hover:bg-[#4a2dc0] sm:px-5"
         >
           <span className="flex min-w-0 items-center gap-3">
