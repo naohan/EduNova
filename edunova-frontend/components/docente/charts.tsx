@@ -149,7 +149,13 @@ export function BarChart({ categories, series, max = 20, ariaLabel }: BarChartPr
 // Per competency: a full-width inline SVG (viewBox 0 0 300 24, preserveAspectRatio
 // none) split into verde / amarillo / rojo proportional rects. Name + percentages
 // rendered as HTML around each bar, plus a shared legend.
-export function StackedBarChart({ data }: { data: CompetenciaMastery[] }) {
+export function StackedBarChart({
+  data,
+  showLegend = true,
+}: {
+  data: CompetenciaMastery[];
+  showLegend?: boolean;
+}) {
   return (
     <div className="space-y-3">
       {data.map((row) => (
@@ -167,13 +173,13 @@ export function StackedBarChart({ data }: { data: CompetenciaMastery[] }) {
             role="img"
             aria-label={`${row.nombre}: ${row.logrado}% logrado, ${row.proceso}% en proceso, ${row.inicio}% en inicio`}
           >
-            <rect x={0} y={0} width={(row.logrado / 100) * 300} height={24} fill="#10B981" />
+            <rect x={0} y={0} width={(row.logrado / 100) * 300} height={24} fill="#2DBE70" />
             <rect
               x={(row.logrado / 100) * 300}
               y={0}
               width={(row.proceso / 100) * 300}
               height={24}
-              fill="#F59E0B"
+              fill="#FFC928"
             />
             <rect
               x={((row.logrado + row.proceso) / 100) * 300}
@@ -185,20 +191,22 @@ export function StackedBarChart({ data }: { data: CompetenciaMastery[] }) {
           </svg>
         </div>
       ))}
-      <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-[#6B7280]">
-        <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#10B981]" aria-hidden="true" />
-          Logrado
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#F59E0B]" aria-hidden="true" />
-          En proceso
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#EF4444]" aria-hidden="true" />
-          En inicio
-        </span>
-      </div>
+      {showLegend ? (
+        <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-[#6B7280]">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#2DBE70]" aria-hidden="true" />
+            Logrado
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#FFC928]" aria-hidden="true" />
+            En proceso
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#EF4444]" aria-hidden="true" />
+            En inicio
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,0 +1,50 @@
+{
+  "project_type": "Next.js 16 App Router frontend (single app, no monorepo), React 19, Tailwind CSS v4",
+  "language": "TypeScript / TSX",
+  "build_system": "Next.js 16.4.5 with Turbopack. `next.config.ts` enables `cacheComponents: true` + `partialPrefetching: true` + `experimental.agentFeedback: true`. NO tailwind.config.js — Tailwind v4 via `@import \"tailwindcss\"` in app/globals.css; custom colors only via `bg-[#hex]`/`text-[#hex]`/`border-[#hex]` utilities.",
+  "test_framework": "none configured — verification is the production build (TypeScript + route generation).",
+  "build_command": "cd d:\\EduNOva\\edunova-frontend ; npx next build",
+  "test_command": "cd d:\\EduNOva\\edunova-frontend ; npx next build (same; a clean build IS the test)",
+  "verification_instructions": "Run `cd d:\\EduNOva\\edunova-frontend ; npx next build`. It must finish with NO TypeScript errors. After the final feature, confirm the printed route list includes /docente, /docente/resultados, /docente/estudiante/[id] (prerendered e.g. to /docente/estudiante/1), /docente/competencias, /docente/evaluacion, /docente/reportes. Do NOT install any npm packages. Do NOT run `next dev` during verification.",
+  "snapshot_or_generated_files": "Build output goes to .next/ (gitignored); no checked-in generated files. next-env.d.ts already exists — do not hand-edit.",
+  "environment_constraints": "Windows + PowerShell. The mascot PNG filename has a literal space: `public/assets/mascotaedu nova.png` — reference it in code as `/assets/mascotaedu%20nova.png`. The `components/` folder does NOT exist yet (create it). `next build` does NOT run ESLint, so plain `<img>` is fine. CRITICAL Next 16 + cacheComponents constraints: (1) `params` is a Promise — `await` it in server pages or `use(params)` in client pages; (2) any Client hook (`usePathname`) used in a shared layout SUSPENDS on routes with unknown dynamic params unless that route exports `generateStaticParams` — therefore the /docente/estudiante/[id] route MUST export `generateStaticParams` returning the student ids, or the build fails.",
+  "contribution_requirements": "AGENTS.md warns this Next.js has breaking changes — trust the bundled docs in node_modules/next/dist/docs over training data. Keep the AGENTS.md comment block intact. No new dependencies. Mobile-first then desktop responsive. All data hardcoded (no fetch/API). Charts are pure inline SVG (no chart libraries). `"use client"` only where useState is used.",
+  "key_patterns": "Server Component pages render static content; Client Component pages use `"use client"` + useState for filters/tabs/selectors. A server page may render a client component (DocenteLayout) and pass server-rendered JSX as children. Shared presentational components (charts.tsx, ui.tsx, data.ts) have NO `"use client"` so they work on both server and client. Use the Next 16 typed helpers `PageProps<'/route'>` / `LayoutProps<'/route'>` (already used in app/layout.tsx). Path alias `@/*` -> `./*`.",
+  "relevant_files": [
+    "d:\\EduNOva\\edunova-frontend\\components\\docente\\data.ts (CREATE)",
+    "d:\\EduNOva\\edunova-frontend\\components\\docente\\charts.tsx (CREATE)",
+    "d:\\EduNOva\\edunova-frontend\\components\\docente\\ui.tsx (CREATE)",
+    "d:\\EduNOva\\edunova-frontend\\components\\docente\\DocenteLayout.tsx (CREATE, use client)",
+    "d:\\EduNOva\\edunova-frontend\\components\\docente\\EstudianteDetalle.tsx (CREATE, use client)",
+    "d:\\EduNOva\\edunova-frontend\\app\\docente\\page.tsx (CREATE, server)",
+    "d:\\EduNOva\\edunova-frontend\\app\\docente\\resultados\\page.tsx (CREATE, use client)",
+    "d:\\EduNOva\\edunova-frontend\\app\\docente\\estudiante\\[id]\\page.tsx (CREATE, server, generateStaticParams)",
+    "d:\\EduNOva\\edunova-frontend\\app\\docente\\competencias\\page.tsx (CREATE, use client)",
+    "d:\\EduNOva\\edunova-frontend\\app\\docente\\evaluacion\\page.tsx (CREATE, use client)",
+    "d:\\EduNOva\\edunova-frontend\\app\\docente\\reportes\\page.tsx (CREATE, use client)",
+    "d:\\EduNOva\\edunova-frontend\\app\\layout.tsx (study: font + metadata + LayoutProps pattern)",
+    "d:\\EduNOva\\edunova-frontend\\app\\page.tsx (study: existing Tailwind color usage style)",
+    "d:\\EduNOva\\edunova-frontend\\app\\globals.css (study: @import tailwindcss, @theme inline)",
+    "d:\\EduNOva\\edunova-frontend\\next.config.ts (study: cacheComponents flags)",
+    "d:\\EduNOva\\edunova-frontend\\public\\assets\\mascotaedu nova.png (mascot asset, space in name)"
+  ],
+  "directory_structure": "edunova-frontend/ is the worktree root and npm project. app/ holds the App Router (layout.tsx, page.tsx=home, globals.css). components/ will be created and hold components/docente/* (shared foundation + layout). public/assets/ holds the mascot PNG (filename has a space). No lib/ folder currently — put shared data in components/docente/data.ts. .agents/tasks/ holds planning artifacts (not committed).",
+  "palette": {
+    "morado_primario": "#5636D9",
+    "azul_oscuro": "#17164F",
+    "fondo_claro": ["#F5F3FF", "#EEF2FF"],
+    "morado_claro_card": "#EDE9FE",
+    "acento_lavanda": "#7C3AED",
+    "verde_logrado": "#10B981",
+    "amarillo_en_proceso": "#F59E0B",
+    "rojo_en_inicio": "#EF4444",
+    "texto_principal": "#111827",
+    "texto_secundario": "#6B7280",
+    "barra_meta": "#A5B4FC"
+  },
+  "badge_styles_aa": {
+    "Logrado": "bg-[#D1FAE5] text-[#065F46] dot #10B981",
+    "En proceso": "bg-[#FEF3C7] text-[#92400E] dot #F59E0B",
+    "En inicio": "bg-[#FEE2E2] text-[#991B1B] dot #EF4444"
+  }
+}

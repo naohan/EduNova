@@ -33,6 +33,7 @@ export interface EstudianteDetalle {
   competencias: CompetenciaNota[];
   habilidades: HabilidadTransversal[];
   evolucion: number[]; // 6 semanas
+  bimestres: number[]; // 3 bimestres
   observacion: string;
 }
 
@@ -76,10 +77,10 @@ export const classStats = {
 // 20-student roster. Notas sum to 316.0 → average exactly 15.8.
 // Exactly 4 students are "En inicio" (ids 4, 8, 10, 15).
 export const estudiantes: Estudiante[] = [
-  { id: "1", nombre: "Gloria Hancco", nota: 19.2, progreso: 90, estado: "Logrado" },
-  { id: "2", nombre: "Luis Mamani", nota: 17.6, progreso: 56, estado: "Logrado" },
-  { id: "3", nombre: "Rosa Quispe", nota: 12.4, progreso: 62, estado: "En proceso" },
-  { id: "4", nombre: "Pedro Salas", nota: 10.8, progreso: 54, estado: "En inicio" },
+  { id: "1", nombre: "Gloria Hancco", nota: 19.2, progreso: 95, estado: "Logrado" },
+  { id: "2", nombre: "Luis Mamani", nota: 17.6, progreso: 85, estado: "Logrado" },
+  { id: "3", nombre: "Rosa Quispe", nota: 12.4, progreso: 60, estado: "En proceso" },
+  { id: "4", nombre: "Pedro Salas", nota: 10.8, progreso: 50, estado: "En inicio" },
   { id: "5", nombre: "Ana Vargas", nota: 15.9, progreso: 80, estado: "Logrado" },
   { id: "6", nombre: "Carlos Rojas", nota: 16.5, progreso: 78, estado: "Logrado" },
   { id: "7", nombre: "Lucía Torres", nota: 17.0, progreso: 85, estado: "Logrado" },
@@ -118,6 +119,7 @@ export const rosaRecord: EstudianteDetalle = {
     { nombre: "Gestión del tiempo", nivel: 2 },
   ],
   evolucion: [10.8, 11.2, 11.6, 11.9, 12.1, 12.4],
+  bimestres: [10.5, 11.2, 12.0],
   observacion:
     "Rosa muestra mejora sostenida en resolución de problemas. Reforzar fracciones y trabajo colaborativo.",
 };
