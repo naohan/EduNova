@@ -2,38 +2,16 @@ import Image from "next/image";
 import Header from "@/components/landing/Header";
 import { AgeStageSelector } from "@/components/landing/AgeStageSelector";
 import { InteractiveReto } from "@/components/landing/InteractiveReto";
+import { RealmsGrid } from "@/components/landing/RealmsGrid";
+import { ScrollQuestPath } from "@/components/landing/ScrollQuestPath";
 import { MesaAprobacion } from "@/components/landing/figura/MesaAprobacion";
-import { CheckCircleIcon } from "@/components/ui/icons";
+import { CheckCircleIcon, GameControllerIcon, ShieldCheckIcon, UsersIcon } from "@/components/ui/icons";
 
-const areas = [
-  {
-    title: "Matemática",
-    text: "Figuras, volumen y fracciones en una isla por descubrir.",
-    image: "/assets/matematica.png",
-    w: 603,
-    h: 281,
-  },
-  {
-    title: "Comunicación",
-    text: "Lectura, sinónimos y relatos con voz que acompaña.",
-    image: "/assets/comunicacion.png",
-    w: 619,
-    h: 293,
-  },
-  {
-    title: "Ciencia y Tecnología",
-    text: "El cuerpo humano y el sistema solar en 3D.",
-    image: "/assets/cienciatecnologia.png",
-    w: 473,
-    h: 303,
-  },
-  {
-    title: "Ciencias Sociales",
-    text: "El planeta, los mapas, la cultura y la ciudadanía.",
-    image: "/assets/cienciasociales.png",
-    w: 592,
-    h: 322,
-  },
+const avatares = [
+  { src: "/assets/juego ludico/avatar_estudiante.png", w: 240, h: 225 },
+  { src: "/assets/juego ludico/avatar_nino.png", w: 220, h: 225 },
+  { src: "/assets/juego ludico/avatar_auriculares.png", w: 179, h: 218 },
+  { src: "/assets/juego ludico/avatar_reina.png", w: 188, h: 218 },
 ];
 
 const titulo = "font-[family-name:var(--font-fredoka)] font-semibold text-[#17164F]";
@@ -42,6 +20,7 @@ const tituloSeccion = `${titulo} text-[1.85rem] leading-tight sm:text-[2.4rem]`;
 export default function Home() {
   return (
     <div className="min-h-[100dvh] bg-white text-[#17164F]">
+      <ScrollQuestPath />
       <Header />
 
       <section id="inicio" className="scroll-mt-[72px] bg-[#F2EEFF]">
@@ -95,6 +74,22 @@ export default function Home() {
           <div className="mt-8 rounded-2xl border border-[#E8E0FF] bg-white p-4 sm:p-6">
             <MesaAprobacion />
           </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#F7F4FF] p-5">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#5636D9] text-white">
+                <GameControllerIcon className="h-6 w-6" aria-hidden />
+              </span>
+              <div>
+                <h3 className="font-bold text-[#17164F]">Funciona en celulares, tablets y laptops</h3>
+                <p className="text-sm text-[#5B5678]">Se instala como app y una lección queda lista sin internet.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm font-bold text-[#17164F]">
+              <span className="rounded-lg bg-white px-3 py-1">App instalable</span>
+              <span className="rounded-lg bg-white px-3 py-1">Modo offline</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -114,24 +109,54 @@ export default function Home() {
             <CheckCircleIcon weight="fill" className="h-5 w-5 shrink-0 text-[#5636D9]" aria-hidden />
             Basadas en el Currículo Nacional del MINEDU
           </p>
+          <div className="mt-10">
+            <RealmsGrid />
+          </div>
+        </div>
+      </section>
 
-          <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-            {areas.map((area) => (
-              <article key={area.title}>
-                <div className="flex h-32 items-end">
-                  <Image
-                    src={area.image}
-                    alt=""
-                    width={area.w}
-                    height={area.h}
-                    sizes="240px"
-                    className="max-h-32 w-auto max-w-full object-contain object-left-bottom"
-                  />
-                </div>
-                <h3 className={`${titulo} mt-4 text-xl`}>{area.title}</h3>
-                <p className="mt-1 text-[#5B5678]">{area.text}</p>
-              </article>
-            ))}
+      <section className="bg-[#17164F] py-14 text-white sm:py-20">
+        <div className="mx-auto grid max-w-[1180px] items-center gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+          <div className="flex justify-center lg:col-span-5">
+            <Image
+              src="/assets/landing/woebling-3d.jpg"
+              alt="Woebling, el robot de EduNova"
+              width={420}
+              height={420}
+              sizes="320px"
+              className="h-auto w-64 rounded-2xl object-cover sm:w-80"
+            />
+          </div>
+
+          <div className="lg:col-span-7">
+            <h2 className="font-[family-name:var(--font-fredoka)] text-[1.85rem] font-semibold leading-tight sm:text-[2.4rem]">
+              Conoce a <span className="text-[#FFC928]">Woebling</span>, tu compañero de ruta
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-white/85">
+              Si te equivocas, Woebling no te da la respuesta: te deja una pista para que la descubras
+              y celebra contigo cuando lo logras.
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-white/10 p-4">
+              <p className="text-sm font-bold text-[#FFC928]">Por ejemplo, en un reto de fracciones:</p>
+              <p className="mt-1 text-white/90">
+                &ldquo;¡Casi! Imagina una pizza cortada en 8 partes. Si tu amigo toma 3, ¿cuántas quedan?&rdquo;
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <div className="flex -space-x-3">
+                {avatares.map((a) => (
+                  <span
+                    key={a.src}
+                    className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white"
+                  >
+                    <Image src={a.src} alt="" width={a.w} height={a.h} className="h-10 w-auto" />
+                  </span>
+                ))}
+              </div>
+              <p className="font-bold">Juega en equipo con tu aula</p>
+            </div>
           </div>
         </div>
       </section>
@@ -156,13 +181,82 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-[#E8E0FF] bg-white py-6">
-        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-4 text-sm text-[#5B5678] sm:px-6 lg:px-8">
-          <span className="inline-flex items-center gap-2 font-[family-name:var(--font-fredoka)] text-base font-semibold text-[#17164F]">
-            <Image src="/assets/logo.svg" alt="" width={26} height={26} />
-            EduNova
-          </span>
-          <span>Hack4Edu 2026</span>
+      <section className="py-14 sm:py-20">
+        <div className="mx-auto max-w-[1180px] px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl bg-[#5636D9] p-8 text-center text-white sm:p-14">
+            <h2 className="mx-auto max-w-2xl font-[family-name:var(--font-fredoka)] text-[1.85rem] font-semibold leading-tight sm:text-[2.4rem]">
+              ¿Listo para convertir el estudio en tu juego favorito?
+            </h2>
+            <p className="mt-3 text-lg text-white/85">Entra con tu alias y el código de tu aula.</p>
+
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:items-center">
+              <a
+                href="/login"
+                className="btn-tactil inline-flex items-center justify-center rounded-xl bg-[#FFC928] px-7 py-3.5 font-bold text-[#17164F]"
+                style={{ "--tactil-borde": "#C98F00" } as React.CSSProperties}
+              >
+                Iniciar sesión
+              </a>
+              <a
+                href="/docente"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 font-bold text-white transition-colors hover:bg-white/15"
+              >
+                <UsersIcon weight="bold" className="h-5 w-5" aria-hidden />
+                Acceso para docentes
+              </a>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/85">
+              {["Solo alias, sin apellidos", "Sin publicidad", "Una lección lista sin internet"].map((punto) => (
+                <span key={punto} className="flex items-center gap-1.5">
+                  <CheckCircleIcon weight="fill" className="h-4 w-4 text-[#FFC928]" aria-hidden />
+                  {punto}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-[#E8E0FF] bg-white py-12 text-[#5B5678]">
+        <div className="mx-auto max-w-[1180px] px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+            <div className="md:col-span-2">
+              <span className="inline-flex items-center gap-2.5 font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
+                <Image src="/assets/logo.svg" alt="" width={32} height={32} />
+                EduNova
+              </span>
+              <p className="mt-3 max-w-sm text-sm">
+                Plataforma de aprendizaje con juegos, basada en el Currículo Nacional del Perú. Proyecto
+                para Hack4Edu 2026.
+              </p>
+              <p className="mt-4 flex items-center gap-2 text-sm font-bold text-[#17164F]">
+                <ShieldCheckIcon weight="fill" className="h-4 w-4 text-[#5636D9]" aria-hidden />
+                Solo alias: nunca apellidos ni teléfonos
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-[family-name:var(--font-fredoka)] font-semibold text-[#17164F]">Explorar</h3>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li><a href="#isometria" className="hover:text-[#5636D9]">Cómo funciona</a></li>
+                <li><a href="#edades" className="hover:text-[#5636D9]">Para tu edad</a></li>
+                <li><a href="#areas" className="hover:text-[#5636D9]">Áreas</a></li>
+                <li><a href="#reto" className="hover:text-[#5636D9]">Mini reto</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-[family-name:var(--font-fredoka)] font-semibold text-[#17164F]">Plataforma</h3>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li><a href="/login" className="hover:text-[#5636D9]">Iniciar sesión</a></li>
+                <li><a href="/docente" className="hover:text-[#5636D9]">Panel del docente</a></li>
+                <li><a href="/familia" className="hover:text-[#5636D9]">Portal de familias</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="mt-10 border-t border-[#E8E0FF] pt-6 text-sm">© 2026 EduNova, Hack4Edu.</p>
         </div>
       </footer>
     </div>
