@@ -184,10 +184,10 @@ export default function Page() {
             Ir a practicar →
           </Link>
           <Link
-            href="/estudiante/cuerpo"
+            href="/estudiante/aventuras"
             className="flex-1 rounded-2xl border border-[#E8E0FF] bg-white py-3.5 text-center text-sm font-bold text-[#17164F]"
           >
-            Explorar cuerpo humano 3D
+            Jugar Aventuras 3D
           </Link>
         </div>
       </div>

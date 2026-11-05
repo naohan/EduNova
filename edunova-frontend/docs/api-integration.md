@@ -60,6 +60,7 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/progreso` | **Conectada** (porcentaje general) | `getStudentProfile` |
 | `/estudiante/ruta` | **Conectada** | `listUnits`: lo que el docente publica en Studio aparece en "De tu docente" |
 | `/estudiante/leccion` | `teoria` | **Conectada:** la frase de apertura de cada edad sale de `getUnit("unit-solar-system")` (`LeccionPorEdad.tsx`); el cuerpo sigue local en `ageContent.ts`. Si el servidor falla, se usa el respaldo local, que copia la semilla del backend |
+| `/estudiante/aventuras` (Piloto, Ordena, Doctor) | **Conectada** | `completeMission` al terminar, con `guardarMision` para funcionar sin red |
 | `/estudiante/flashcards` | **Conectada** | `getUnit` → `stages.practice.flashcards`, unidas a un mazo local |
 | `/estudiante/explorar` (Sistema Solar) | **Conectada** | `getUnit` para las misiones y `completeMission` al completarlas (`useSolarMissions.ts`) |
 | `/estudiante/cuerpo` | **Conectada** | `completeMission` al aprobar un quiz o completar una misión |
