@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
+import { LeccionPorEdad } from "@/components/estudiante/LeccionPorEdad";
 import { teoria, unidadActual } from "@/components/estudiante/data";
 
 export default function Page() {
@@ -18,31 +19,8 @@ export default function Page() {
 
         <div className="grid gap-5 lg:grid-cols-[1fr_1.2fr]">
           <div className="space-y-4">
-            {/* Audio player */}
-            <div className="flex items-center gap-3 rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
-              <button
-                type="button"
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-[#5636D9] text-white"
-                aria-label="Reproducir audio"
-              >
-                ▶
-              </button>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-[#17164F]">{teoria.audioLabel}</div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E8E0FF]">
-                  <div className="h-full w-1/3 rounded-full bg-[#4C9EFF]" />
-                </div>
-              </div>
-              <span className="text-xs text-[#6B7280]">1:24</span>
-            </div>
-
-            <article className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
-              <div className="space-y-3 text-sm leading-relaxed text-[#17164F]/80">
-                {teoria.parrafos.map((p) => (
-                  <p key={p}>{p}</p>
-                ))}
-              </div>
-            </article>
+            {/* Audio, texto y actividad cambian con el modo de edad */}
+            <LeccionPorEdad />
 
             <div className="flex items-start gap-3 rounded-2xl bg-[#F2EEFF] p-4">
               <Image

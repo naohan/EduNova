@@ -4,6 +4,9 @@ import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAgeTier } from "@/lib/age-tier";
+import { ageTierLabel } from "@/lib/api/helpers";
+import { AgeTierSwitcher } from "./AgeTierSwitcher";
 import { estudiante } from "./data";
 
 type Item = {
@@ -50,6 +53,7 @@ export function EstudianteLayout({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [tier] = useAgeTier();
 
   return (
     <div className={shellClassName ?? "min-h-screen bg-[#F7F4FF]"}>
@@ -81,7 +85,7 @@ export function EstudianteLayout({
               <div className="truncate text-sm font-bold text-[#17164F]">
                 {estudiante.nombre}
               </div>
-              <div className="text-xs text-[#5636D9]">{estudiante.nivel}</div>
+              <div className="text-xs text-[#5636D9]">{ageTierLabel[tier]}</div>
             </div>
           </div>
         </div>
@@ -202,7 +206,12 @@ export function EstudianteLayout({
         </div>
       ) : null}
 
-      <main className="min-h-screen pb-[72px] lg:ml-[248px] lg:pb-0">{children}</main>
+      <main className="min-h-screen pb-[72px] lg:ml-[248px] lg:pb-0">
+        <div className="flex justify-end px-4 pt-3 sm:px-6 lg:px-8">
+          <AgeTierSwitcher />
+        </div>
+        {children}
+      </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[#E8E0FF] bg-white px-1 py-1 lg:hidden">
         <div className="flex justify-around">
