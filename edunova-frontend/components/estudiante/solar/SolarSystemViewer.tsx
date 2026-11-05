@@ -34,8 +34,10 @@ export default function SolarSystemViewer({
   const onSelectRef = useRef(onSelect);
   const focusRef = useRef<(id: PlanetId) => void>(() => {});
 
-  selectedRef.current = selectedId;
-  onSelectRef.current = onSelect;
+  useEffect(() => {
+    selectedRef.current = selectedId;
+    onSelectRef.current = onSelect;
+  });
 
   useEffect(() => {
     const mount = mountRef.current;

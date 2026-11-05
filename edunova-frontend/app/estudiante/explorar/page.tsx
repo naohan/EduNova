@@ -6,7 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { unidadActual } from "@/components/estudiante/data";
+import { MissionReward } from "@/components/estudiante/solar/MissionReward";
 import { SOLAR_BODIES, type PlanetId } from "@/components/estudiante/solar/planetData";
+import { useSolarMissions } from "@/components/estudiante/solar/useSolarMissions";
 
 const SolarSystemViewer = dynamic(
   () => import("@/components/estudiante/solar/SolarSystemViewer"),
@@ -23,6 +25,12 @@ const SolarSystemViewer = dynamic(
 export default function Page() {
   const [activo, setActivo] = useState<PlanetId>("tierra");
   const actual = SOLAR_BODIES.find((p) => p.id === activo) ?? SOLAR_BODIES[3];
+  const misiones = useSolarMissions();
+
+  function tocarPlaneta(id: PlanetId) {
+    setActivo(id);
+    misiones.seleccionar(id);
+  }
 
   return (
     <EstudianteLayout>
@@ -83,7 +91,7 @@ export default function Page() {
             <div className="relative h-[360px] sm:h-[440px] lg:h-[520px]">
               <SolarSystemViewer
                 selectedId={activo}
-                onSelect={setActivo}
+                onSelect={tocarPlaneta}
                 className="absolute inset-0 h-full w-full"
               />
 
@@ -91,7 +99,7 @@ export default function Page() {
                 {actual.emoji} {actual.name}
               </div>
 
-              <div className="absolute bottom-3 left-3 flex max-w-[210px] items-end gap-2">
+              <div className="absolute bottom-3 left-3 flex max-w-[270px] items-end gap-2">
                 <Image
                   src="/assets/woebling.png"
                   alt=""
@@ -99,10 +107,36 @@ export default function Page() {
                   height={44}
                   className="pointer-events-none h-auto w-11"
                 />
-                <div className="rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-xs text-[#17164F] shadow">
-                  Arrastra, acerca y toca cada planeta.
+                <div
+                  aria-live="polite"
+                  className="rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-xs text-[#17164F] shadow"
+                >
+                  {misiones.actual ? (
+                    <>
+                      <span className="block font-bold text-[#5636D9]">
+                        Misión {misiones.numero} de {misiones.total}
+                      </span>
+                      {misiones.pista ?? misiones.actual.texto}
+                    </>
+                  ) : (
+                    <>
+                      ¡Completaste todas las misiones!{" "}
+                      <button type="button" onClick={misiones.repetir} className="font-bold text-[#5636D9]">
+                        Repetir
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
+
+              {misiones.logro ? (
+                <MissionReward
+                  logro={misiones.logro}
+                  hayMasMisiones={Boolean(misiones.actual)}
+                  onContinuar={misiones.cerrar}
+                  onReintentar={() => void misiones.reintentar()}
+                />
+              ) : null}
             </div>
 
             <div className="flex gap-2 overflow-x-auto border-t border-white/10 bg-[#12113f] px-3 py-3">
@@ -110,7 +144,7 @@ export default function Page() {
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => setActivo(p.id)}
+                  onClick={() => tocarPlaneta(p.id)}
                   className={`flex shrink-0 flex-col items-center rounded-xl px-3 py-2 ${
                     activo === p.id ? "bg-[#5636D9]" : "bg-white/5"
                   }`}
