@@ -10,7 +10,7 @@ El backend usa **PostgreSQL**. Hay dos formas de tenerlo:
 cp .env.example .env.local        # y cambia NEXT_PUBLIC_API_URL por la URL de Render
 npm run dev                       # http://localhost:3000
 ```
-Si la URL de Render es nueva, agrégala (junto a `http://localhost:3000`) a `WEB_ORIGIN` en Render, o el navegador bloqueará las llamadas por CORS. En el plan gratis, el servicio se duerme tras 15 minutos: la primera llamada tarda y la pantalla muestra su respaldo local hasta que responda.
+El navegador no llama a Render directamente: llama a `/backend` y Next reenvía la petición (`rewrites` en `next.config.ts`). Por eso la app funciona desde cualquier dirección (otro celular en el mismo wifi, por ejemplo) sin tocar `WEB_ORIGIN` en Render. En el plan gratis, el servicio se duerme tras 15 minutos: la primera llamada tarda y la pantalla muestra su respaldo local hasta que responda.
 
 **B. Backend local.** Necesita PostgreSQL instalado y una base `edunova`:
 ```bash

@@ -22,6 +22,8 @@ import { getToken, setSessionUser, setToken } from "./session";
 // Nunca lanza errores: devuelve { ok: false } y la pantalla sigue con sus datos fijos de respaldo.
 // Next fija NEXT_PUBLIC_* al hacer build, por eso se lee de forma literal.
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// En el navegador se llama a /backend, que Next reenvía a API_URL (ver rewrites en next.config.ts).
+const BASE_URL = typeof window === "undefined" ? API_URL : "/backend";
 
 const TIMEOUT_MS = 4000;
 // Las escrituras tardan más: con la base en Render una ingesta toma unos 3,5 s. Si se cortara a los 4 s,
@@ -42,7 +44,7 @@ async function request<T>(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const token = getToken();
-    const res = await fetch(`${API_URL}/api${path}`, {
+    const res = await fetch(`${BASE_URL}/api${path}`, {
       method,
       headers: {
         ...(body !== undefined ? { "Content-Type": "application/json" } : {}),

@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // El navegador llama al backend por /backend (mismo origen) y Next reenvía la petición.
+  // Así el backend no necesita permitir cada dirección desde la que se abre la app (CORS).
+  async rewrites() {
+    const backend = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+    return [{ source: "/backend/:path*", destination: `${backend}/:path*` }];
+  },
   partialPrefetching: true,
   turbopack: {
     rules: {
