@@ -130,6 +130,7 @@ export interface StudentProfile extends GamificationAndBenchmarkProfile {
   ageTier?: AgeTier;
   classroomCode?: string;
   overallProgressPercent: number;
+  topicToReinforce?: string; // solo para tutor y docente
 }
 
 // Solo docente del aula. Safe-Play: alias, nunca apellidos.

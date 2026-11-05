@@ -48,7 +48,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2.5">
           <a
-            href="/estudiante"
+            href="/login"
             className="hidden items-center rounded-xl border-[1.5px] border-[#17164F]/25 px-4 py-2.5 text-sm font-bold text-[#17164F] transition-colors hover:border-[#5636D9] hover:text-[#5636D9] sm:inline-flex"
           >
             Iniciar sesión
@@ -103,7 +103,7 @@ export default function Header() {
               </a>
             ))}
             <a
-              href="#login"
+              href="/login"
               onClick={() => setOpen(false)}
               className="mt-1 rounded-xl border border-[#17164F]/20 px-4 py-3 text-center text-sm font-bold text-[#17164F] sm:hidden"
             >

@@ -11,7 +11,7 @@ import type {
   StudentProfile,
   User,
 } from "./edunova-contract";
-import { getToken, setToken } from "./session";
+import { getToken, setSessionUser, setToken } from "./session";
 
 // Cliente del backend de EduNova (https://github.com/nilton2005/edunova).
 // Nunca lanza errores: devuelve { ok: false } y la pantalla sigue con sus datos fijos de respaldo.
@@ -85,12 +85,21 @@ export interface PassportResponse {
 
 // ---- Sesión ----
 // Usuarios de prueba: u-teacher-1, u-student-1 (Gloria), u-student-2 (Mateo), u-student-3 (Sofía), u-family-1.
-export async function demoLogin(userId: string): Promise<ApiResult<{ user: User; token: string }>> {
-  const r = await request<{ user: User; token: string }>("POST", "/auth/login", { userId });
-  if (r.ok) setToken(r.data.token);
+export type LoginResponse = { user: User; token: string; redirectUrl?: string; linkedStudentId?: string };
+
+export async function login(credentials: { userId?: string; alias?: string; classroomCode?: string }) {
+  const r = await request<LoginResponse>("POST", "/auth/login", credentials);
+  if (r.ok) {
+    setToken(r.data.token);
+    setSessionUser({ ...r.data.user, linkedStudentId: r.data.linkedStudentId });
+  }
   return r;
 }
-export const demoLogout = () => setToken(undefined);
+export const demoLogin = (userId: string) => login({ userId });
+export function demoLogout() {
+  setToken(undefined);
+  setSessionUser(undefined);
+}
 
 // ---- Unidades y docente ----
 export const listUnits = () => request<LearningUnit[]>("GET", "/units");

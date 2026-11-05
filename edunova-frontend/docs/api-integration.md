@@ -46,7 +46,7 @@ export default function Page() {
 }
 ```
 
-Para iniciar sesión en el demo: `await demoLogin("u-student-1")`. Usuarios de prueba: `u-teacher-1`, `u-student-1` (Gloria), `u-student-2` (Mateo), `u-student-3` (Sofía), `u-family-1`. Los endpoints de perfil y de aula **piden sesión** y responden 401 o 403 si no corresponde.
+Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: `await demoLogin("u-student-1")`. Usuarios de prueba: `u-teacher-1`, `u-student-1` (Gloria), `u-student-2` (Mateo), `u-student-3` (Sofía), `u-family-1`. Los endpoints de perfil y de aula **piden sesión** y responden 401 o 403 si no corresponde. En un componente, `useSessionUser()` devuelve el usuario.
 
 ## Reglas de Next.js en este proyecto
 `next.config.ts` tiene `cacheComponents: true`. Un `fetch` sin caché en un **componente de servidor** debe ir dentro de `<Suspense>`, o la ruta se bloquea. Por eso el cliente está pensado para **componentes de cliente** con `useApi`.
@@ -69,7 +69,7 @@ Para iniciar sesión en el demo: `await demoLogin("u-student-1")`. Usuarios de p
 | `/docente/competencias` | `competenciaMastery`, `estudiantes` | `getClassAnalytics` → `criteria` y `getClassStudents` |
 | `/docente/reportes` (alertas) | `predictiveAlerts` | `getClassAnalytics` → `alerts` |
 | Studio (subir PDF) | — | `ingestDocument` + `approveRubric` |
-| Portal de familia | — | `getFamilyExplanation`, `getBenchmark`, `getPassport` |
+| `/familia` | **Conectada** | `getStudentProfile`, `getBenchmark`, `getFamilyExplanation`, `getPassport`. El pacto es de solo lectura, con una meta fija |
 
 ## Diferencias que hay que tener en cuenta
 El backend sigue el **Plan Maestro**, no los datos fijos de `data.ts`:
