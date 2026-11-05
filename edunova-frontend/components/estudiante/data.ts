@@ -126,12 +126,10 @@ export const casillasTablero = [
 ];
 
 export const habilidades = [
-  { id: "razonamiento", nombre: "Razonamiento", pct: 85, icon: BrainIcon },
-  { id: "espacial", nombre: "Espacial", pct: 80, icon: CubeIcon },
-  { id: "comunicacion", nombre: "Comunicación", pct: 75, icon: ChatCircleIcon },
-  { id: "colaboracion", nombre: "Colaboración", pct: 90, icon: UsersIcon },
-  { id: "creatividad", nombre: "Creatividad", pct: 78, icon: LightbulbIcon },
-  { id: "autonomia", nombre: "Autonomía", pct: 82, icon: TargetIcon },
+  { id: "razonamiento", nombre: "Razonamiento", pct: 85, emoji: "🧠" },
+  { id: "espacial", nombre: "Espacial", pct: 80, emoji: "🧊" },
+  { id: "verbal", nombre: "Verbal", pct: 75, emoji: "💬" },
+  { id: "matematica", nombre: "Lógico-Matemática", pct: 82, emoji: "🧮" },
 ];
 
 export const tiposEvaluacion = [
