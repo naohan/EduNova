@@ -1,6 +1,33 @@
 @import "tailwindcss";
 
 :root {
+  /* Paleta por sección de marca EduNova */
+  --sec-explorar: #4c9eff;
+  --sec-explorar-borde: #2472cc;
+  --sec-explorar-fondo: #e6f2ff;
+  --sec-explorar-texto: #17164f;
+
+  --sec-juego: #ffc928;
+  --sec-juego-borde: #c98f00;
+  --sec-juego-fondo: #fff6d6;
+  --sec-juego-texto: #17164f;
+
+  --sec-cooperar: #2dbe70;
+  --sec-cooperar-borde: #1b8a4f;
+  --sec-cooperar-fondo: #e3f8ec;
+  --sec-cooperar-texto: #17164f;
+
+  --sec-magia: #5636d9;
+  --sec-magia-borde: #3b229d;
+  --sec-magia-fondo: #f2eeff;
+  --sec-magia-texto: #ffffff;
+
+  --sec-refuerzo: #ff8a73;
+  --sec-refuerzo-borde: #d9583f;
+  --sec-refuerzo-fondo: #ffede8;
+  --sec-refuerzo-texto: #17164f;
+
+  /* Tokens base existentes */
   --morado: #5636d9;
   --azul-noche: #17164f;
   --lavanda: #f2eeff;
@@ -19,13 +46,39 @@
 
 /*
   Reglas de forma: tarjetas rounded-2xl, botones y campos rounded-xl,
-  chips y selectores rounded-full. Las tarjetas se separan con borde, sin sombra.
-  El verde, amarillo y rojo significan estado (logrado, en proceso, en inicio).
+  chips y selectores rounded-full. Las tarjetas se separan con borde sólido de 4px, sin sombras difusas.
+  Rojo, amarillo y verde de estado se mantienen en el panel docente; en estudiante se usa Refuerzo.
 */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-sec-explorar: var(--sec-explorar);
+  --color-sec-explorar-borde: var(--sec-explorar-borde);
+  --color-sec-explorar-fondo: var(--sec-explorar-fondo);
+  --color-sec-explorar-texto: var(--sec-explorar-texto);
+
+  --color-sec-juego: var(--sec-juego);
+  --color-sec-juego-borde: var(--sec-juego-borde);
+  --color-sec-juego-fondo: var(--sec-juego-fondo);
+  --color-sec-juego-texto: var(--sec-juego-texto);
+
+  --color-sec-cooperar: var(--sec-cooperar);
+  --color-sec-cooperar-borde: var(--sec-cooperar-borde);
+  --color-sec-cooperar-fondo: var(--sec-cooperar-fondo);
+  --color-sec-cooperar-texto: var(--sec-cooperar-texto);
+
+  --color-sec-magia: var(--sec-magia);
+  --color-sec-magia-borde: var(--sec-magia-borde);
+  --color-sec-magia-fondo: var(--sec-magia-fondo);
+  --color-sec-magia-texto: var(--sec-magia-texto);
+
+  --color-sec-refuerzo: var(--sec-refuerzo);
+  --color-sec-refuerzo-borde: var(--sec-refuerzo-borde);
+  --color-sec-refuerzo-fondo: var(--sec-refuerzo-fondo);
+  --color-sec-refuerzo-texto: var(--sec-refuerzo-texto);
+
   --color-morado: var(--morado);
   --color-azul-noche: var(--azul-noche);
   --color-lavanda: var(--lavanda);
@@ -45,8 +98,122 @@ body {
 
 /* Foco visible para quien navega con teclado. */
 :focus-visible {
-  outline: 2px solid var(--morado);
+  outline: 3px solid var(--sec-magia);
   outline-offset: 2px;
+}
+
+/* ==========================================================================
+   SISTEMA TÁCTIL EDUNOVA (Botones y Tarjetas para Estudiantes)
+   ========================================================================== */
+
+.btn-tactil {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: 0.75rem; /* rounded-xl */
+  border-bottom: 4px solid var(--tactil-borde, #e8e0ff);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.06s ease, border-bottom-width 0.06s ease, margin-bottom 0.06s ease;
+}
+
+.btn-tactil:active:not(:disabled) {
+  transform: translateY(4px);
+  border-bottom-width: 0px;
+  margin-bottom: 4px;
+}
+
+.btn-tactil:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card-tactil {
+  display: flex;
+  min-height: 44px;
+  border-radius: 1rem; /* rounded-2xl */
+  border-bottom: 4px solid var(--tactil-borde, #e8e0ff);
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.06s ease, border-bottom-width 0.06s ease, margin-bottom 0.06s ease;
+}
+
+.card-tactil:active:not(:disabled) {
+  transform: translateY(4px);
+  border-bottom-width: 0px;
+  margin-bottom: 4px;
+}
+
+/* Variantes táctiles por sección */
+.tactil-explorar {
+  --tactil-borde: var(--sec-explorar-borde);
+  background-color: var(--sec-explorar);
+  color: var(--sec-explorar-texto);
+}
+
+.tactil-explorar-suave {
+  --tactil-borde: var(--sec-explorar-borde);
+  background-color: var(--sec-explorar-fondo);
+  color: var(--sec-explorar-texto);
+}
+
+.tactil-juego {
+  --tactil-borde: var(--sec-juego-borde);
+  background-color: var(--sec-juego);
+  color: var(--sec-juego-texto);
+}
+
+.tactil-juego-suave {
+  --tactil-borde: var(--sec-juego-borde);
+  background-color: var(--sec-juego-fondo);
+  color: var(--sec-juego-texto);
+}
+
+.tactil-cooperar {
+  --tactil-borde: var(--sec-cooperar-borde);
+  background-color: var(--sec-cooperar);
+  color: var(--sec-cooperar-texto);
+}
+
+.tactil-cooperar-suave {
+  --tactil-borde: var(--sec-cooperar-borde);
+  background-color: var(--sec-cooperar-fondo);
+  color: var(--sec-cooperar-texto);
+}
+
+.tactil-magia {
+  --tactil-borde: var(--sec-magia-borde);
+  background-color: var(--sec-magia);
+  color: var(--sec-magia-texto);
+}
+
+.tactil-magia-suave {
+  --tactil-borde: var(--sec-magia-borde);
+  background-color: var(--sec-magia-fondo);
+  color: var(--sec-magia-borde);
+}
+
+.tactil-refuerzo {
+  --tactil-borde: var(--sec-refuerzo-borde);
+  background-color: var(--sec-refuerzo);
+  color: var(--sec-refuerzo-texto);
+}
+
+.tactil-refuerzo-suave {
+  --tactil-borde: var(--sec-refuerzo-borde);
+  background-color: var(--sec-refuerzo-fondo);
+  color: var(--sec-refuerzo-texto);
+}
+
+.tactil-blanco {
+  --tactil-borde: var(--linea);
+  background-color: #ffffff;
+  color: var(--foreground);
 }
 
 @keyframes entrada {
@@ -61,12 +228,26 @@ body {
     scroll-behavior: smooth;
   }
 
-  /* Confirma el clic con un empujón de 1px. */
-  :where(a, button):active:not(:disabled) {
+  /* Confirma el clic con un empujón de 1px solo en elementos generales no táctiles. */
+  :where(a, button):not(.btn-tactil):not(.card-tactil):active:not(:disabled) {
     translate: 0 1px;
   }
 
   .entrada {
     animation: entrada 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .btn-tactil:active:not(:disabled),
+  .card-tactil:active:not(:disabled) {
+    transform: none !important;
+    border-bottom-width: 4px !important;
+    margin-bottom: 0px !important;
   }
 }

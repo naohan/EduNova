@@ -11,6 +11,7 @@ import { JUEGO_ASSETS } from "./assets";
 import { CHARACTER_PROFILES } from "./boardData";
 import { soundManager } from "./soundEffects";
 import type { CharacterClass } from "./gameTypes";
+import { MusicNotesIcon, SpeakerSimpleSlashIcon, StarIcon, TrophyIcon } from "@/components/ui/icons";
 
 type DuelStep = "setup" | "battle" | "creator" | "result";
 
@@ -224,20 +225,24 @@ export function DueloExperience() {
           <button
             type="button"
             onClick={handleToggleBgm}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black shadow transition-all ${
+            className={`flex items-center gap-1.5 rounded-xl border border-b-2 px-3 py-1.5 text-xs font-bold transition-all ${
               bgmActive
-                ? "bg-gradient-to-r from-[#FFC928] to-[#FF8A3D] text-[#17164F] animate-pulse"
-                : "bg-white text-[#5B5678] border border-[#E8E0FF]"
+                ? "border-[#C98F00] bg-[#FFC928] text-[#17164F]"
+                : "border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
             }`}
           >
-            <span>{bgmActive ? "🎵" : "🔇"}</span>
-            <span className="hidden sm:inline">{bgmActive ? "Música: ON" : "Música: OFF"}</span>
+            {bgmActive ? (
+              <MusicNotesIcon weight="bold" className="h-4 w-4" aria-hidden />
+            ) : (
+              <SpeakerSimpleSlashIcon weight="bold" className="h-4 w-4" aria-hidden />
+            )}
+            <span className="hidden sm:inline">{bgmActive ? "Música" : "Música"}</span>
           </button>
           <Link
             href="/estudiante/juegos"
-            className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#5636D9] shadow border border-[#E8E0FF] hover:bg-[#F2EEFF]"
+            className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#5636D9] border border-[#E8E0FF] hover:bg-[#F2EEFF]"
           >
-            🎲 Volver al Tablero
+            Volver al Tablero
           </Link>
         </div>
       </header>
@@ -532,9 +537,13 @@ export function DueloExperience() {
 
       {/* STEP: RESULT */}
       {step === "result" && resultado && (
-        <div className="rounded-3xl bg-white p-6 sm:p-8 text-center shadow-2xl border border-[#E8E0FF]">
-          <div className="text-5xl mb-2" aria-hidden>
-            {resultado.gano ? "🏆" : "💪"}
+        <div className="rounded-3xl bg-white p-6 sm:p-8 text-center border-2 border-b-4 border-[#C98F00]/30 border-b-[#C98F00]">
+          <div className="mb-3 flex justify-center" aria-hidden>
+            {resultado.gano ? (
+              <TrophyIcon weight="fill" className="h-12 w-12 text-[#FFC928]" />
+            ) : (
+              <StarIcon weight="fill" className="h-12 w-12 text-[#4C9EFF]" />
+            )}
           </div>
           <h2 className="font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F]">
             {resultado.gano ? "¡Ganaste el duelo!" : "¡Buen intento!"}
@@ -542,20 +551,20 @@ export function DueloExperience() {
           <p className="mt-1 text-sm text-[#5B5678]">
             {resultado.gano
               ? `Demostraste lo que sabes frente a ${selectedGhost.name}.`
-              : `${selectedGhost.name} ganó esta vez. Cada duelo te hace más fuerte: pide la revancha.`}
+              : `${selectedGhost.name} ganó esta vez. Cada duelo te hace más fuerte.`}
           </p>
 
-          <div className="my-5 grid grid-cols-3 gap-2 rounded-2xl bg-[#F2EEFF] p-4 text-center">
+          <div className="my-5 grid grid-cols-3 gap-2 rounded-2xl bg-[#FFF6D6] p-4 text-center border border-[#C98F00]/20">
             <div>
-              <span className="block text-xl font-black text-[#5636D9]">+{resultado.xp}</span>
+              <span className="block text-xl font-black text-[#17164F]">+{resultado.xp}</span>
               <span className="text-[10px] text-[#5B5678] font-bold">XP de Maestría</span>
             </div>
             <div>
-              <span className="block text-xl font-black text-[#92400E]">+{resultado.coins}</span>
+              <span className="block text-xl font-black text-[#17164F]">+{resultado.coins}</span>
               <span className="text-[10px] text-[#5B5678] font-bold">NovaCoins</span>
             </div>
             <div>
-              <span className="block text-xl font-black text-[#127A43]">
+              <span className="block text-xl font-black text-[#17164F]">
                 {resultado.aciertos}/{RONDAS}
               </span>
               <span className="text-[10px] text-[#5B5678] font-bold">Aciertos</span>
@@ -567,15 +576,15 @@ export function DueloExperience() {
             <button
               type="button"
               onClick={startBattle}
-              className="flex-1 rounded-full bg-[#5636D9] py-3 text-xs sm:text-sm font-bold text-white shadow hover:bg-[#4323c4]"
+              className="btn-tactil tactil-magia flex-1 py-3 text-xs sm:text-sm text-white"
             >
               Jugar la Revancha
             </button>
             <Link
               href="/estudiante/ligas"
-              className="flex-1 rounded-full bg-[#FFC928] py-3 text-xs sm:text-sm font-black text-[#17164F] shadow hover:brightness-110 flex items-center justify-center"
+              className="btn-tactil tactil-juego flex-1 py-3 text-xs sm:text-sm text-[#17164F]"
             >
-              Ver mi Puesto en la Liga 🏅
+              Ver mi puesto en la liga
             </Link>
           </div>
         </div>

@@ -16,7 +16,20 @@ import {
 import { GameBoard } from "./GameBoard";
 import { useGameRoom } from "./useGameRoom";
 import type { CharacterClass, GameRoom, PlayerState } from "./gameTypes";
-import { CrownIcon } from "@/components/ui/icons";
+import {
+  CheckIcon,
+  CrownIcon,
+  DiamondIcon,
+  HeartIcon,
+  LightningIcon,
+  LockIcon,
+  MusicNotesIcon,
+  SpeakerHighIcon,
+  SpeakerSimpleSlashIcon,
+  StarIcon,
+  StorefrontIcon,
+  TrophyIcon,
+} from "@/components/ui/icons";
 import { Dice3D } from "./Dice3D";
 import { CharacterCard } from "./CharacterCard";
 import { GameQuizModal } from "./GameQuizModal";
@@ -179,13 +192,13 @@ export function ExploradoresGame() {
               <span>PWA Sincronizada</span>
             </div>
 
-            {/* Hub Shortcut to Tienda & Ligas */}
+            {/* Hub Shortcut to Tienda */}
             <Link
               href="/estudiante/tienda"
-              className="flex items-center gap-1 rounded-full bg-[#FFC928]/20 border border-[#FFC928]/40 px-2.5 py-1 text-[11px] font-bold text-[#FFC928] hover:bg-[#FFC928]/30"
+              className="flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[#C98F00]/40 border-b-2 border-b-[#C98F00] bg-[#FFC928] px-3 py-1.5 text-xs font-bold text-[#17164F]"
               title="Ir a la Tienda de la Mascota"
             >
-              <span>🛍️</span>
+              <StorefrontIcon weight="bold" className="h-4 w-4" aria-hidden />
               <span className="hidden sm:inline">Tienda</span>
             </Link>
 
@@ -193,30 +206,38 @@ export function ExploradoresGame() {
             <button
               type="button"
               onClick={handleToggleBgm}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-black transition-all ${
+              className={`flex min-h-[44px] items-center gap-1.5 rounded-xl border border-b-2 px-3 py-1.5 text-xs font-bold transition-all ${
                 bgmActive
-                  ? "bg-gradient-to-r from-[#FFC928] via-[#FF8A3D] to-[#E85D5D] text-[#17164F] shadow-md animate-pulse ring-2 ring-[#FFC928]/60"
-                  : "border border-white/20 bg-white/10 text-white/60 hover:bg-white/20"
+                  ? "border-[#C98F00] bg-[#FFC928] text-[#17164F]"
+                  : "border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
               }`}
               title={bgmActive ? "Pausar música de fondo" : "Activar música de fondo"}
             >
-              <span>{bgmActive ? "🎵" : "🔇"}</span>
-              <span className="hidden sm:inline">{bgmActive ? "Música: ON" : "Música: OFF"}</span>
+              {bgmActive ? (
+                <MusicNotesIcon weight="bold" className="h-4 w-4" aria-hidden />
+              ) : (
+                <SpeakerSimpleSlashIcon weight="bold" className="h-4 w-4" aria-hidden />
+              )}
+              <span className="hidden sm:inline">{bgmActive ? "Música" : "Música"}</span>
             </button>
 
             {/* SFX Mute Audio Button */}
             <button
               type="button"
               onClick={handleToggleMute}
-              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold border transition-all ${
+              className={`flex min-h-[44px] items-center gap-1.5 rounded-xl border border-b-2 px-3 py-1.5 text-xs font-bold transition-all ${
                 !muted
-                  ? "border-[#2DBE70]/50 bg-[#2DBE70]/20 text-[#4ADE80] shadow"
-                  : "border-white/20 bg-white/10 text-white/50"
+                  ? "border-[#1B8A4F] bg-[#2DBE70] text-[#17164F]"
+                  : "border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
               }`}
               title={muted ? "Activar efectos de sonido" : "Silenciar efectos de sonido"}
             >
-              <span>{muted ? "🔇" : "🔊"}</span>
-              <span className="hidden sm:inline">{muted ? "SFX: OFF" : "SFX: ON"}</span>
+              {!muted ? (
+                <SpeakerHighIcon weight="bold" className="h-4 w-4" aria-hidden />
+              ) : (
+                <SpeakerSimpleSlashIcon weight="bold" className="h-4 w-4" aria-hidden />
+              )}
+              <span className="hidden sm:inline">{muted ? "SFX: Mudo" : "SFX: Activo"}</span>
             </button>
           </div>
         </div>
@@ -385,12 +406,13 @@ export function ExploradoresGame() {
               <p className="mt-2 text-sm text-[#5B5678]">{pending.message}</p>
               {"xp" in pending && (
                 <div className="mt-3 flex items-center justify-center gap-3">
-                  <span className="rounded-full bg-[#D1FAE5] px-3 py-1 text-xs font-black text-[#127A43]">
+                  <span className="rounded-xl bg-[#E3F8EC] px-3 py-1 text-xs font-black text-[#17164F]">
                     +{pending.xp} XP
                   </span>
                   {"coins" in pending && pending.coins && (
-                    <span className="rounded-full bg-[#FEF3C7] px-3 py-1 text-xs font-black text-[#92400E]">
-                      +{pending.coins} NovaCoins 🪙
+                    <span className="inline-flex items-center gap-1 rounded-xl bg-[#FFF6D6] px-3 py-1 text-xs font-black text-[#17164F]">
+                      +{pending.coins} NovaCoins
+                      <DiamondIcon weight="fill" className="h-3.5 w-3.5 text-[#C98F00]" aria-hidden />
                     </span>
                   )}
                 </div>
@@ -398,9 +420,9 @@ export function ExploradoresGame() {
               <button
                 type="button"
                 onClick={() => game.action({ action: "resolve" })}
-                className="mt-5 w-full rounded-full bg-[#5636D9] py-3 text-sm font-bold text-white shadow-lg hover:bg-[#4323c4] active:scale-95"
+                className="btn-tactil tactil-magia mt-5 w-full py-3 text-sm text-white"
               >
-                Continuar Expedición →
+                Continuar
               </button>
             </div>
           </div>
@@ -409,8 +431,10 @@ export function ExploradoresGame() {
       {/* Level Up Fanfare Modal */}
       {levelUpAlert && (
         <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
-          <div className="w-full max-w-md rounded-3xl bg-gradient-to-b from-white via-[#F7F4FF] to-[#EDE7FF] p-6 text-center shadow-2xl border-4 border-[#FFC928] animate-[bounce_0.6s_ease-out]">
-            <div className="text-5xl mb-2 animate-bounce">🌟</div>
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 text-center border-4 border-b-8 border-[#FFC928] border-b-[#C98F00]">
+            <div className="mb-2 flex justify-center">
+              <StarIcon weight="fill" className="h-12 w-12 text-[#FFC928]" aria-hidden />
+            </div>
             <h2 className="font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F]">
               ¡NIVEL {levelUpAlert} SUPERADO!
             </h2>
@@ -421,23 +445,23 @@ export function ExploradoresGame() {
               {GAME_LEVELS[levelUpAlert - 1]?.subtitle}
             </p>
 
-            <div className="my-4 flex items-center justify-center gap-2 rounded-2xl bg-[#FFF6D6] p-3 text-xs font-bold text-[#92400E]">
-              <span>🎁 Recompensa:</span>
-              <span>+{GAME_LEVELS[levelUpAlert - 1]?.rewardCoins} NovaCoins 🪙</span>
+            <div className="my-4 flex items-center justify-center gap-2 rounded-2xl bg-[#FFF6D6] border border-[#C98F00]/30 p-3 text-xs font-bold text-[#17164F]">
+              <span>Recompensa:</span>
+              <span>+{GAME_LEVELS[levelUpAlert - 1]?.rewardCoins} NovaCoins</span>
               <span>|</span>
               <span>+{GAME_LEVELS[levelUpAlert - 1]?.rewardXP} XP</span>
             </div>
 
-            <p className="text-[11px] text-[#127A43] font-bold">
-              ❤️ Todas las vidas y habilidades del equipo han sido recargadas.
+            <p className="text-xs font-bold text-[#1B8A4F]">
+              Todas las vidas y habilidades del equipo han sido recargadas.
             </p>
 
             <button
               type="button"
               onClick={() => setLevelUpAlert(null)}
-              className="mt-5 w-full rounded-full bg-[#FFC928] py-3 text-sm font-black text-[#17164F] shadow-lg hover:brightness-110 active:scale-95"
+              className="btn-tactil tactil-juego mt-5 w-full py-3 text-sm font-black text-[#17164F]"
             >
-              ¡Adelante al siguiente Mundo! 🚀
+              Avanzar al siguiente mundo
             </button>
           </div>
         </div>
@@ -532,12 +556,12 @@ export function ExploradoresGame() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               <Link
                 href="/estudiante/tienda"
-                className="w-full rounded-full bg-[#FFC928] py-3 text-sm font-black text-[#17164F] shadow hover:brightness-110"
+                className="btn-tactil tactil-juego w-full py-3 text-sm font-black text-[#17164F]"
               >
-                Ir a la Tienda a equipar al Robot 🛍️
+                Equipar en la tienda
               </Link>
               <button
                 type="button"
@@ -545,7 +569,7 @@ export function ExploradoresGame() {
                   game.leave();
                   setStep("curso");
                 }}
-                className="w-full rounded-full bg-[#5636D9] py-3 text-sm font-bold text-white shadow hover:bg-[#4323c4]"
+                className="btn-tactil tactil-magia w-full py-3 text-sm font-bold text-white"
               >
                 Jugar otra partida
               </button>
@@ -647,14 +671,16 @@ function CourseSelect({
             {GAME_LEVELS.map((lvl) => (
               <div
                 key={lvl.level}
-                className="rounded-xl bg-white p-2 text-center shadow-sm border border-slate-100"
+                className="rounded-xl bg-white p-2 text-center border border-[#C98F00]/20"
               >
-                <span className="text-base">{lvl.badge.split(" ")[0]}</span>
+                <div className="flex justify-center mb-1">
+                  <TrophyIcon weight="bold" className="h-4 w-4 text-[#C98F00]" aria-hidden />
+                </div>
                 <p className="text-[10px] font-bold text-[#17164F] truncate">
                   Nivel {lvl.level}
                 </p>
-                <p className="text-[9px] text-[#FF8A3D] font-bold">
-                  +{lvl.rewardCoins} 🪙
+                <p className="text-[9px] text-[#C98F00] font-black">
+                  +{lvl.rewardCoins} pts
                 </p>
               </div>
             ))}
@@ -1140,12 +1166,12 @@ function LobbyScreen({
           >
             {room.players.length < 2
               ? "Agrega al menos 1 compañero"
-              : "¡Comenzar Partida! 🎲"}
+              : "¡Comenzar Partida!"}
           </button>
         )}
 
         {error && (
-          <p className="mt-2 text-center text-xs font-semibold text-[#E85D5D]">
+          <p className="mt-2 text-center text-xs font-semibold text-[#D9583F]">
             {error}
           </p>
         )}
@@ -1276,17 +1302,25 @@ function PlayScreen({
               <span className="text-xs font-black">{current?.name}</span>
               <span className="text-[10px] text-[#5636D9] font-semibold">({currentProfile.archetype})</span>
             </div>
-            {/* Lives ❤️ */}
-            <div className="flex items-center gap-0.5 text-xs" title={`Vidas: ${current?.lives ?? 3}`}>
+            {/* Lives */}
+            <div className="flex items-center gap-1 text-xs" title={`Vidas: ${current?.lives ?? 3}`}>
               {Array.from({ length: current?.maxLives ?? 3 }).map((_, i) => (
-                <span
+                <HeartIcon
                   key={i}
-                  className={i < (current?.lives ?? 3) ? "opacity-100" : "opacity-25 grayscale"}
-                >
-                  ❤️
-                </span>
+                  weight="fill"
+                  className={`h-3.5 w-3.5 ${
+                    i < (current?.lives ?? 3)
+                      ? "text-[#FF8A73]"
+                      : "text-slate-300"
+                  }`}
+                  aria-hidden
+                />
               ))}
-              {(current?.shields ?? 0) > 0 && <span className="ml-1 text-xs">🛡️</span>}
+              {(current?.shields ?? 0) > 0 && (
+                <span title="Escudo activo" className="ml-1 inline-flex items-center">
+                  <LockIcon weight="bold" className="h-3.5 w-3.5 text-[#FFC928]" aria-hidden />
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -1296,9 +1330,9 @@ function PlayScreen({
           <button
             type="button"
             onClick={onShowTerritories}
-            className="flex items-center gap-1.5 rounded-full bg-[#F2EEFF] px-3 py-1 text-xs font-extrabold text-[#5636D9] shadow-sm hover:bg-[#E8E0FF]"
+            className="flex items-center gap-1.5 rounded-full border border-[#3B229D]/20 border-b-2 border-b-[#3B229D] bg-[#F2EEFF] px-3 py-1 text-xs font-extrabold text-[#5636D9]"
           >
-            <span>{GAME_LEVELS[(room.currentLevel ?? 1) - 1]?.badge.split(" ")[0]}</span>
+            <TrophyIcon weight="bold" className="h-3.5 w-3.5 text-[#5636D9]" aria-hidden />
             <span>Nivel {room.currentLevel ?? 1}</span>
             <span className="text-[10px] text-[#5B5678]">({unlocked}/6 Territorios)</span>
           </button>
@@ -1307,14 +1341,14 @@ function PlayScreen({
         {/* Currency & Score Stats */}
         <div className="flex items-center gap-2">
           {/* NovaCoins */}
-          <div className="flex items-center gap-1 rounded-full bg-[#FEF3C7] border border-[#FDE68A] px-2.5 py-1 text-xs font-black text-[#92400E] shadow-sm">
-            <span>🪙</span>
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#C98F00]/30 border-b-2 border-b-[#C98F00] bg-[#FFF6D6] px-2.5 py-1 text-xs font-black text-[#17164F]">
+            <DiamondIcon weight="fill" className="h-3.5 w-3.5 text-[#C98F00]" aria-hidden />
             <span>{me.novaCoins ?? 80}</span>
           </div>
 
           {/* XP */}
-          <div className="flex items-center gap-1 rounded-full bg-[#D1FAE5] border border-[#A7F3D0] px-2.5 py-1 text-xs font-black text-[#065F46] shadow-sm">
-            <span>⚡</span>
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#1B8A4F]/30 border-b-2 border-b-[#1B8A4F] bg-[#E3F8EC] px-2.5 py-1 text-xs font-black text-[#17164F]">
+            <LightningIcon weight="fill" className="h-3.5 w-3.5 text-[#1B8A4F]" aria-hidden />
             <span>{me.xp} XP</span>
           </div>
 
@@ -1364,9 +1398,11 @@ function PlayScreen({
                         <p className="truncate text-xs font-bold leading-tight">
                           {p.name}
                         </p>
-                        <p className="text-[9px] text-[#E85D5D]">
-                          {"❤️".repeat(p.lives ?? 3)}
-                        </p>
+                        <div className="flex items-center gap-0.5 mt-0.5">
+                          {Array.from({ length: p.lives ?? 3 }).map((_, li) => (
+                            <HeartIcon key={li} weight="fill" className="h-2.5 w-2.5 text-[#FF8A73]" aria-hidden />
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <span className="text-xs font-black text-[#5636D9]">
@@ -1511,8 +1547,18 @@ function TerritoriesModal({
                 <span className="mt-2 text-xs font-bold leading-tight">
                   {t.nombre}
                 </span>
-                <span className="mt-1 text-[10px] font-black">
-                  {isUnlocked ? "✓ Conquistado" : "🔒 Bloqueado"}
+                <span className="mt-1 flex items-center justify-center gap-1 text-[10px] font-black">
+                  {isUnlocked ? (
+                    <>
+                      <CheckIcon weight="bold" className="h-3 w-3 text-[#1B8A4F]" aria-hidden />
+                      <span className="text-[#1B8A4F]">Conquistado</span>
+                    </>
+                  ) : (
+                    <>
+                      <LockIcon weight="bold" className="h-3 w-3 text-[#5B5678]" aria-hidden />
+                      <span className="text-[#5B5678]">Bloqueado</span>
+                    </>
+                  )}
                 </span>
               </div>
             );

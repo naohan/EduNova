@@ -22,7 +22,7 @@ export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
     passiveDesc: "Gana +50 NovaCoins extras en casillas de Recompensa y Cooperación.",
     activeName: "Escudo Guardián",
     activeDesc: "Activa un escudo que absorbe el siguiente error sin perder vidas.",
-    activeIcon: "🛡️",
+    activeIcon: "Escudo",
   },
   explorador: {
     id: "explorador",
@@ -42,7 +42,7 @@ export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
     passiveDesc: "Comienza con 4 corazones de vida máxima y recupera energía rápido.",
     activeName: "Brújula de la Suerte",
     activeDesc: "Permite volver a tirar el dado si no te gusta el número obtenido.",
-    activeIcon: "🧭",
+    activeIcon: "Brújula",
   },
   cientifico: {
     id: "cientifico",
@@ -62,7 +62,7 @@ export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
     passiveDesc: "Otorga +50% de XP adicional y revela pistas de la Mascota Robot.",
     activeName: "Hipótesis Cuántica",
     activeDesc: "Elimina una opción incorrecta en la pregunta actual para asegurar el acierto.",
-    activeIcon: "🧪",
+    activeIcon: "Frasco",
   },
   gamer: {
     id: "gamer",
@@ -98,7 +98,7 @@ export const GAME_LEVELS: GameLevel[] = [
     requiredTerritories: 1,
     rewardCoins: 150,
     rewardXP: 200,
-    badge: "🌱 Brote del Saber",
+    badge: "Brote del Saber",
   },
   {
     level: 2,
@@ -111,7 +111,7 @@ export const GAME_LEVELS: GameLevel[] = [
     requiredTerritories: 3,
     rewardCoins: 250,
     rewardXP: 350,
-    badge: "💎 Cristal del Conocimiento",
+    badge: "Cristal del Conocimiento",
   },
   {
     level: 3,
@@ -124,7 +124,7 @@ export const GAME_LEVELS: GameLevel[] = [
     requiredTerritories: 5,
     rewardCoins: 400,
     rewardXP: 500,
-    badge: "🔥 Llama de la Ciencia",
+    badge: "Llama de la Ciencia",
   },
   {
     level: 4,
@@ -137,7 +137,7 @@ export const GAME_LEVELS: GameLevel[] = [
     requiredTerritories: 6,
     rewardCoins: 600,
     rewardXP: 800,
-    badge: "👑 Copa Supernova EduNova",
+    badge: "Copa Supernova",
   },
 ];
 

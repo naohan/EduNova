@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import type { QuizQuestion } from "@/components/estudiante/shared/quizTypes";
 import type { CharacterProfile, PlayerState } from "./gameTypes";
 import { soundManager } from "./soundEffects";
 import { JUEGO_ASSETS } from "./assets";
+import {
+  FireIcon,
+  HeartIcon,
+  LockIcon,
+  SpeakerHighIcon,
+  TrophyIcon,
+} from "@/components/ui/icons";
 
 type Props = {
   question: QuizQuestion;
@@ -95,12 +102,12 @@ export function GameQuizModal({
       setRobotDialog("¡Escudo Guardián desplegado! El próximo error no te restará vidas.");
     } else if (character.id === "explorador") {
       if (question.pista) {
-        setRobotDialog(`🧭 Brújula de la Suerte: ${question.pista}`);
+        setRobotDialog(`Brújula de la Suerte: ${question.pista}`);
       } else {
-        setRobotDialog("🧭 Brújula de la Suerte: ¡Confía en tu primer instinto!");
+        setRobotDialog("Brújula de la Suerte: ¡Confía en tu primer instinto!");
       }
     } else if (character.id === "gamer") {
-      setRobotDialog("⚡ Turbo Boost: ¡Si aciertas esta pregunta ganarás triple bono de NovaCoins!");
+      setRobotDialog("Turbo Boost: ¡Si aciertas esta pregunta ganarás triple bono de NovaCoins!");
     }
   }
 
@@ -124,8 +131,8 @@ export function GameQuizModal({
 
       setRobotDialog(
         comboMultiplier > 1
-          ? `¡INCREÍBLE! Combo x${comboMultiplier} activo. Ganaste +${question.xp} XP y +${totalCoins} NovaCoins!`
-          : `¡Respuesta correcta! Excelente razonamiento. +${question.xp} XP y +${totalCoins} NovaCoins!`
+          ? `¡Excelente! Combo x${comboMultiplier} activo. Ganaste +${question.xp} XP y +${totalCoins} NovaCoins.`
+          : `¡Respuesta correcta! Buen razonamiento. +${question.xp} XP y +${totalCoins} NovaCoins.`
       );
     } else {
       // Manejo de fallo no punitivo con vidas
@@ -136,7 +143,7 @@ export function GameQuizModal({
         soundManager.playWrong();
         setHasShield(false);
         setFeedback("wrong");
-        setRobotDialog("🛡️ ¡Tu escudo absorbió el impacto! No perdiste vidas. Revisa la pista y reintenta.");
+        setRobotDialog("¡Tu escudo absorbió el impacto! No perdiste vidas. Revisa la pista y reintenta.");
       } else {
         const nextLives = currentLives - 1;
         soundManager.playWrong();
@@ -203,10 +210,10 @@ export function GameQuizModal({
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#FFC928]">
                 {tileKind === "desafio"
-                  ? "⚔️ Desafío Especial"
+                  ? "Desafío Especial"
                   : tileKind === "cooperacion"
-                    ? "🤝 Casilla Cooperativa"
-                    : "🎯 Casilla de Sabiduría"}
+                    ? "Casilla Cooperativa"
+                    : "Casilla de Sabiduría"}
               </p>
               <h3 className="font-[family-name:var(--font-fredoka)] text-sm sm:text-base font-bold">
                 {tileTitle}
@@ -217,24 +224,29 @@ export function GameQuizModal({
           {/* HUD: Hearts / Shield / Combo */}
           <div className="flex items-center gap-3">
             {/* Lives */}
-            <div className="flex items-center gap-1 rounded-full bg-black/30 px-3 py-1 shadow-inner">
+            <div className="flex items-center gap-1 rounded-full bg-black/40 px-2.5 py-1">
               {Array.from({ length: player.maxLives ?? 3 }).map((_, i) => (
-                <span
+                <HeartIcon
                   key={i}
-                  className={`text-base transition-transform ${
-                    i < currentLives ? "scale-100 opacity-100 animate-pulse" : "scale-75 opacity-30 grayscale"
+                  weight="fill"
+                  className={`h-4 w-4 ${
+                    i < currentLives ? "text-[#FF8A73]" : "text-white/20"
                   }`}
-                >
-                  ❤️
-                </span>
+                  aria-hidden
+                />
               ))}
-              {hasShield && <span className="ml-1 text-sm animate-bounce" title="Escudo activo">🛡️</span>}
+              {hasShield && (
+                <span title="Escudo activo" className="ml-1 inline-flex items-center">
+                  <LockIcon weight="bold" className="h-4 w-4 text-[#FFC928]" aria-hidden />
+                </span>
+              )}
             </div>
 
             {/* Combo */}
             {combo > 0 && (
-              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#FF8A3D] px-2.5 py-0.5 text-xs font-black text-white shadow animate-pulse">
-                🔥 x{combo + 1}
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#FFC928] px-2.5 py-0.5 text-xs font-black text-[#17164F]">
+                <FireIcon weight="fill" className="h-3.5 w-3.5 text-[#C98F00]" aria-hidden />
+                <span>x{combo + 1}</span>
               </span>
             )}
 
@@ -243,7 +255,7 @@ export function GameQuizModal({
               onClick={onClose}
               className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white hover:bg-white/30"
             >
-              ✕
+              Cerrar
             </button>
           </div>
         </div>
@@ -259,14 +271,14 @@ export function GameQuizModal({
               <button
                 type="button"
                 onClick={() => speakText(question.enunciado)}
-                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
                   ttsSpeaking
-                    ? "bg-[#5636D9] text-white animate-pulse"
+                    ? "bg-[#5636D9] text-white"
                     : "bg-white text-[#5636D9] hover:bg-[#E8E0FF]"
                 }`}
-                title="Escuchar pregunta en voz alta (TTS)"
+                title="Escuchar pregunta en voz alta"
               >
-                <span>🔊</span>
+                <SpeakerHighIcon weight="bold" className="h-3.5 w-3.5" aria-hidden />
                 <span>{ttsSpeaking ? "Leyendo..." : "Escuchar"}</span>
               </button>
             </div>
@@ -384,7 +396,7 @@ export function GameQuizModal({
                 {question.pista && feedback !== "correct" && (
                   <button
                     type="button"
-                    onClick={() => setRobotDialog(`💡 Pista clave: ${question.pista}`)}
+                    onClick={() => setRobotDialog(`Pista clave: ${question.pista}`)}
                     className="text-[10px] font-bold text-[#5636D9] underline hover:text-[#4323c4]"
                   >
                     Pedir pista
@@ -400,16 +412,16 @@ export function GameQuizModal({
         <div className="border-t border-slate-100 bg-slate-50 p-4 sm:px-6">
           {feedback === "correct" ? (
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#127A43]">
-                <span className="text-lg">🎉</span>
+              <div className="flex items-center gap-2 text-xs font-bold text-[#1B8A4F]">
+                <TrophyIcon weight="bold" className="h-5 w-5 text-[#1B8A4F]" aria-hidden />
                 <span>¡Reto superado! +{question.xp} XP acumulados</span>
               </div>
               <button
                 type="button"
                 onClick={handleFinish}
-                className="rounded-full bg-[#2DBE70] px-6 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-lg hover:bg-[#25a560] active:scale-95"
+                className="btn-tactil tactil-cooperar px-6 py-2.5 text-xs sm:text-sm font-black text-[#17164F]"
               >
-                Continuar Jugando →
+                Continuar
               </button>
             </div>
           ) : feedback === "wrong" ? (

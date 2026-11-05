@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { soundManager } from "./soundEffects";
 
 type Props = {
@@ -131,18 +132,25 @@ export function Dice3D({ value, rolling, canRoll, onRoll, accentColor = "#5636D9
         type="button"
         disabled={!canRoll || rolling || internalRolling}
         onClick={handleRoll}
-        className={`mt-4 flex items-center gap-2 rounded-full px-5 py-2.5 text-xs sm:text-sm font-extrabold shadow-lg transition-all active:scale-95 ${
+        className={`btn-tactil mt-4 px-6 py-2.5 text-xs sm:text-sm font-black transition-all ${
           canRoll && !rolling && !internalRolling
-            ? "bg-gradient-to-r from-[#FFC928] via-[#FF8A3D] to-[#E85D5D] text-[#17164F] hover:brightness-110 animate-bounce"
-            : "bg-white/20 text-white/50 cursor-not-allowed"
+            ? "tactil-juego"
+            : "border-slate-300 bg-white/20 text-white/50 cursor-not-allowed"
         }`}
       >
-        <span>🎲</span>
+        <Image
+          src="/assets/juego ludico/icon_dado.png"
+          alt=""
+          width={20}
+          height={20}
+          className="h-5 w-5 object-contain"
+          aria-hidden
+        />
         <span>
           {internalRolling || rolling
-            ? "¡Rodando dados...!"
+            ? "Lanzando dado..."
             : canRoll
-              ? "¡Lanzar Dado 3D!"
+              ? "Lanzar dado 3D"
               : "Turno del compañero"}
         </span>
       </button>

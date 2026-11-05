@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { CharacterProfile } from "./gameTypes";
 import { soundManager } from "./soundEffects";
+import { HeartIcon } from "@/components/ui/icons";
 
 type Props = {
   profile: CharacterProfile;
@@ -65,12 +66,11 @@ export function CharacterCard({ profile, selected, onSelect, compact = false }: 
         style={{ backgroundColor: profile.color }}
       >
         <span className="flex items-center gap-1 tracking-wider uppercase text-[11px]">
-          <span>{profile.activeIcon}</span>
           <span>{profile.archetype}</span>
         </span>
         <div className="flex items-center gap-0.5" title={`Vidas: ${profile.stats.vida}`}>
           {Array.from({ length: profile.stats.vida }).map((_, i) => (
-            <span key={i} className="text-sm">❤️</span>
+            <HeartIcon key={i} weight="fill" className="h-3.5 w-3.5 text-white" aria-hidden />
           ))}
         </div>
       </div>
@@ -126,17 +126,14 @@ export function CharacterCard({ profile, selected, onSelect, compact = false }: 
               </p>
             </div>
           </div>
-          <div className="flex items-start gap-1.5 text-left">
-            <span className="text-xs">{profile.activeIcon}</span>
-            <div>
-              <p className="text-[11px] font-bold text-[#17164F]">
-                {profile.activeName}{" "}
-                <span className="font-normal text-[10px] text-[#E85D5D]">(Habilidad Activa)</span>
-              </p>
-              <p className="text-[10px] leading-tight text-[#5B5678]">
-                {profile.activeDesc}
-              </p>
-            </div>
+          <div className="flex flex-col text-left">
+            <p className="text-[11px] font-bold text-[#17164F]">
+              {profile.activeName}{" "}
+              <span className="font-semibold text-[10px] text-[#D9583F]">(Habilidad Activa)</span>
+            </p>
+            <p className="text-[10px] leading-tight text-[#5B5678]">
+              {profile.activeDesc}
+            </p>
           </div>
         </div>
 

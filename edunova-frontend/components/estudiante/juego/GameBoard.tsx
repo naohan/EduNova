@@ -5,7 +5,7 @@ import Image from "next/image";
 import { BOARD_TILES, GAME_LEVELS, tilePosition } from "./boardData";
 import { JUEGO_ASSETS } from "./assets";
 import type { PlayerState } from "./gameTypes";
-import { CheckIcon } from "@/components/ui/icons";
+import { CheckIcon, CrownIcon, HeartIcon } from "@/components/ui/icons";
 
 type Props = {
   players: PlayerState[];
@@ -310,22 +310,22 @@ export function GameBoard({
                       style={{ backgroundColor: ring }}
                     />
 
-                    {/* Floating Health Badge (❤️❤️❤️) over token */}
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.2 shadow-md border border-white/30 text-[9px]">
+                    {/* Floating Health Badge over token */}
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.5 border border-white/30 text-[9px]">
                       {Array.from({ length: p.maxLives ?? 3 }).map((_, lIdx) => (
-                        <span
+                        <HeartIcon
                           key={lIdx}
-                          className={lIdx < playerLives ? "opacity-100" : "opacity-30 grayscale"}
-                        >
-                          ❤️
-                        </span>
+                          weight="fill"
+                          className={`h-2.5 w-2.5 ${lIdx < playerLives ? "text-[#FF8A73]" : "text-white/20"}`}
+                          aria-hidden
+                        />
                       ))}
                     </div>
 
                     {/* Turn Crown */}
                     {active && (
-                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs animate-bounce drop-shadow">
-                        👑
+                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[#FFC928]">
+                        <CrownIcon weight="fill" className="h-4 w-4" aria-hidden />
                       </span>
                     )}
 
