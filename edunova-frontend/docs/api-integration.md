@@ -61,7 +61,7 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/leccion` | `teoria` | **Conectada:** la frase de apertura de cada edad sale de `getUnit("unit-solar-system")` (`LeccionPorEdad.tsx`); el cuerpo sigue local en `ageContent.ts`. Si el servidor falla, se usa el respaldo local, que copia la semilla del backend |
 | `/estudiante/practica` (tarjetas) | `preguntaPractica` | `getUnit` → `stages.practice.flashcards` |
 | `/estudiante/explorar` (Sistema Solar), `/estudiante/cuerpo` (al completar misión) | — | `completeMission` |
-| `/estudiante/evaluaciones` (foto) | `tiposEvaluacion` | `analyzeHandwrittenPhoto` |
+| `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `syncProgress` para el bono. La imagen no se envía: el análisis simulado no la usa |
 | `/estudiante/duelo` | — | `validateDuelQuestion`, `getGhostOpponent`, `reportDuelResult` |
 | Ligas y tienda | — | `getLeaderboard` |
 | `/docente` (totales del aula) | `classStats` | `getClassAnalytics("EDU-402")` → `studentCount`, `averageMasteryPercent` |

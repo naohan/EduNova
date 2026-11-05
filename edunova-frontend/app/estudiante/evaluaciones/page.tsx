@@ -17,7 +17,13 @@ export default function Page() {
           {tiposEvaluacion.map((t) => (
             <Link
               key={t.id}
-              href={t.id === "opcion" ? "/estudiante/practica" : "/estudiante/desafio"}
+              href={
+                t.id === "foto"
+                  ? "/estudiante/evaluaciones/foto"
+                  : t.id === "opcion"
+                    ? "/estudiante/practica"
+                    : "/estudiante/desafio"
+              }
               className="flex items-center gap-3 rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm"
             >
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EAF6FF] text-xl text-[#5636D9]">

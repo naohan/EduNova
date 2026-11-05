@@ -113,9 +113,9 @@ export const approveRubric = (unitId: string, rubric?: RubricCriterion[]) =>
 export const getStudentProfile = (studentId: string) =>
   request<StudentProfile>("GET", `/students/${encodeURIComponent(studentId)}/profile`);
 export const completeMission = (input: Omit<LabMissionComplete, "type"> & { studentId: string }) =>
-  request<GamificationAndBenchmarkProfile>("POST", "/labs/complete-mission", { type: "LAB_MISSION_COMPLETE", ...input });
+  request<GamificationAndBenchmarkProfile>("POST", "/labs/complete-mission", { type: "LAB_MISSION_COMPLETE", ...input }, WRITE_TIMEOUT_MS);
 export const syncProgress = (studentId: string, events: Array<{ xp?: number; coins?: number }>) =>
-  request<{ synced: number }>("POST", "/progress/sync", { studentId, events });
+  request<{ synced: number }>("POST", "/progress/sync", { studentId, events }, WRITE_TIMEOUT_MS);
 export const analyzeHandwrittenPhoto = (input: { imageBase64?: string; explanation?: string }) =>
   request<HandwrittenAnalysis>("POST", "/ai/analyze-handwritten-photo", input);
 
