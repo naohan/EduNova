@@ -181,6 +181,54 @@ export function EstudianteDetalle({ student }: { student: Estudiante }) {
                 ))}
               </div>
 
+              {/* Perfil de Inteligencias (Test Diario) */}
+              <div className="rounded-2xl border border-[#EDE9FE] bg-white p-5 shadow-sm">
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#17164F]">
+                      Perfil de Inteligencias (Evaluación Formativa Diaria)
+                    </h3>
+                    <p className="text-xs text-[#6B7280]">
+                      Desafíos del banco exploratorio de 43 ejercicios cognitivos
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[#ECFDF5] px-2.5 py-1 text-[10px] font-bold text-[#065F46]">
+                    Monitoreo Activo
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                  {[
+                    { nombre: "Razonamiento", emoji: "🧠", pct: 85, estado: "Fortaleza" },
+                    { nombre: "Espacial", emoji: "🧊", pct: 80, estado: "Fortaleza" },
+                    { nombre: "Verbal", emoji: "💬", pct: 75, estado: "Por reforzar" },
+                    { nombre: "Lógico-Matemática", emoji: "🧮", pct: 82, estado: "Fortaleza" },
+                  ].map((int) => (
+                    <div
+                      key={int.nombre}
+                      className="rounded-xl border border-[#EDE9FE] bg-[#F7F4FF] p-3 text-center"
+                    >
+                      <span className="text-2xl">{int.emoji}</span>
+                      <p className="mt-1 text-xs font-bold text-[#17164F]">{int.nombre}</p>
+                      <p className="text-sm font-black text-[#5636D9]">{int.pct}%</p>
+                      <span
+                        className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                          int.estado === "Fortaleza"
+                            ? "bg-[#D1FAE5] text-[#065F46]"
+                            : "bg-[#FEF3C7] text-[#92400E]"
+                        }`}
+                      >
+                        {int.estado}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 rounded-xl border border-[#FFF0C2] bg-[#FFFBEB] p-3 text-xs text-[#78350F]">
+                  <strong>Diagnóstico docente:</strong> Destaca en razonamiento inductivo y rotación mental 3D. Se sugiere reforzar comprensión de analogías verbales en las siguientes lecciones.
+                </div>
+              </div>
+
               <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
                 <h3 className="mb-2 text-sm font-semibold text-[#17164F]">
                   Habilidades transversales
