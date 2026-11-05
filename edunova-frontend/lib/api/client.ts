@@ -44,6 +44,8 @@ async function request<T>(method: "GET" | "POST" | "PUT", path: string, body?: u
       const error = (json as { error?: string } | null)?.error ?? res.statusText;
       return { ok: false, status: res.status, error };
     }
+    // 200 con un cuerpo que no es JSON: no es un éxito, y `data: null` rompería a quien lo use.
+    if (json === null) return { ok: false, status: res.status, error: "respuesta inválida del servidor" };
     return { ok: true, data: json as T };
   } catch (e) {
     const aborted = e instanceof DOMException && e.name === "AbortError";
