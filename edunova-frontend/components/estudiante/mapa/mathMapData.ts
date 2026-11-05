@@ -16,7 +16,20 @@ export type MathStation = {
   position: [number, number, number];
   /** Modelo geométrico asociado (si aplica) */
   geometry?: "cube" | "sphere" | "cone" | "cylinder" | "pyramid" | "prism";
+  /** Icono llamativo en /public/assets/matematica */
+  icon: string;
 };
+
+/** Assets de geometría (public/assets/matematica) */
+export const MATH_ASSETS = {
+  matematica: "/assets/matematica/matematica.png",
+  compas: "/assets/matematica/compas.png",
+  regla: "/assets/matematica/regla.png",
+  figura3d: "/assets/matematica/figura3d.png",
+  libro: "/assets/matematica/libro.png",
+  tesoro: "/assets/matematica/busqueda-tesoro.png",
+  avatar: "/assets/usuario.png",
+} as const;
 
 export type MathStage = {
   id: StageId;
@@ -73,6 +86,7 @@ export const MATH_STATIONS: MathStation[] = [
       "Reconoce círculos, cuadrados y triángulos. Cuenta lados y vértices.",
     kind: "teoria",
     position: [-10.5, 0.55, 3.2],
+    icon: MATH_ASSETS.libro,
   },
   {
     id: "e2",
@@ -85,6 +99,7 @@ export const MATH_STATIONS: MathStation[] = [
     kind: "explorar3d",
     position: [-8.2, 0.55, 1.4],
     geometry: "cube",
+    icon: MATH_ASSETS.compas,
   },
   {
     id: "a1",
@@ -97,6 +112,7 @@ export const MATH_STATIONS: MathStation[] = [
     kind: "juego",
     position: [-1.5, 0.85, -0.2],
     geometry: "sphere",
+    icon: MATH_ASSETS.figura3d,
   },
   {
     id: "a2",
@@ -109,6 +125,7 @@ export const MATH_STATIONS: MathStation[] = [
     kind: "reto",
     position: [1.8, 0.85, -2.2],
     geometry: "cone",
+    icon: MATH_ASSETS.regla,
   },
   {
     id: "c1",
@@ -121,6 +138,7 @@ export const MATH_STATIONS: MathStation[] = [
     kind: "explorar3d",
     position: [7.5, 1.25, 0.4],
     geometry: "pyramid",
+    icon: MATH_ASSETS.matematica,
   },
   {
     id: "c2",
@@ -133,6 +151,7 @@ export const MATH_STATIONS: MathStation[] = [
     kind: "reto",
     position: [10.5, 1.25, 2.2],
     geometry: "cylinder",
+    icon: MATH_ASSETS.tesoro,
   },
 ];
 

@@ -274,3 +274,63 @@ export const teoriaCuerpo = {
     "Toca un órgano para ver su ficha: sistema, función, ubicación y un dato curioso para recordar.",
   ],
 };
+
+/** Agrupación visual por sistema (galería) */
+export const SISTEMAS_GALERIA: {
+  id: string;
+  nombre: string;
+  color: string;
+  organIds: OrganId[];
+}[] = [
+  {
+    id: "nervioso",
+    nombre: "Nervioso",
+    color: "#E87A9B",
+    organIds: ["cerebro"],
+  },
+  {
+    id: "respiratorio",
+    nombre: "Respiratorio",
+    color: "#7EC8E3",
+    organIds: ["pulmones", "nasofaringe"],
+  },
+  {
+    id: "cardiovascular",
+    nombre: "Cardiovascular",
+    color: "#E85D5D",
+    organIds: ["corazon"],
+  },
+  {
+    id: "digestivo",
+    nombre: "Digestivo",
+    color: "#F0A06A",
+    organIds: ["higado", "estomago", "intestinos", "pancreas"],
+  },
+  {
+    id: "urinario",
+    nombre: "Urinario",
+    color: "#5BA3E0",
+    organIds: ["rinones", "vejiga"],
+  },
+  {
+    id: "endocrino",
+    nombre: "Endocrino",
+    color: "#9B7EDE",
+    organIds: ["tiroides"],
+  },
+  {
+    id: "inmunitario",
+    nombre: "Inmunitario",
+    color: "#6BBF8A",
+    organIds: ["timo"],
+  },
+];
+
+export function getOrganById(id: OrganId): OrganBody {
+  return ORGANOS.find((o) => o.id === id) ?? ORGANOS[0];
+}
+
+/** Texto corto para edades 7–15 */
+export function organHint(organ: OrganBody): string {
+  return `${organ.name}: ${organ.funcion.toLowerCase()}.`;
+}

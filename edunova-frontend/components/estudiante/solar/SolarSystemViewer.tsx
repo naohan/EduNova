@@ -45,14 +45,18 @@ export default function SolarSystemViewer({
     const height = mount.clientHeight || 420;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b0a2e);
+    scene.background = new THREE.Color(0x07061f);
+    scene.fog = new THREE.FogExp2(0x07061f, 0.008);
 
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 500);
     camera.position.set(0, 28, 48);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     mount.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -62,19 +66,29 @@ export default function SolarSystemViewer({
     controls.maxDistance = 90;
     controls.target.set(0, 0, 0);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
-    const sunLight = new THREE.PointLight(0xfff2dd, 2.2, 0, 0);
+    scene.add(new THREE.AmbientLight(0xb8c4ff, 0.35));
+    scene.add(new THREE.HemisphereLight(0x9bb8ff, 0x1a1040, 0.45));
+    const sunLight = new THREE.PointLight(0xfff2dd, 2.6, 0, 0);
     scene.add(sunLight);
+    const rim = new THREE.DirectionalLight(0x6b8cff, 0.35);
+    rim.position.set(-20, 10, -15);
+    scene.add(rim);
 
-    // Starfield
+    // Starfield denso
     const starsGeo = new THREE.BufferGeometry();
-    const starPos = new Float32Array(900);
-    for (let i = 0; i < 900; i++) starPos[i] = (Math.random() - 0.5) * 200;
+    const starPos = new Float32Array(1800);
+    for (let i = 0; i < 1800; i++) starPos[i] = (Math.random() - 0.5) * 220;
     starsGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
     scene.add(
       new THREE.Points(
         starsGeo,
-        new THREE.PointsMaterial({ color: 0xffffff, size: 0.15 }),
+        new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 0.18,
+          transparent: true,
+          opacity: 0.9,
+          sizeAttenuation: true,
+        }),
       ),
     );
 
@@ -123,11 +137,11 @@ export default function SolarSystemViewer({
       group.name = data.id;
 
       const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(data.radius, 32, 32),
+        new THREE.SphereGeometry(data.radius, 40, 40),
         new THREE.MeshStandardMaterial({
           color: data.color,
-          roughness: 0.85,
-          metalness: 0.05,
+          roughness: 0.72,
+          metalness: 0.12,
         }),
       );
       group.add(mesh);
