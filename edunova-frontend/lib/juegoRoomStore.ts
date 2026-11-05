@@ -1,5 +1,6 @@
-import { BOARD_TILES, TERRITORIES, pickQuestion } from "@/components/estudiante/juego/boardData";
+import { BOARD_TILES, GAME_LEVELS, TERRITORIES, getCharacterProfileByAvatar, pickQuestion } from "@/components/estudiante/juego/boardData";
 import type {
+  CharacterClass,
   CreateRoomBody,
   GameRoom,
   JoinRoomBody,
@@ -25,6 +26,10 @@ export function createRoom(body: CreateRoomBody): GameRoom {
   let code = codeGenerator();
   while (rooms.has(code)) code = codeGenerator();
 
+  const profile = getCharacterProfileByAvatar(body.avatarId);
+  const characterClass = (body.characterClass ?? profile.id) as CharacterClass;
+  const initialMaxLives = profile.stats.vida ?? 3;
+
   const host: PlayerState = {
     id: crypto.randomUUID(),
     name: body.hostName.trim() || "Anfitrión",
@@ -34,6 +39,14 @@ export function createRoom(body: CreateRoomBody): GameRoom {
     ready: true,
     isHost: true,
     helps: 0,
+    lives: initialMaxLives,
+    maxLives: initialMaxLives,
+    shields: 0,
+    characterClass,
+    level: 1,
+    novaCoins: 80,
+    combo: 0,
+    usedAbility: false,
   };
 
   const room: GameRoom = {
@@ -50,6 +63,9 @@ export function createRoom(body: CreateRoomBody): GameRoom {
     pending: null,
     territoriesUnlocked: [],
     completedTiles: [0],
+    currentLevel: 1,
+    comboMultiplier: 1,
+    totalCoins: 80,
     updatedAt: Date.now(),
   };
   rooms.set(code, room);
@@ -66,6 +82,10 @@ export function joinRoom(body: JoinRoomBody): { room: GameRoom; playerId: string
   if (room.phase !== "lobby") return { error: "La partida ya comenzó" };
   if (room.players.length >= room.maxPlayers) return { error: "Sala llena" };
 
+  const profile = getCharacterProfileByAvatar(body.avatarId);
+  const characterClass = (body.characterClass ?? profile.id) as CharacterClass;
+  const initialMaxLives = profile.stats.vida ?? 3;
+
   const player: PlayerState = {
     id: crypto.randomUUID(),
     name: body.name.trim() || "Jugador",
@@ -75,8 +95,17 @@ export function joinRoom(body: JoinRoomBody): { room: GameRoom; playerId: string
     ready: false,
     isHost: false,
     helps: 0,
+    lives: initialMaxLives,
+    maxLives: initialMaxLives,
+    shields: 0,
+    characterClass,
+    level: 1,
+    novaCoins: 80,
+    combo: 0,
+    usedAbility: false,
   };
   room.players.push(player);
+  room.totalCoins = (room.totalCoins ?? 0) + 80;
   touch(room);
   return { room, playerId: player.id };
 }
@@ -126,6 +155,9 @@ export function addGuest(
     opts?.avatarId ||
     GUEST_AVATARS[room.players.length % GUEST_AVATARS.length];
 
+  const profile = getCharacterProfileByAvatar(avatarId);
+  const characterClass = profile.id as CharacterClass;
+
   room.players.push({
     id: crypto.randomUUID(),
     name,
@@ -135,7 +167,16 @@ export function addGuest(
     ready: true,
     isHost: false,
     helps: 0,
+    lives: profile.stats.vida ?? 3,
+    maxLives: profile.stats.vida ?? 3,
+    shields: 0,
+    characterClass,
+    level: 1,
+    novaCoins: 80,
+    combo: 0,
+    usedAbility: false,
   });
+  room.totalCoins = (room.totalCoins ?? 0) + 80;
   return { room: touch(room) };
 }
 
@@ -168,26 +209,27 @@ export function startGame(code: string, playerId: string) {
   room.turnIndex = 0;
   room.dice = null;
   room.pending = null;
+  room.currentLevel = 1;
   return { room: touch(room) };
 }
 
 function canActAs(room: GameRoom, actorId: string, turnPlayerId: string) {
   if (actorId === turnPlayerId) return true;
   const actor = room.players.find((p) => p.id === actorId);
-  // El anfitrión puede lanzar/resolver por cualquier compañero (mismo dispositivo)
   return Boolean(actor?.isHost);
 }
 
-export function rollDice(code: string, playerId: string) {
+export function rollDice(code: string, playerId: string, extraSteps = 0) {
   const room = getRoom(code);
-  if (!room || room.phase !== "playing") return { error: "Partida no activa" };
+  if (!room || (room.phase !== "playing" && room.phase !== "level_complete")) return { error: "Partida no activa" };
   if (room.pending) return { error: "Hay una actividad pendiente" };
   const current = room.players[room.turnIndex];
   if (!current || !canActAs(room, playerId, current.id)) {
     return { error: "No puedes lanzar en este turno" };
   }
 
-  const dice = Math.floor(Math.random() * 6) + 1;
+  const baseDice = Math.floor(Math.random() * 6) + 1;
+  const dice = baseDice + extraSteps;
   room.dice = dice;
   const from = current.position;
   const nextPos = (from + dice) % BOARD_TILES.length;
@@ -200,18 +242,28 @@ export function rollDice(code: string, playerId: string) {
 
   if (tile.kind === "salida") {
     current.xp += 50;
-    room.pending = { type: "recompensa", xp: 50, message: "¡Pasaste por la salida! +50 XP" };
+    current.novaCoins = (current.novaCoins ?? 0) + 50;
+    room.totalCoins = (room.totalCoins ?? 0) + 50;
+    room.pending = { type: "recompensa", xp: 50, coins: 50, message: "¡Pasaste por la salida! +50 XP y +50 NovaCoins" };
   } else if (tile.kind === "recompensa") {
     const xp = 30;
+    const coins = 60;
     current.xp += xp;
-    room.pending = { type: "recompensa", xp, message: "¡Casilla de recompensa!" };
+    current.novaCoins = (current.novaCoins ?? 0) + coins;
+    room.totalCoins = (room.totalCoins ?? 0) + coins;
+    room.pending = { type: "recompensa", xp, coins, message: "¡Cofre del tesoro! Ganas +30 XP y +60 NovaCoins." };
   } else if (tile.kind === "descanso") {
+    // Regenera vida no punitivamente
+    if (current.lives < (current.maxLives ?? 3)) {
+      current.lives += 1;
+    }
+    current.xp += 20;
+    current.helps += 1;
     room.pending = {
       type: "descanso",
-      message: "Descanso: revisa una pista con tu equipo. +10 XP de cooperación.",
+      message: "Descanso y cooperación: ¡Recuperas +1 Vida (❤️) y ganas +20 XP de Superación!",
+      heal: true,
     };
-    current.xp += 10;
-    current.helps += 1;
   } else if (tile.kind === "cooperacion") {
     const q = pickQuestion(room.courseId);
     room.pending = { type: "cooperacion", question: q };
@@ -226,10 +278,18 @@ export function rollDice(code: string, playerId: string) {
 export function resolveAction(
   code: string,
   playerId: string,
-  payload: { correct?: boolean; xp?: number; skip?: boolean },
+  payload: {
+    correct?: boolean;
+    xp?: number;
+    coins?: number;
+    lives?: number;
+    combo?: number;
+    usedAbility?: boolean;
+    skip?: boolean;
+  },
 ) {
   const room = getRoom(code);
-  if (!room || room.phase !== "playing") return { error: "Partida no activa" };
+  if (!room || (room.phase !== "playing" && room.phase !== "level_complete")) return { error: "Partida no activa" };
   const current = room.players[room.turnIndex];
   if (!current || !canActAs(room, playerId, current.id)) {
     return { error: "No puedes resolver esta casilla" };
@@ -254,11 +314,29 @@ export function resolveAction(
     return { room: touch(room) };
   }
 
+  // Actualizar vidas y combo de manera no punitiva
+  if (typeof payload.lives === "number") {
+    current.lives = Math.max(1, payload.lives); // Siempre al menos 1 vida tras rescate
+  }
+  if (typeof payload.combo === "number") {
+    current.combo = payload.combo;
+  }
+  if (payload.usedAbility) {
+    current.usedAbility = true;
+  }
+
   if (payload.correct) {
     const xp = payload.xp ?? pending.question.xp;
+    const coins = payload.coins ?? 40;
     current.xp += xp;
+    current.novaCoins = (current.novaCoins ?? 0) + coins;
+    room.totalCoins = (room.totalCoins ?? 0) + coins;
+
     if (pending.type === "cooperacion") current.helps += 1;
     maybeUnlockTerritory(room);
+  } else {
+    // Esfuerzo premiado sin puntos negativos
+    current.xp += 10;
   }
 
   room.pending = null;
@@ -271,12 +349,23 @@ export function resolveAction(
 function maybeUnlockTerritory(room: GameRoom) {
   const next = TERRITORIES.find((t) => !room.territoriesUnlocked.includes(t.id));
   if (!next) return;
-  // Desbloquear cada ~2 aciertos colectivos (aprox por XP total)
+
   const totalXp = room.players.reduce((s, p) => s + p.xp, 0);
   const should = room.territoriesUnlocked.length < Math.floor(totalXp / 120);
-  if (should || Math.random() < 0.35) {
+
+  if (should || Math.random() < 0.4) {
     if (!room.territoriesUnlocked.includes(next.id)) {
       room.territoriesUnlocked.push(next.id);
+
+      // Chequear si sube de nivel según territorios desbloqueados
+      const unlockedCount = room.territoriesUnlocked.length;
+      if (unlockedCount >= 6) {
+        room.currentLevel = 4;
+      } else if (unlockedCount >= 4) {
+        room.currentLevel = 3;
+      } else if (unlockedCount >= 2) {
+        room.currentLevel = 2;
+      }
     }
   }
 }
@@ -285,4 +374,22 @@ function checkWin(room: GameRoom) {
   if (room.territoriesUnlocked.length >= TERRITORIES.length) {
     room.phase = "finished";
   }
+}
+
+export function advanceLevel(code: string, playerId: string) {
+  const room = getRoom(code);
+  if (!room) return { error: "Sala no encontrada" };
+  const host = room.players.find((p) => p.id === playerId);
+  if (!host?.isHost) return { error: "Solo el anfitrión puede avanzar de nivel" };
+
+  if (room.currentLevel < 4) {
+    room.currentLevel += 1;
+    // Restaurar vidas y habilidades para el nuevo nivel
+    room.players.forEach((p) => {
+      p.lives = p.maxLives ?? 3;
+      p.usedAbility = false;
+    });
+  }
+  room.phase = "playing";
+  return { room: touch(room) };
 }

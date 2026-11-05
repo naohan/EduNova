@@ -1,7 +1,150 @@
 import type { CursoId } from "@/components/estudiante/data";
 import type { QuizQuestion } from "@/components/estudiante/shared/quizTypes";
 import { JUEGO_ASSETS } from "./assets";
-import type { BoardTile, Territory } from "./gameTypes";
+import type { BoardTile, CharacterClass, CharacterProfile, GameLevel, Territory } from "./gameTypes";
+
+export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
+  aventurera: {
+    id: "aventurera",
+    avatarId: "reina",
+    name: "Aventurera Valiente",
+    archetype: "Líder de Expedición",
+    avatarSrc: JUEGO_ASSETS.avatars[0].src,
+    color: "#E85D9A",
+    accent: "#FFF0F5",
+    stats: {
+      vida: 3,
+      logica: 4,
+      energia: 4,
+      cooperacion: 5,
+    },
+    passiveName: "Aura de Liderazgo",
+    passiveDesc: "Gana +50 NovaCoins extras en casillas de Recompensa y Cooperación.",
+    activeName: "Escudo Guardián",
+    activeDesc: "Activa un escudo que absorbe el siguiente error sin perder vidas.",
+    activeIcon: "🛡️",
+  },
+  explorador: {
+    id: "explorador",
+    avatarId: "nino",
+    name: "Explorador Curioso",
+    archetype: "Pionero Veloz",
+    avatarSrc: JUEGO_ASSETS.avatars[1].src,
+    color: "#FF8A3D",
+    accent: "#FFF7ED",
+    stats: {
+      vida: 4,
+      logica: 3,
+      energia: 5,
+      cooperacion: 4,
+    },
+    passiveName: "Paso Firme",
+    passiveDesc: "Comienza con 4 corazones de vida máxima y recupera energía rápido.",
+    activeName: "Brújula de la Suerte",
+    activeDesc: "Permite volver a tirar el dado si no te gusta el número obtenido.",
+    activeIcon: "🧭",
+  },
+  cientifico: {
+    id: "cientifico",
+    avatarId: "estudiante",
+    name: "Científico Prodigio",
+    archetype: "Genio Analítico",
+    avatarSrc: JUEGO_ASSETS.avatars[2].src,
+    color: "#5636D9",
+    accent: "#F2EEFF",
+    stats: {
+      vida: 3,
+      logica: 5,
+      energia: 3,
+      cooperacion: 4,
+    },
+    passiveName: "Mente Maestra",
+    passiveDesc: "Otorga +50% de XP adicional y revela pistas de la Mascota Robot.",
+    activeName: "Hipótesis Cuántica",
+    activeDesc: "Elimina una opción incorrecta en la pregunta actual para asegurar el acierto.",
+    activeIcon: "🧪",
+  },
+  gamer: {
+    id: "gamer",
+    avatarId: "auriculares",
+    name: "Cibernauta Audaz",
+    archetype: "Estratega Veloz",
+    avatarSrc: JUEGO_ASSETS.avatars[3].src,
+    color: "#25CFE0",
+    accent: "#ECFEFF",
+    stats: {
+      vida: 3,
+      logica: 4,
+      energia: 5,
+      cooperacion: 3,
+    },
+    passiveName: "Combo Supernova",
+    passiveDesc: "Cada 2 aciertos consecutivos duplica las NovaCoins ganadas (x2 Combo).",
+    activeName: "Turbo Boost",
+    activeDesc: "Añade +2 casillas a tu tirada de dados para llegar a la casilla deseada.",
+    activeIcon: "⚡",
+  },
+};
+
+export const GAME_LEVELS: GameLevel[] = [
+  {
+    level: 1,
+    name: "Nivel 1: Bosque de los Fundamentos",
+    subtitle: "Tier Explorador (7–9 años) • Conceptos iniciales y descubrimiento",
+    theme: "bosque",
+    skyGradient: "linear-gradient(180deg,#C4B5FD 0%,#9BB8FF 25%,#7EC8F0 50%,#6BCB77 78%,#4CAF50 100%)",
+    islandGradient: "radial-gradient(ellipse at 50% 35%, #93E06E 0%, #5CBF4E 60%, #388E3C 100%)",
+    starsOpacity: 0,
+    requiredTerritories: 1,
+    rewardCoins: 150,
+    rewardXP: 200,
+    badge: "🌱 Brote del Saber",
+  },
+  {
+    level: 2,
+    name: "Nivel 2: Valle de los Cristales Cuánticos",
+    subtitle: "Tier Aventurero (10–12 años) • Retos interactivos y enigmas",
+    theme: "cristal",
+    skyGradient: "linear-gradient(180deg,#F59E0B 0%,#EC4899 35%,#8B5CF6 65%,#3B82F6 100%)",
+    islandGradient: "radial-gradient(ellipse at 50% 35%, #A78BFA 0%, #7C3AED 60%, #4C1D95 100%)",
+    starsOpacity: 0.35,
+    requiredTerritories: 3,
+    rewardCoins: 250,
+    rewardXP: 350,
+    badge: "💎 Cristal del Conocimiento",
+  },
+  {
+    level: 3,
+    name: "Nivel 3: Montaña de las Ecuaciones de Fuego",
+    subtitle: "Tier Creador (13–15 años) • Cooperación y razonamiento profundo",
+    theme: "volcan",
+    skyGradient: "linear-gradient(180deg,#1E1B4B 0%,#4C1D95 30%,#BE185D 70%,#EA580C 100%)",
+    islandGradient: "radial-gradient(ellipse at 50% 35%, #F97316 0%, #C2410C 60%, #7C2D12 100%)",
+    starsOpacity: 0.65,
+    requiredTerritories: 5,
+    rewardCoins: 400,
+    rewardXP: 500,
+    badge: "🔥 Llama de la Ciencia",
+  },
+  {
+    level: 4,
+    name: "Nivel 4: Castillo del Saber Supremo (Jefe Final)",
+    subtitle: "Desafío Maestro • Copa Intercolegial Supernova",
+    theme: "castillo",
+    skyGradient: "linear-gradient(180deg,#0B0A26 0%,#1E1B4B 35%,#312E81 65%,#4338CA 100%)",
+    islandGradient: "radial-gradient(ellipse at 50% 35%, #FDE047 0%, #CA8A04 50%, #4338CA 100%)",
+    starsOpacity: 0.95,
+    requiredTerritories: 6,
+    rewardCoins: 600,
+    rewardXP: 800,
+    badge: "👑 Copa Supernova EduNova",
+  },
+];
+
+export function getCharacterProfileByAvatar(avatarId: string): CharacterProfile {
+  const found = Object.values(CHARACTER_PROFILES).find((p) => p.avatarId === avatarId);
+  return found ?? CHARACTER_PROFILES.explorador;
+}
 
 export const COURSE_OPTIONS: {
   id: CursoId;

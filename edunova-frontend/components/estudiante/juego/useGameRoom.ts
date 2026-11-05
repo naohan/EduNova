@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CursoId } from "@/components/estudiante/data";
-import type { GameRoom } from "./gameTypes";
+import type { CreateRoomBody, GameRoom, JoinRoomBody } from "./gameTypes";
 
 const PLAYER_KEY = "edunova-juego-player-v1";
 
@@ -50,14 +50,7 @@ export function useGameRoom() {
     return () => clearInterval(id);
   }, [room, poll]);
 
-  async function createRoom(input: {
-    courseId: CursoId;
-    topic: string;
-    mission: string;
-    maxPlayers: number;
-    hostName: string;
-    avatarId: string;
-  }) {
+  async function createRoom(input: CreateRoomBody) {
     setBusy(true);
     setError(null);
     try {
@@ -79,11 +72,7 @@ export function useGameRoom() {
     }
   }
 
-  async function joinRoom(input: {
-    code: string;
-    name: string;
-    avatarId: string;
-  }) {
+  async function joinRoom(input: JoinRoomBody) {
     setBusy(true);
     setError(null);
     try {
@@ -95,6 +84,7 @@ export function useGameRoom() {
           action: "join",
           name: input.name,
           avatarId: input.avatarId,
+          characterClass: input.characterClass,
         }),
       });
       const data = await res.json();

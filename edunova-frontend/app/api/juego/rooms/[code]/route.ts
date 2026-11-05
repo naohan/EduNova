@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   addGuest,
+  advanceLevel,
   getRoom,
   joinRoom,
   removeGuest,
@@ -70,7 +71,7 @@ export async function POST(req: Request, ctx: Ctx) {
   }
 
   if (action === "roll") {
-    const result = rollDice(code, body.playerId);
+    const result = rollDice(code, body.playerId, body.extraSteps ?? 0);
     if ("error" in result) {
       return NextResponse.json(result, { status: 400 });
     }
@@ -81,8 +82,20 @@ export async function POST(req: Request, ctx: Ctx) {
     const result = resolveAction(code, body.playerId, {
       correct: body.correct,
       xp: body.xp,
+      coins: body.coins,
+      lives: body.lives,
+      combo: body.combo,
+      usedAbility: body.usedAbility,
       skip: body.skip,
     });
+    if ("error" in result) {
+      return NextResponse.json(result, { status: 400 });
+    }
+    return NextResponse.json(result);
+  }
+
+  if (action === "advanceLevel") {
+    const result = advanceLevel(code, body.playerId);
     if ("error" in result) {
       return NextResponse.json(result, { status: 400 });
     }
