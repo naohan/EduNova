@@ -24,6 +24,8 @@ const sideNav: Item[] = [
   { href: "/estudiante/progreso", label: "Mi progreso", icon: IconProgress },
   { href: "/estudiante/habilidades", label: "Habilidades", icon: IconSkills },
   { href: "/estudiante/duelo", label: "Duelo", icon: IconMission },
+  { href: "/estudiante/ligas", label: "Ligas", icon: IconProgress },
+  { href: "/estudiante/tienda", label: "Tienda", icon: IconGame },
   { href: "/estudiante/evaluaciones", label: "Evaluaciones", icon: IconEval },
   { href: "/estudiante/logros", label: "Perfil", icon: IconUser },
 ];

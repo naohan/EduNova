@@ -5,9 +5,12 @@ import type {
   ExplainableAlert,
   GamificationAndBenchmarkProfile,
   HandwrittenAnalysis,
+  Inventory,
   LabMissionComplete,
+  LeaderboardEntry,
   LearningUnit,
   RubricCriterion,
+  ShopItem,
   StudentProfile,
   User,
 } from "./edunova-contract";
@@ -121,7 +124,10 @@ export const analyzeHandwrittenPhoto = (input: { imageBase64?: string; explanati
 
 // ---- Juegos y ligas ----
 export const getLeaderboard = (league: "mastery" | "effort" = "mastery") =>
-  request<GamificationAndBenchmarkProfile[]>("GET", `/leagues/leaderboard?league=${league}`);
+  request<LeaderboardEntry[]>("GET", `/leagues/leaderboard?league=${league}`);
+export const getShopItems = () => request<ShopItem[]>("GET", "/shop/items");
+export const buyItem = (itemId: string) => request<Inventory>("POST", "/shop/buy", { itemId }, WRITE_TIMEOUT_MS);
+export const toggleItem = (itemId: string) => request<Inventory>("POST", "/shop/equip", { itemId }, WRITE_TIMEOUT_MS);
 export const validateDuelQuestion = (question: string, topic?: string) =>
   request<{ valid: boolean; reason: string }>("POST", "/ai/validate-duel-question", { question, topic });
 export const getGhostOpponent = (ageTier?: string) =>

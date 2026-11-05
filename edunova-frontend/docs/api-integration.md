@@ -64,7 +64,8 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/cuerpo` (al completar misión) | — | `completeMission` |
 | `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `syncProgress` para el bono. La imagen no se envía: el análisis simulado no la usa |
 | `/estudiante/duelo` | — | `validateDuelQuestion`, `getGhostOpponent`, `reportDuelResult` |
-| Ligas y tienda | — | `getLeaderboard` |
+| `/estudiante/ligas` | **Conectada** | `getLeaderboard` y `getStudentProfile` |
+| `/estudiante/tienda` | **Conectada** | `getShopItems`, `buyItem`, `toggleItem` (piden sesión de estudiante) |
 | `/docente` (totales del aula) | `classStats` | `getClassAnalytics("EDU-402")` → `studentCount`, `averageMasteryPercent` |
 | `/docente/resultados`, `/docente/estudiante/[id]` | `estudiantes` | `getClassStudents("EDU-402")` |
 | `/docente/competencias` | `competenciaMastery`, `estudiantes` | `getClassAnalytics` → `criteria` y `getClassStudents` |

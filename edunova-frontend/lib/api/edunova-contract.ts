@@ -90,6 +90,34 @@ export interface GamificationAndBenchmarkProfile {
   };
   badges: string[];
   equippedItems: string[]; // ids de accesorios del avatar
+  ownedItems?: string[]; // ids de accesorios comprados
+}
+
+// Fila pública de una liga. Safe-Play: nada de saldo, racha ni vínculos familiares de otros niños.
+export interface LeaderboardEntry {
+  studentId: string;
+  alias: string;
+  institutionName?: string;
+  masteryPoints: number;
+  effortPoints: number;
+  division: GamificationAndBenchmarkProfile['leagues']['division'];
+}
+
+// ---- Tienda del avatar (HU-06) ----
+export type AvatarSlot = 'CABEZA' | 'CARA' | 'CUELLO' | 'ESPALDA';
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  emoji: string;
+  price: number;
+  slot: AvatarSlot;
+}
+
+export interface Inventory {
+  novaCoins: number;
+  ownedItems: string[];
+  equippedItems: string[];
 }
 
 // ---- Evaluación por foto (HU-04) ----
@@ -192,7 +220,10 @@ export interface LabMissionComplete {
 // POST /api/ai/analyze-handwritten-photo -> HandwrittenAnalysis
 // POST /api/ai/validate-duel-question    -> { valid: boolean; reason: string }
 // POST /api/ai/family-home-explainer     -> { explanation: string }
-// GET  /api/leagues/leaderboard          -> GamificationAndBenchmarkProfile[]
+// GET  /api/leagues/leaderboard          -> LeaderboardEntry[]
+// GET  /api/shop/items                   -> ShopItem[]
+// POST /api/shop/buy    body: { itemId } -> Inventory  (estudiante con sesión)
+// POST /api/shop/equip  body: { itemId } -> Inventory  (estudiante con sesión; alterna puesto/quitado)
 // GET  /api/benchmark/external/:studentId-> BenchmarkResult
 // GET  /api/analytics/explainable-alerts -> ExplainableAlert[]
 // GET  /api/students/:id/profile         -> StudentProfile   (estudiante, su tutor o su docente)
