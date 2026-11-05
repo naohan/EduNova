@@ -17,6 +17,7 @@ type NavItem = {
 const mainNav: NavItem[] = [
   { href: "/docente", label: "Inicio", icon: IconHome, match: "^/docente$" },
   { href: "/docente/resultados", label: "Aulas", icon: IconClass },
+  { href: "/docente/studio", label: "Crear unidad", icon: IconReport },
   { href: "/docente/evaluacion", label: "Evaluación", icon: IconEval },
   { href: "/docente/competencias", label: "Seguimiento", icon: IconTrack },
   {
