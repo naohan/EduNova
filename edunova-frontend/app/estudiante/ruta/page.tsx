@@ -1,96 +1,145 @@
+import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
-import { rutaPasos, unidadActual } from "@/components/estudiante/data";
+import { cursosAprender, estudiante } from "@/components/estudiante/data";
 
 export default function Page() {
   return (
-    <EstudianteLayout>
-      <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
-        <header className="mb-6">
-          <p className="text-sm text-[#6B7280]">Ruta de aprendizaje</p>
-          <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
-            {unidadActual.titulo}
-          </h1>
-          <p className="mt-1 text-sm text-[#6B7280]">{unidadActual.leccion}</p>
+    <EstudianteLayout
+      mobileHeader={
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-transparent px-4 lg:hidden">
+          <Link href="/estudiante" className="flex items-center gap-2">
+            <Image
+              src="/assets/Logo.png"
+              alt="EduNova"
+              width={34}
+              height={34}
+              className="h-8 w-8 object-contain"
+              priority
+            />
+            <span className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-[#17164F]">
+              EduNova
+            </span>
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              aria-label="Notificaciones"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-[#5636D9] shadow-sm"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
+                <path d="M10 19a2 2 0 0 0 4 0" />
+              </svg>
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#EF4444] ring-2 ring-white" />
+            </button>
+            <Image
+              src="/assets/usuario.png"
+              alt="usuario"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow"
+            />
+          </div>
         </header>
+      }
+    >
+      <div className="relative mx-auto min-h-[calc(100vh-3.5rem)] max-w-3xl overflow-hidden px-4 pb-8 pt-2 sm:px-6 lg:min-h-0 lg:p-8">
+        {/* Atmosphere */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,#EDE7FF_0%,#F7F4FF_45%,#EEF8F0_100%)] lg:rounded-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-8 bottom-24 h-28 w-28 rounded-full bg-[#C8E6C0]/50 blur-2xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-6 bottom-40 h-24 w-24 rounded-full bg-[#C8E6C0]/40 blur-2xl"
+        />
 
-        <ol className="relative space-y-4 before:absolute before:left-[23px] before:top-4 before:h-[calc(100%-2rem)] before:w-0.5 before:bg-[#E8E0FF]">
-          {rutaPasos.map((paso, i) => {
-            const done = paso.estado === "completado";
-            const current = paso.estado === "actual";
-            const locked = paso.estado === "bloqueado";
-            return (
-              <li key={paso.id} className="relative pl-14">
-                <span
-                  className={`absolute left-0 flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold ${
-                    done
-                      ? "bg-[#2DBE70] text-white"
-                      : current
-                        ? "bg-[#5636D9] text-white ring-4 ring-[#5636D9]/20"
-                        : "bg-[#E8E0FF] text-[#9CA3AF]"
-                  }`}
-                >
-                  {done ? "✓" : locked ? "🔒" : i + 1}
-                </span>
-                <div
-                  className={`rounded-2xl border p-4 shadow-sm ${
-                    current
-                      ? "border-[#5636D9] bg-white"
-                      : done
-                        ? "border-[#E8E0FF] bg-white"
-                        : "border-dashed border-[#E8E0FF] bg-[#F7F4FF]"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="font-bold text-[#17164F]">{paso.titulo}</h2>
-                      <p className="mt-0.5 text-sm text-[#6B7280]">{paso.desc}</p>
-                    </div>
-                    {done ? (
-                      <span className="rounded-full bg-[#D1FAE5] px-2.5 py-1 text-xs font-bold text-[#065F46]">
-                        Listo
-                      </span>
-                    ) : null}
-                    {current ? (
-                      <span className="rounded-full bg-[#F2EEFF] px-2.5 py-1 text-xs font-bold text-[#5636D9]">
-                        Ahora
-                      </span>
-                    ) : null}
-                  </div>
-                  {!locked ? (
-                    <Link
-                      href={paso.href}
-                      className={`mt-3 inline-flex rounded-xl px-4 py-2 text-sm font-bold ${
-                        current
-                          ? "bg-[#5636D9] text-white"
-                          : "bg-[#F2EEFF] text-[#5636D9]"
-                      }`}
-                    >
-                      {done ? "Repasar" : "Empezar"} →
-                    </Link>
-                  ) : (
-                    <p className="mt-3 text-xs text-[#9CA3AF]">Completa Practica para desbloquear</p>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        {/* Hero */}
+        <section className="mb-5 flex items-end gap-2 sm:mb-6 sm:gap-4">
+          <Image
+            src="/assets/robot-saludando.png"
+            alt=""
+            width={160}
+            height={180}
+            className="h-auto w-[118px] shrink-0 drop-shadow-md sm:w-[140px]"
+            priority
+          />
+          <div className="mb-6 min-w-0 flex-1 sm:mb-10">
+            <div className="relative rounded-3xl rounded-bl-md bg-white px-4 py-3 shadow-md">
+              <p className="font-[family-name:var(--font-fredoka)] text-base font-semibold leading-snug text-[#17164F] sm:text-lg">
+                ¡Hola, {estudiante.nombre}! 👋 Explora tus cursos
+              </p>
+              <span
+                aria-hidden
+                className="absolute -left-2 bottom-3 h-0 w-0 border-y-[10px] border-r-[12px] border-y-transparent border-r-white"
+              />
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-[#5B5678]">
+              Aprende, juega, descubre y supera misiones increíbles.
+            </p>
+          </div>
+        </section>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Link
-            href="/estudiante/explorar"
-            className="rounded-2xl border border-[#E8E0FF] bg-white p-4 text-center text-sm font-semibold text-[#5636D9] shadow-sm"
-          >
-            🌌 Explorar en 3D
-          </Link>
-          <Link
-            href="/estudiante/desafio"
-            className="rounded-2xl border border-[#E8E0FF] bg-white p-4 text-center text-sm font-semibold text-[#17164F] shadow-sm"
-          >
-            🏆 Ver desafío final
-          </Link>
+        {/* Course grid */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          {cursosAprender.map((curso) => (
+            <Link
+              key={curso.id}
+              href={curso.href}
+              className={`group flex flex-col rounded-[22px] ${curso.tint} border border-white/70 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-4`}
+            >
+              <div className="relative mx-auto mb-2 h-[88px] w-full sm:h-[110px]">
+                <Image
+                  src={curso.imagen}
+                  alt=""
+                  fill
+                  className="object-contain drop-shadow-sm"
+                  sizes="(max-width: 640px) 42vw, 200px"
+                />
+              </div>
+              <h2 className="font-[family-name:var(--font-fredoka)] text-sm font-semibold text-[#17164F] sm:text-base">
+                {curso.nombre}
+              </h2>
+              <p className="mt-1 flex-1 text-[11px] leading-snug text-[#5B5678] sm:text-xs">
+                {curso.desc}
+              </p>
+              <span className="mt-3 ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-[#5636D9] text-white shadow transition group-hover:scale-105">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </span>
+            </Link>
+          ))}
         </div>
+
+        {/* CTA */}
+        <Link
+          href="/estudiante/leccion"
+          className="mt-6 flex w-full items-center justify-between gap-3 rounded-full bg-[#5636D9] px-4 py-3.5 text-white shadow-lg shadow-[#5636D9]/30 transition hover:bg-[#4a2dc0] sm:px-5"
+        >
+          <span className="flex min-w-0 items-center gap-3">
+            <Image
+              src="/assets/cohete.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-9 w-9 shrink-0 object-contain"
+            />
+            <span className="font-[family-name:var(--font-fredoka)] text-sm font-semibold sm:text-base">
+              Comenzar mi aventura
+            </span>
+          </span>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+        </Link>
       </div>
     </EstudianteLayout>
   );

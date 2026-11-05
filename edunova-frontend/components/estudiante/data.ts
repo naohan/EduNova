@@ -1,6 +1,6 @@
 export const estudiante = {
-  nombre: "Gloria",
-  apellido: "Hancco",
+  nombre: "usuario",
+  apellido: "",
   nivel: "Aventurero",
   edad: 11,
   racha: 5,
@@ -8,6 +8,102 @@ export const estudiante = {
   progresoGeneral: 65,
   progresoTotal: 72,
 };
+
+export type CursoId = "matematica" | "comunicacion" | "ciencia" | "sociales";
+
+export type CursoAprender = {
+  id: CursoId;
+  nombre: string;
+  desc: string;
+  imagen: string;
+  href: string;
+  tint: string;
+  tagline: string;
+  iconoCurso: string;
+  ctaHref: string;
+};
+
+export const cursosAprender: CursoAprender[] = [
+  {
+    id: "matematica",
+    nombre: "Matemática",
+    desc: "Operaciones, geometría, patrones y resolución de problemas.",
+    imagen: "/assets/matematica.png",
+    href: "/estudiante/curso/matematica",
+    tint: "bg-[#F2EEFF]",
+    tagline: "Explora números, formas y problemas del día a día.",
+    iconoCurso: "/assets/matematica.png",
+    ctaHref: "/estudiante/matematica/mapa",
+  },
+  {
+    id: "comunicacion",
+    nombre: "Comunicación",
+    desc: "Comprensión lectora, vocabulario y producción de textos.",
+    imagen: "/assets/comunicacion.png",
+    href: "/estudiante/curso/comunicacion",
+    tint: "bg-[#FFEAF2]",
+    tagline: "Lee, escribe y comparte ideas con creatividad.",
+    iconoCurso: "/assets/comunicacion.png",
+    ctaHref: "/estudiante/leccion",
+  },
+  {
+    id: "ciencia",
+    nombre: "Ciencia y Tecnología",
+    desc: "Cuerpo humano, ecosistemas, materia y energía.",
+    imagen: "/assets/cienciatecnologia.png",
+    href: "/estudiante/curso/ciencia",
+    tint: "bg-[#EAF6FF]",
+    tagline: "Explora, experimenta y descubre cómo funciona el mundo que te rodea.",
+    iconoCurso: "/assets/aprender/frasco_ciencia.png",
+    ctaHref: "/estudiante/cuerpo",
+  },
+  {
+    id: "sociales",
+    nombre: "Ciencias Sociales",
+    desc: "Historia, geografía, ciudadanía y cultura.",
+    imagen: "/assets/cienciasociales.png",
+    href: "/estudiante/curso/sociales",
+    tint: "bg-[#FFF6E0]",
+    tagline: "Conoce tu historia, tu territorio y tu comunidad.",
+    iconoCurso: "/assets/cienciasociales.png",
+    ctaHref: "/estudiante/explorar",
+  },
+];
+
+export function getCurso(id: string): CursoAprender | undefined {
+  return cursosAprender.find((c) => c.id === id);
+}
+
+export const tiposAventura = [
+  {
+    id: "exploradores",
+    nombre: "Exploradores",
+    desc: "Descubre conceptos con juegos, cuentos y experimentos simples.",
+    imagen: "/assets/aprender/exploradora.png",
+    href: "/estudiante/leccion",
+    /** Fondo de tarjeta (no blanco) */
+    cardBg: "bg-[linear-gradient(165deg,#B8F0C8_0%,#7ED9A0_45%,#E8FFF0_100%)]",
+    accent: "#2DBE70",
+  },
+  {
+    id: "aventureros",
+    nombre: "Aventureros",
+    desc: "Resuelve retos, realiza experimentos y trabaja en misiones por etapas.",
+    imagen: "/assets/aprender/aventurera.png",
+    href: "/estudiante/practica",
+    cardBg: "bg-[linear-gradient(165deg,#B8E4FF_0%,#7EC8F5_45%,#E8F6FF_100%)]",
+    accent: "#4C9EFF",
+  },
+  {
+    id: "creadores",
+    nombre: "Creadores",
+    desc: "Diseña proyectos, simula ideas y resuelve problemas del mundo real.",
+    imagen: "/assets/aprender/creadora.png",
+    href: "/estudiante/desafio",
+    cardBg: "bg-[linear-gradient(165deg,#E0D4FF_0%,#C4B0F5_45%,#F5F0FF_100%)]",
+    accent: "#5636D9",
+  },
+] as const;
 
 export const unidadActual = {
   id: "sistema-solar",

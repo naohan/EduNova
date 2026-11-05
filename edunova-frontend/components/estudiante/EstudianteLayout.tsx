@@ -38,16 +38,31 @@ function isOn(pathname: string, item: Item) {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-export function EstudianteLayout({ children }: { children: ReactNode }) {
+export function EstudianteLayout({
+  children,
+  mobileHeader,
+  shellClassName,
+}: {
+  children: ReactNode;
+  mobileHeader?: ReactNode;
+  /** Fondo de página (p. ej. nebulosa en cursos) */
+  shellClassName?: string;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F7F4FF]">
+    <div className={shellClassName ?? "min-h-screen bg-[#F7F4FF]"}>
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col border-r border-[#E8E0FF] bg-white lg:flex">
         <div className="flex items-center gap-2.5 px-5 py-5">
-          <Image src="/assets/logo.svg" alt="" width={32} height={32} />
+          <Image
+            src="/assets/Logo.png"
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain"
+          />
           <span className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
             EduNova
           </span>
@@ -55,12 +70,16 @@ export function EstudianteLayout({ children }: { children: ReactNode }) {
 
         <div className="mx-4 mb-4 rounded-2xl bg-[#F2EEFF] p-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#5636D9] text-sm font-bold text-white">
-              GH
-            </div>
+            <Image
+              src="/assets/usuario.png"
+              alt=""
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-full object-cover ring-2 ring-white"
+            />
             <div className="min-w-0">
               <div className="truncate text-sm font-bold text-[#17164F]">
-                {estudiante.nombre} {estudiante.apellido}
+                {estudiante.nombre}
               </div>
               <div className="text-xs text-[#5636D9]">{estudiante.nivel}</div>
             </div>
@@ -100,30 +119,48 @@ export function EstudianteLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Mobile header */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E8E0FF] bg-white/95 px-4 backdrop-blur lg:hidden">
-        <button
-          type="button"
-          aria-label="Abrir menú"
-          onClick={() => setOpen(true)}
-          className="inline-flex h-9 w-9 items-center justify-center text-[#17164F]"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
-        <Link href="/estudiante" className="flex items-center gap-2">
-          <Image src="/assets/logo.svg" alt="" width={26} height={26} />
-          <span className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-[#17164F]">
-            EduNova
-          </span>
-        </Link>
-        <button type="button" aria-label="Notificaciones" className="text-[#5636D9]">
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
-            <path d="M10 19a2 2 0 0 0 4 0" />
-          </svg>
-        </button>
-      </header>
+      {mobileHeader ?? (
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E8E0FF] bg-white/95 px-4 backdrop-blur lg:hidden">
+          <button
+            type="button"
+            aria-label="Abrir menú"
+            onClick={() => setOpen(true)}
+            className="inline-flex h-9 w-9 items-center justify-center text-[#17164F]"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+          <Link href="/estudiante" className="flex items-center gap-2">
+            <Image
+              src="/assets/Logo.png"
+              alt=""
+              width={26}
+              height={26}
+              className="h-6 w-6 object-contain"
+            />
+            <span className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-[#17164F]">
+              EduNova
+            </span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <button type="button" aria-label="Notificaciones" className="relative text-[#5636D9]">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
+                <path d="M10 19a2 2 0 0 0 4 0" />
+              </svg>
+              <span className="absolute right-0 top-0 h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
+            </button>
+            <Image
+              src="/assets/usuario.png"
+              alt="usuario"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-full object-cover"
+            />
+          </div>
+        </header>
+      )}
 
       {open ? (
         <div className="fixed inset-0 z-50 lg:hidden">

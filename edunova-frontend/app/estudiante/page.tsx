@@ -19,11 +19,11 @@ export default function Page() {
           <div className="mb-4 flex items-center gap-3">
             <div className="relative h-14 w-14 overflow-hidden rounded-full bg-[#F2EEFF] ring-2 ring-white shadow">
               <Image
-                src="/assets/aventurero.png"
+                src="/assets/usuario.png"
                 alt=""
                 width={56}
                 height={56}
-                className="h-full w-full object-cover object-top"
+                className="h-full w-full object-cover"
                 priority
               />
             </div>
