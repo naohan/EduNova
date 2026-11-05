@@ -3,14 +3,23 @@
 El backend está en https://github.com/nilton2005/edunova (`apps/api`). Esta carpeta, `lib/api/`, es el cliente que lo llama.
 
 ## Arrancar
-```bash
-# 1. Backend (otro terminal)
-cd edunova/apps/api && npm install && npm run dev      # http://localhost:4000
+El backend usa **PostgreSQL**. Hay dos formas de tenerlo:
 
-# 2. Frontend
-cp .env.example .env.local
-npm run dev                                            # http://localhost:3000
+**A. Usar el backend desplegado (recomendado, no instala nada).** Pide la URL de Render y ponla en `.env.local`:
+```bash
+cp .env.example .env.local        # y cambia NEXT_PUBLIC_API_URL por la URL de Render
+npm run dev                       # http://localhost:3000
 ```
+Si la URL de Render es nueva, agrégala (junto a `http://localhost:3000`) a `WEB_ORIGIN` en Render, o el navegador bloqueará las llamadas por CORS. En el plan gratis, el servicio se duerme tras 15 minutos: la primera llamada tarda y la pantalla muestra su respaldo local hasta que responda.
+
+**B. Backend local.** Necesita PostgreSQL instalado y una base `edunova`:
+```bash
+cd edunova/apps/api
+cp .env.example .env              # revisa DATABASE_URL
+npm install && npm run dev        # http://localhost:4000
+```
+
+Sin backend, todas las pantallas siguen funcionando con sus datos fijos.
 
 ## Archivos
 | Archivo | Para qué sirve |
@@ -48,7 +57,8 @@ Para iniciar sesión en el demo: `await demoLogin("u-student-1")`. Usuarios de p
 | Pantalla | Hoy usa | Endpoint |
 |---|---|---|
 | `/estudiante` (inicio, insignias, puntos) | `estudiante`, `insignias` | `getStudentProfile` |
-| `/estudiante/ruta`, `/estudiante/leccion` | `unidadActual`, `rutaPasos`, `teoria` | `getUnit` + `storyFor` |
+| `/estudiante/ruta` | `unidadActual`, `rutaPasos` | `getUnit` |
+| `/estudiante/leccion` | `teoria` | **Conectada:** la frase de apertura de cada edad sale de `getUnit("unit-solar-system")` (`LeccionPorEdad.tsx`); el cuerpo sigue local en `ageContent.ts`. Si el servidor falla, se usa el respaldo local, que copia la semilla del backend |
 | `/estudiante/practica` (tarjetas) | `preguntaPractica` | `getUnit` → `stages.practice.flashcards` |
 | `/estudiante/explorar` (Sistema Solar), `/estudiante/cuerpo` (al completar misión) | — | `completeMission` |
 | `/estudiante/evaluaciones` (foto) | `tiposEvaluacion` | `analyzeHandwrittenPhoto` |

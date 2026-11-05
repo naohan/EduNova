@@ -2,19 +2,34 @@
 
 import Link from "next/link";
 import { useAgeTier } from "@/lib/age-tier";
+import { getUnit } from "@/lib/api/client";
+import { useApi } from "@/lib/api/use-api";
 import { hipotesisCreador, modoPorEdad } from "./ageContent";
 import { rutaPasos } from "./data";
 import { StoryPlayer } from "./StoryPlayer";
+
+// Unidad del backend de la que sale la frase de apertura (primer subtema).
+const UNIT_ID = "unit-solar-system";
 
 /**
  * Bloque de la lección que cambia con el modo de edad (HU-02):
  * 7–9: voz destacada y botones de misión grandes · 10–12: ruta por etapas y reto guiado ·
  * 13–15: datos y pregunta de hipótesis abierta.
+ *
+ * La frase de apertura se lee del backend (`storyTextByAge`); si no responde, se usa el texto local
+ * de `ageContent.ts`, que es idéntico, así que la lección no cambia ni parpadea.
  */
 export function LeccionPorEdad() {
   const [tier] = useAgeTier();
+  const unit = useApi(() => getUnit(UNIT_ID), []);
   const modo = modoPorEdad[tier];
-  const texto = modo.parrafos.join(" ");
+
+  // Se lee con cuidado: una respuesta incompleta del servidor no debe romper la lección.
+  const texto0 =
+    unit.status === "ok" ? unit.data?.subtopics?.[0]?.stages?.discover?.storyTextByAge?.[tier] : undefined;
+  const desdeApi = typeof texto0 === "string" && texto0.trim() ? texto0 : undefined;
+  const gancho = desdeApi ?? modo.gancho;
+  const texto = [gancho, ...modo.parrafos].join(" ");
 
   return (
     <>
@@ -31,6 +46,9 @@ export function LeccionPorEdad() {
             tier === "EXPLORADOR_7_9" ? "text-lg" : "text-sm"
           }`}
         >
+          <p data-fuente={desdeApi ? "api" : "local"} className="font-semibold text-[#17164F]">
+            {gancho}
+          </p>
           {modo.parrafos.map((p) => (
             <p key={p}>{p}</p>
           ))}
