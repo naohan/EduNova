@@ -42,6 +42,7 @@ export function StudioWizard() {
   const [borrador, setBorrador] = useState<Borrador | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [motivoEjemplo, setMotivoEjemplo] = useState("");
 
   const rubricaCompleta = borrador?.rubrica.every((c) => columnas.every(({ campo }) => c[campo].trim())) ?? false;
 
@@ -58,6 +59,11 @@ export function StudioWizard() {
     const r = await ingestDocument({ title: tituloFinal || undefined, text: textoFinal });
     const recibido = r.ok ? aBorrador(r.data) : null;
     setBorrador(recibido ?? borradorDeEjemplo(tituloFinal, textoFinal));
+    if (!recibido) {
+      const motivo = r.ok ? "respuesta incompleta" : r.status ? `error ${r.status}: ${r.error}` : r.error;
+      setMotivoEjemplo(motivo);
+      console.warn("Studio: se usa el ejemplo local.", motivo);
+    }
     setOcupado(false);
     setPaso("revisar");
   }
@@ -160,7 +166,7 @@ export function StudioWizard() {
         <>
           {borrador.sinConexion ? (
             <p role="status" className="rounded-xl bg-[#FEF3C7] px-4 py-3 text-sm text-[#92400E]">
-              Sin conexión con el servidor: este es un ejemplo y no se guardará.
+              No se pudo analizar en el servidor ({motivoEjemplo}): este es un ejemplo y no se guardará.
             </p>
           ) : null}
 
@@ -250,7 +256,7 @@ export function StudioWizard() {
           </h2>
           <p className="mt-1 text-sm text-[#6B7280]">
             {borrador.sinConexion
-              ? "Sin conexión: esta unidad no se guardó ni llegó a los estudiantes."
+              ? "Era un ejemplo: esta unidad no se guardó ni llegó a los estudiantes."
               : `«${borrador.titulo}» ya está disponible para el aula ${borrador.aula}.`}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">

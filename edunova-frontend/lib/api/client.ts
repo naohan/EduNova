@@ -19,14 +19,22 @@ import { getToken, setToken } from "./session";
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 const TIMEOUT_MS = 4000;
+// Las escrituras tardan más: con la base en Render una ingesta toma unos 3,5 s. Si se cortara a los 4 s,
+// la pantalla daría por fallida una operación que el servidor sí completa.
+const WRITE_TIMEOUT_MS = 10000;
 
 export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; error: string }; // status 0 = sin conexión o tiempo agotado
 
-async function request<T>(method: "GET" | "POST" | "PUT", path: string, body?: unknown): Promise<ApiResult<T>> {
+async function request<T>(
+  method: "GET" | "POST" | "PUT",
+  path: string,
+  body?: unknown,
+  timeoutMs = TIMEOUT_MS,
+): Promise<ApiResult<T>> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const token = getToken();
     const res = await fetch(`${API_URL}/api${path}`, {
@@ -88,9 +96,9 @@ export const demoLogout = () => setToken(undefined);
 export const listUnits = () => request<LearningUnit[]>("GET", "/units");
 export const getUnit = (unitId: string) => request<LearningUnit>("GET", `/units/${encodeURIComponent(unitId)}`);
 export const ingestDocument = (input: { title?: string; text: string }) =>
-  request<IngestedUnit>("POST", "/ai/ingest-document", input);
+  request<IngestedUnit>("POST", "/ai/ingest-document", input, WRITE_TIMEOUT_MS);
 export const approveRubric = (unitId: string, rubric?: RubricCriterion[]) =>
-  request<LearningUnit>("PUT", "/teacher/approve-rubric", { unitId, rubric });
+  request<LearningUnit>("PUT", "/teacher/approve-rubric", { unitId, rubric }, WRITE_TIMEOUT_MS);
 
 // ---- Estudiante ----
 export const getStudentProfile = (studentId: string) =>
