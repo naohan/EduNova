@@ -16,6 +16,7 @@ import {
   type MathProgress,
   type MathStation,
 } from "./mathMapData";
+import { FireIcon, StarIcon } from "@/components/ui/icons";
 
 const MathIslandMap = dynamic(
   () => import("./MathIslandMap").then((m) => m.MathIslandMap),
@@ -133,8 +134,8 @@ export function MathMapExperience() {
           {MATH_COURSE.titulo}: {MATH_COURSE.nivelLabel}
         </div>
         <div className="flex items-center gap-1.5 text-[10px] font-semibold sm:gap-2 sm:text-sm">
-          <span className="rounded-full bg-white px-2 py-1 shadow sm:px-3 sm:py-1.5">🔥 3</span>
-          <span className="hidden rounded-full bg-white px-3 py-1.5 shadow sm:inline">⭐ 120</span>
+          <span className="rounded-full bg-white px-2 py-1 shadow sm:px-3 sm:py-1.5"><FireIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E8590C]" aria-hidden />3</span>
+          <span className="hidden rounded-full bg-white px-3 py-1.5 shadow sm:inline"><StarIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E0A800]" aria-hidden />120</span>
           <Image
             src="/assets/usuario.png"
             alt="usuario"
@@ -146,7 +147,7 @@ export function MathMapExperience() {
       </header>
 
       <p className="pointer-events-none absolute inset-x-0 top-[4.25rem] z-10 text-center text-[11px] font-semibold text-[#17164F]/70 lg:top-[4.75rem]">
-        Toca una estación del camino · arrastra para girar el mapa
+        Toca una estación del camino o arrastra para girar el mapa
       </p>
 
       {/* 3D Map */}
@@ -163,7 +164,7 @@ export function MathMapExperience() {
 
       {/* Bottom station card (estilo mockup) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#C9B8F5]/80 to-transparent p-3 pt-10 sm:p-4 lg:bottom-5 lg:px-6">
-        <div className="pointer-events-auto mx-auto max-w-4xl rounded-[28px] border border-white/60 bg-white/92 p-3 shadow-2xl backdrop-blur-md sm:p-4">
+        <div className="pointer-events-auto mx-auto max-w-4xl rounded-2xl border border-white/60 bg-white/92 p-3 shadow-2xl backdrop-blur-md sm:p-4">
           <div className="flex gap-3">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#17164F] sm:h-20 sm:w-20">
               <Image
@@ -189,7 +190,7 @@ export function MathMapExperience() {
                   disabled={!canStart}
                   onClick={startActivity}
                   className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow lg:hidden ${
-                    canStart ? "bg-[#5636D9]" : "bg-[#9CA3AF]"
+                    canStart ? "bg-[#5636D9]" : "bg-[#6A6586]"
                   }`}
                   aria-label="Continuar"
                 >
@@ -213,14 +214,14 @@ export function MathMapExperience() {
                   type="button"
                   disabled={!canStart}
                   onClick={startActivity}
-                  className="ml-auto rounded-full bg-[#5636D9] px-5 py-2.5 text-sm font-bold text-white disabled:bg-[#9CA3AF]"
+                  className="ml-auto rounded-full bg-[#5636D9] px-5 py-2.5 text-sm font-bold text-white disabled:bg-[#6A6586]"
                 >
                   Continuar →
                 </button>
               </div>
 
               <div className="mt-3">
-                <div className="mb-1 flex justify-between text-[10px] font-semibold text-[#6B7280]">
+                <div className="mb-1 flex justify-between text-[10px] font-semibold text-[#5B5678]">
                   <span>
                     {done} de {MATH_STATIONS.length} lecciones
                   </span>

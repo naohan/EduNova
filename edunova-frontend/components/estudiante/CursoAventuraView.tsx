@@ -8,6 +8,8 @@ import {
   tiposAventura,
   type CursoAprender,
 } from "@/components/estudiante/data";
+import { DiamondIcon, FireIcon, StarIcon } from "@/components/ui/icons";
+import { NombreAlumno } from "@/components/estudiante/NombreAlumno";
 
 /** Quita el negro de los PNG de personaje (fondo #000). */
 const imgKnockout = "mix-blend-screen";
@@ -37,9 +39,9 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
             <span className="pr-1 text-xs font-bold text-white">Volver</span>
           </Link>
           <div className="flex items-center gap-1.5 text-[10px] font-semibold text-white">
-            <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur">🔥 3</span>
-            <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur">⭐ 120</span>
-            <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur">💎 5</span>
+            <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur"><FireIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E8590C]" aria-hidden />3</span>
+            <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur"><StarIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E0A800]" aria-hidden />120</span>
+            <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur"><DiamondIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#4C9EFF]" aria-hidden />5</span>
             <Image
               src="/assets/usuario.png"
               alt="usuario"
@@ -57,8 +59,7 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-[520px] lg:h-[560px]"
           style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 20% 30%, rgba(124,58,237,0.55), transparent 60%), radial-gradient(ellipse 70% 50% at 85% 20%, rgba(76,158,255,0.35), transparent 55%), radial-gradient(ellipse 50% 40% at 50% 80%, rgba(86,54,217,0.4), transparent 70%), linear-gradient(180deg, #1a1458 0%, #2a1f7a 40%, #3d2a9e 70%, #5636D9 100%)",
+            background: "#17164F",
           }}
         />
         {/* Estrellas */}
@@ -96,14 +97,6 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
           className="pointer-events-none absolute inset-x-0 top-[500px] bottom-0 bg-[#F7F4FF] lg:top-[540px]"
         />
         {/* Hojas / blobs decorativos */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -left-10 bottom-10 h-40 w-40 rounded-full bg-[#2DBE70]/25 blur-2xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-8 bottom-24 h-36 w-36 rounded-full bg-[#5636D9]/20 blur-2xl"
-        />
 
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-10 pt-2 sm:px-6 lg:p-8">
           {/* Volver (desktop; en móvil está en el header) */}
@@ -183,9 +176,9 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
                 className="h-auto w-[130px] shrink-0 drop-shadow-2xl"
                 priority
               />
-              <div className="relative mb-10 rounded-3xl rounded-bl-md bg-white px-4 py-3 shadow-xl">
+              <div className="relative mb-10 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-xl">
                 <p className="font-[family-name:var(--font-fredoka)] text-base font-semibold leading-snug text-[#17164F]">
-                  ¡Hola, {estudiante.nombre}! Explora, experimenta y descubre el mundo con
+                  ¡Hola, <NombreAlumno />! Explora, experimenta y descubre el mundo con
                   EduNova.
                 </p>
                 <span
@@ -250,10 +243,8 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
           {/* Adventure picker */}
           <section className="relative pt-2 lg:pt-6">
             <h2 className="mb-4 flex items-center justify-center gap-2 text-center font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F] sm:text-3xl">
-              <span aria-hidden className="text-[#FFC928]">✦</span>
-              Elige tu tipo de aventura
-              <span aria-hidden className="text-[#FFC928]">✦</span>
-            </h2>
+                            Elige tu tipo de aventura
+                          </h2>
 
             {/* Mobile: toca la tarjeta → entra de frente a la aventura */}
             <div className="space-y-3 lg:hidden">
@@ -261,7 +252,7 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
                 <Link
                   key={tipo.id}
                   href={destino}
-                  className={`flex w-full flex-col overflow-hidden rounded-[24px] text-left shadow-md transition ${tipo.cardBg}`}
+                  className={`flex w-full flex-col overflow-hidden rounded-2xl text-left shadow-md transition ${tipo.cardBg}`}
                 >
                   <div className="relative z-10 flex h-[148px] items-end justify-center px-3 pt-3">
                     <Image
@@ -269,7 +260,7 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
                       alt=""
                       width={160}
                       height={148}
-                      className={`h-[140px] w-auto max-w-full object-contain object-bottom drop-shadow-md ${imgKnockout}`}
+                      className={`h-[140px] w-auto max-w-full object-contain object-bottom ${imgKnockout}`}
                     />
                   </div>
                   <div className="relative z-0 flex items-center gap-2 rounded-t-[28px] bg-white px-4 py-3">
@@ -295,7 +286,7 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
                 <Link
                   key={tipo.id}
                   href={destino}
-                  className={`group relative flex flex-col overflow-hidden rounded-[32px] text-left shadow-lg transition hover:-translate-y-1 ${tipo.cardBg}`}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl text-left shadow-lg transition hover:-translate-y-1 ${tipo.cardBg}`}
                 >
                   <div className="relative z-10 flex h-[230px] items-end justify-center px-4 pt-5">
                     <Image
@@ -328,7 +319,7 @@ export function CursoAventuraView({ curso }: { curso: CursoAprender }) {
             <div className="mt-6 flex justify-center lg:mt-10">
               <Link
                 href={destino}
-                className="inline-flex w-full max-w-md items-center justify-between gap-3 rounded-full bg-gradient-to-r from-[#5636D9] to-[#4C9EFF] px-5 py-3.5 text-white shadow-xl shadow-[#5636D9]/35 transition hover:brightness-110 sm:w-auto sm:min-w-[300px]"
+                className="inline-flex w-full max-w-md items-center justify-between gap-3 rounded-xl bg-[#5636D9] px-5 py-3.5 text-white transition-colors hover:bg-[#4528b8] sm:w-auto sm:min-w-[300px]"
               >
                 <span className="flex items-center gap-3">
                   <Image

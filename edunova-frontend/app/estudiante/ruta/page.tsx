@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { cursosAprender, estudiante } from "@/components/estudiante/data";
+import { NombreAlumno } from "@/components/estudiante/NombreAlumno";
 
 export default function Page() {
   return (
@@ -48,15 +49,7 @@ export default function Page() {
         {/* Atmosphere */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,#EDE7FF_0%,#F7F4FF_45%,#EEF8F0_100%)] lg:rounded-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -left-8 bottom-24 h-28 w-28 rounded-full bg-[#C8E6C0]/50 blur-2xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-6 bottom-40 h-24 w-24 rounded-full bg-[#C8E6C0]/40 blur-2xl"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[#F7F4FF] lg:rounded-2xl"
         />
 
         {/* Hero */}
@@ -66,13 +59,13 @@ export default function Page() {
             alt=""
             width={160}
             height={180}
-            className="h-auto w-[118px] shrink-0 drop-shadow-md sm:w-[140px]"
+            className="h-auto w-[118px] shrink-0 sm:w-[140px]"
             priority
           />
           <div className="mb-6 min-w-0 flex-1 sm:mb-10">
-            <div className="relative rounded-3xl rounded-bl-md bg-white px-4 py-3 shadow-md">
+            <div className="relative rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-md">
               <p className="font-[family-name:var(--font-fredoka)] text-base font-semibold leading-snug text-[#17164F] sm:text-lg">
-                ¡Hola, {estudiante.nombre}! 👋 Explora tus cursos
+                ¡Hola, <NombreAlumno />! Explora tus cursos
               </p>
               <span
                 aria-hidden
@@ -91,14 +84,14 @@ export default function Page() {
             <Link
               key={curso.id}
               href={curso.href}
-              className={`group flex flex-col rounded-[22px] ${curso.tint} border border-white/70 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-4`}
+              className={`group flex flex-col rounded-2xl ${curso.tint} border border-white/70 p-3 transition hover:-translate-y-0.5 hover:shadow-md sm:p-4`}
             >
                   <div className="relative mx-auto mb-2 h-[88px] w-full sm:h-[110px]">
                 <Image
                   src={curso.imagen}
                   alt=""
                   fill
-                  className="object-contain drop-shadow-sm"
+                  className="object-contain"
                   sizes="(max-width: 640px) 42vw, 200px"
                 />
               </div>
@@ -120,7 +113,7 @@ export default function Page() {
         {/* CTA */}
         <Link
           href="/estudiante/matematica/mapa"
-          className="mt-6 flex w-full items-center justify-between gap-3 rounded-full bg-[#5636D9] px-4 py-3.5 text-white shadow-lg shadow-[#5636D9]/30 transition hover:bg-[#4a2dc0] sm:px-5"
+          className="mt-6 flex w-full items-center justify-between gap-3 rounded-full bg-[#5636D9] px-4 py-3.5 text-white transition hover:bg-[#4a2dc0] sm:px-5"
         >
           <span className="flex min-w-0 items-center gap-3">
             <Image

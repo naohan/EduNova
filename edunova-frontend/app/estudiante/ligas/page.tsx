@@ -9,7 +9,7 @@ import { useSessionUser } from "@/lib/api/use-session";
 
 const divisiones: Record<LeaderboardEntry["division"], { label: string; cls: string }> = {
   BRONCE: { label: "Bronce", cls: "bg-[#F5E6D8] text-[#8A5A2B]" },
-  PLATA: { label: "Plata", cls: "bg-[#E5E7EB] text-[#4B5563]" },
+  PLATA: { label: "Plata", cls: "bg-[#E8E0FF] text-[#4B5563]" },
   ORO: { label: "Oro", cls: "bg-[#FEF3C7] text-[#92400E]" },
   SUPERNOVA: { label: "Supernova", cls: "bg-[#EAE5FF] text-[#5636D9]" },
 };
@@ -39,9 +39,9 @@ function TablaLiga({
   miId?: string;
 }) {
   return (
-    <section className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm sm:p-5">
+    <section className="rounded-2xl border border-[#E8E0FF] bg-white p-4 sm:p-5">
       <h2 className="font-bold text-[#17164F]">{titulo}</h2>
-      <p className="mt-0.5 text-xs text-[#6B7280]">{descripcion}</p>
+      <p className="mt-0.5 text-xs text-[#5B5678]">{descripcion}</p>
       <ol className="mt-3 space-y-2">
         {filas.map((f, i) => {
           const soyYo = f.studentId === miId;
@@ -62,7 +62,7 @@ function TablaLiga({
                   {f.alias}
                   {soyYo ? " (tú)" : ""}
                 </span>
-                <span className="block truncate text-xs text-[#6B7280]">
+                <span className="block truncate text-xs text-[#5B5678]">
                   {f.institutionName ?? "Estudia en casa"}
                 </span>
               </span>
@@ -90,9 +90,9 @@ function MiResumen({ studentId }: { studentId: string }) {
   return (
     <div className="mb-5 grid grid-cols-3 gap-3">
       {datos.map((d) => (
-        <div key={d.label} className="rounded-2xl border border-[#E8E0FF] bg-white p-3 text-center shadow-sm">
+        <div key={d.label} className="rounded-2xl border border-[#E8E0FF] bg-white p-3 text-center">
           <div className="text-xl font-extrabold text-[#17164F]">{d.valor}</div>
-          <div className="text-[11px] text-[#6B7280]">{d.label}</div>
+          <div className="text-[11px] text-[#5B5678]">{d.label}</div>
         </div>
       ))}
     </div>
@@ -114,9 +114,9 @@ export default function Page() {
       <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
         <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-sm text-[#6B7280]">Competencia sana</p>
+            <p className="text-sm text-[#5B5678]">Competencia sana</p>
             <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">Ligas</h1>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#5B5678]">
               Compites en dos ligas a la vez: una premia lo que dominas y otra tu esfuerzo.
             </p>
           </div>

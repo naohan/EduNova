@@ -41,12 +41,12 @@ export default function Page() {
         </div>
 
         <header className="mb-6 hidden lg:block">
-          <p className="text-sm text-[#6B7280]">Resultados por curso</p>
+          <p className="text-sm text-[#5B5678]">Resultados por curso</p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Estudiantes y resultados
           </h1>
-          <p className="mt-1 text-[#6B7280]">
-            {classInfo.curso} · {classInfo.grado}
+          <p className="mt-1 text-[#5B5678]">
+            {classInfo.curso}, {classInfo.grado}
           </p>
         </header>
 
@@ -58,7 +58,7 @@ export default function Page() {
         </div>
 
         {/* Mobile list — percentage pills like mockup */}
-        <div className="overflow-hidden rounded-2xl border border-[#E8E0FF] bg-white shadow-sm lg:hidden">
+        <div className="overflow-hidden rounded-2xl border border-[#E8E0FF] bg-white lg:hidden">
           {estudiantes.map((e, i) => (
             <Link
               key={e.id}
@@ -72,7 +72,7 @@ export default function Page() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate font-semibold text-[#17164F]">{e.nombre}</div>
-                <div className="text-sm text-[#6B7280]">{Math.round(e.nota)}/20</div>
+                <div className="text-sm text-[#5B5678]">{Math.round(e.nota)}/20</div>
               </div>
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-bold ${pctBadge(e.progreso)}`}
@@ -85,9 +85,9 @@ export default function Page() {
         </div>
 
         {/* Desktop table */}
-        <div className="hidden overflow-hidden rounded-2xl border border-[#E8E0FF] bg-white shadow-sm lg:block">
+        <div className="hidden overflow-hidden rounded-2xl border border-[#E8E0FF] bg-white lg:block">
           <table className="w-full text-sm">
-            <thead className="bg-[#F2EEFF] text-[#6B7280]">
+            <thead className="bg-[#F2EEFF] text-[#5B5678]">
               <tr>
                 <th className="px-4 py-3 text-left font-semibold">#</th>
                 <th className="px-4 py-3 text-left font-semibold">Estudiante</th>
@@ -103,7 +103,7 @@ export default function Page() {
                   key={e.id}
                   className={e.estado === "En inicio" ? "bg-[#FFF5F5]" : undefined}
                 >
-                  <td className="px-4 py-3 text-[#6B7280]">{i + 1}</td>
+                  <td className="px-4 py-3 text-[#5B5678]">{i + 1}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#5636D9] text-xs font-bold text-white">
@@ -116,7 +116,7 @@ export default function Page() {
                   <td className="px-4 py-3">
                     <div className="flex w-36 items-center gap-2">
                       <ProgressBar value={e.progreso} />
-                      <span className="text-xs text-[#6B7280]">{e.progreso}%</span>
+                      <span className="text-xs text-[#5B5678]">{e.progreso}%</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -157,7 +157,7 @@ function Field({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full appearance-none rounded-2xl border border-[#E8E0FF] bg-white px-4 py-3 text-sm font-medium text-[#17164F] shadow-sm"
+        className="mt-1 w-full appearance-none rounded-2xl border border-[#E8E0FF] bg-white px-4 py-3 text-sm font-medium text-[#17164F]"
       >
         {options.map((o) => (
           <option key={o}>{o}</option>

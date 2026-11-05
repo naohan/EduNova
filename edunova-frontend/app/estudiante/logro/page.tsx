@@ -18,25 +18,25 @@ export default function Page() {
         <h1 className="mt-4 font-[family-name:var(--font-fredoka)] text-3xl font-semibold text-[#17164F]">
           {logro.titulo}
         </h1>
-        <p className="mt-2 text-[#6B7280]">Gran trabajo explorando el Sistema Solar</p>
+        <p className="mt-2 text-[#5B5678]">Gran trabajo explorando el Sistema Solar</p>
 
         <div className="mt-6 grid w-full grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
-            <div className="text-xs text-[#6B7280]">Puntaje</div>
+          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
+            <div className="text-xs text-[#5B5678]">Puntaje</div>
             <div className="text-3xl font-bold text-[#5636D9]">{logro.puntaje}</div>
           </div>
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
-            <div className="text-xs text-[#6B7280]">Puntos ganados</div>
+          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
+            <div className="text-xs text-[#5B5678]">Puntos ganados</div>
             <div className="text-3xl font-bold text-[#FFC928]">+{logro.puntosGanados}</div>
           </div>
         </div>
 
-        <div className="mt-4 w-full rounded-2xl bg-gradient-to-r from-[#F2EEFF] to-[#EAF6FF] p-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+        <div className="mt-4 w-full rounded-2xl bg-[#F2EEFF] p-4">
+          <div className="text-xs font-semibold text-[#5B5678]">
             Nueva insignia
           </div>
           <div className="mt-2 flex items-center justify-center gap-3">
-            <span className="text-4xl">🧭</span>
+            <Image src="/assets/matematica/compas.png" alt="" width={230} height={350} className="h-12 w-auto" />
             <span className="font-bold text-[#17164F]">{logro.insignia}</span>
           </div>
         </div>

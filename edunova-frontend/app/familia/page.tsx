@@ -41,10 +41,10 @@ const conSigno = (n: number) => `${n > 0 ? "+" : ""}${n}`;
 
 function Metrica({ label, value, detalle }: { label: string; value: string; detalle: string }) {
   return (
-    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
-      <div className="text-xs font-semibold text-[#6B7280]">{label}</div>
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
+      <div className="text-xs font-semibold text-[#5B5678]">{label}</div>
       <div className="mt-2 text-2xl font-extrabold text-[#17164F] sm:text-3xl">{value}</div>
-      <div className="mt-1 text-xs text-[#6B7280]">{detalle}</div>
+      <div className="mt-1 text-xs text-[#5B5678]">{detalle}</div>
     </div>
   );
 }
@@ -99,7 +99,7 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
             <button
               type="button"
               onClick={onSalir}
-              className="text-xs font-bold text-[#6B7280] hover:text-[#E11D48]"
+              className="text-xs font-bold text-[#5B5678] hover:text-[#E11D48]"
             >
               Cerrar sesión
             </button>
@@ -114,7 +114,7 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
           </p>
         ) : null}
 
-        <section className="relative overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#5636D9_0%,#3B229D_100%)] p-6 text-white shadow-lg sm:p-8">
+        <section className="relative overflow-hidden rounded-2xl bg-[#5636D9] p-6 text-white sm:p-8">
           <div className="relative z-10 max-w-2xl">
             <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-bold sm:text-3xl">
               Acompañando el aprendizaje de {perfil.alias}
@@ -147,10 +147,10 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="flex flex-col justify-between rounded-3xl border border-[#E8E0FF] bg-white p-6 shadow-sm">
+          <section className="flex flex-col justify-between rounded-2xl border border-[#E8E0FF] bg-white p-6">
             <div>
               <h2 className="text-xl font-bold">¿Cómo se lo explico en casa?</h2>
-              <p className="mt-1 text-xs text-[#6B7280]">Una explicación con ejemplos cotidianos, lista para leer.</p>
+              <p className="mt-1 text-xs text-[#5B5678]">Una explicación con ejemplos cotidianos, lista para leer.</p>
               <div className="mt-4 rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] p-4">
                 <div className="text-xs font-bold text-[#5636D9]">Tema para reforzar</div>
                 <div className="mt-0.5 text-sm font-bold">{tema}</div>
@@ -171,9 +171,9 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
             </button>
           </section>
 
-          <section className="rounded-3xl border border-[#E8E0FF] bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-6">
             <h2 className="text-xl font-bold">Comparación con otros estudiantes</h2>
-            <p className="mt-1 text-xs text-[#6B7280]">
+            <p className="mt-1 text-xs text-[#5B5678]">
               Comparación anónima con estudiantes de su edad en la red.
             </p>
             <div className="mt-4">
@@ -196,15 +196,15 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
             </ul>
           </section>
 
-          <section className="rounded-3xl border border-[#E8E0FF] bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-6">
             <h2 className="text-xl font-bold">Pacto de recompensa familiar</h2>
-            <p className="mt-1 text-xs text-[#6B7280]">Una meta acordada en casa, con un premio real.</p>
+            <p className="mt-1 text-xs text-[#5B5678]">Una meta acordada en casa, con un premio real.</p>
             <div className="mt-4 rounded-2xl border border-[#FDE68A] bg-[#FFF9E6] p-5">
               <div className="text-base font-extrabold">{META_PACTO.toLocaleString("es-PE")} NovaCoins</div>
               <div className="mt-1 text-xs text-[#92400E]">
                 Premio: <strong>tarde de cine con palomitas</strong>
               </div>
-              <div className="mb-1 mt-3 flex justify-between text-[11px] font-bold text-[#6B7280]">
+              <div className="mb-1 mt-3 flex justify-between text-[11px] font-bold text-[#5B5678]">
                 <span>
                   {perfil.novaCoins.toLocaleString("es-PE")} / {META_PACTO.toLocaleString("es-PE")}
                 </span>
@@ -214,9 +214,9 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
             </div>
           </section>
 
-          <section className="rounded-3xl border border-[#E8E0FF] bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-6">
             <h2 className="text-xl font-bold">Pasaporte EduNova</h2>
-            <p className="mt-1 text-xs text-[#6B7280]">
+            <p className="mt-1 text-xs text-[#5B5678]">
               Un código QR con sus logros, para llevarlo a otro colegio.
             </p>
             {pasaporte ? (
@@ -269,11 +269,11 @@ export default function FamiliaPage() {
   if (usuario?.role !== "FAMILY_TUTOR" || !usuario.linkedStudentId) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F7F4FF] p-4">
-        <div className="max-w-sm rounded-3xl border border-[#E8E0FF] bg-white p-8 text-center shadow-sm">
+        <div className="max-w-sm rounded-2xl border border-[#E8E0FF] bg-white p-8 text-center">
           <h1 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
             Portal de la familia
           </h1>
-          <p className="mt-2 text-sm text-[#6B7280]">
+          <p className="mt-2 text-sm text-[#5B5678]">
             Inicia sesión como tutor familiar vinculado a un estudiante para ver su avance.
           </p>
           <Link

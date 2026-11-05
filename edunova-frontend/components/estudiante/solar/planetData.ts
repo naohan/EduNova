@@ -14,7 +14,6 @@ export type PlanetId =
 export interface PlanetBody {
   id: PlanetId;
   name: string;
-  emoji: string;
   /** Color hex Three.js */
   color: number;
   /** Radio visual en escena */
@@ -37,7 +36,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "sol",
     name: "Sol",
-    emoji: "☀️",
     color: 0xfdb813,
     radius: 2.4,
     orbit: 0,
@@ -47,14 +45,13 @@ export const SOLAR_BODIES: PlanetBody[] = [
       diametro: "1 392 700 km",
       distancia: "Centro del Sistema Solar",
       temperatura: "5 500 °C (fotosfera)",
-      lunas: "—",
+      lunas: "No tiene",
       dato: "Contiene el 99,86 % de toda la masa del Sistema Solar.",
     },
   },
   {
     id: "mercurio",
     name: "Mercurio",
-    emoji: "🌑",
     color: 0xaaaaaa,
     radius: 0.28,
     orbit: 5.2,
@@ -71,7 +68,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "venus",
     name: "Venus",
-    emoji: "🟠",
     color: 0xffcc88,
     radius: 0.42,
     orbit: 7.2,
@@ -88,7 +84,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "tierra",
     name: "Tierra",
-    emoji: "🌍",
     color: 0x2266cc,
     radius: 0.45,
     orbit: 9.5,
@@ -105,7 +100,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "marte",
     name: "Marte",
-    emoji: "🔴",
     color: 0xcc4422,
     radius: 0.35,
     orbit: 12,
@@ -122,7 +116,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "jupiter",
     name: "Júpiter",
-    emoji: "🪐",
     color: 0xddbb88,
     radius: 1.35,
     orbit: 17,
@@ -139,7 +132,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "saturno",
     name: "Saturno",
-    emoji: "💍",
     color: 0xeeddaa,
     radius: 1.15,
     orbit: 22,
@@ -156,7 +148,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "urano",
     name: "Urano",
-    emoji: "🧊",
     color: 0x66ccff,
     radius: 0.75,
     orbit: 27,
@@ -173,7 +164,6 @@ export const SOLAR_BODIES: PlanetBody[] = [
   {
     id: "neptuno",
     name: "Neptuno",
-    emoji: "🔵",
     color: 0x3355aa,
     radius: 0.72,
     orbit: 32,

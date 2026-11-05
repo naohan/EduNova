@@ -12,6 +12,7 @@ import {
   tituloDesdeArchivo,
   type Borrador,
 } from "./studioData";
+import { CheckCircleIcon, FilePlusIcon, PencilLineIcon } from "@/components/ui/icons";
 
 type Paso = "subir" | "revisar" | "publicado";
 
@@ -123,10 +124,10 @@ export function StudioWizard() {
       ) : null}
 
       {paso === "subir" ? (
-        <section className="space-y-4 rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+        <section className="space-y-4 rounded-2xl border border-[#E8E0FF] bg-white p-5">
           <label className="block cursor-pointer rounded-2xl border-2 border-dashed border-[#C4B5FD] bg-[#F7F4FF] p-6 text-center">
             <span className="block text-3xl" aria-hidden>
-              📄
+              <FilePlusIcon className="mx-auto h-7 w-7 text-[#5636D9]" aria-hidden />
             </span>
             <span className="mt-2 block text-sm font-bold text-[#17164F]">
               {archivo ? archivo.name : "Elige un PDF, presentación, imagen o texto"}
@@ -139,7 +140,7 @@ export function StudioWizard() {
             />
           </label>
           <label className="block">
-            <span className="text-xs font-medium text-[#6B7280]">Título de la unidad (opcional)</span>
+            <span className="text-xs font-medium text-[#5B5678]">Título de la unidad (opcional)</span>
             <input
               className={`${inputCls} mt-1`}
               value={titulo}
@@ -148,7 +149,7 @@ export function StudioWizard() {
             />
           </label>
           <label className="block">
-            <span className="text-xs font-medium text-[#6B7280]">O pega el texto de tu clase</span>
+            <span className="text-xs font-medium text-[#5B5678]">O pega el texto de tu clase</span>
             <textarea
               className={`${inputCls} mt-1`}
               rows={4}
@@ -170,7 +171,7 @@ export function StudioWizard() {
             </p>
           ) : null}
 
-          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="font-bold text-[#17164F]">{borrador.titulo}</h2>
               <span className="rounded-full bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#92400E]">
@@ -190,11 +191,11 @@ export function StudioWizard() {
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
             <h2 className="mb-3 font-bold text-[#17164F]">Rúbrica interna</h2>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
-                <thead className="bg-[#F2EEFF] text-[#6B7280]">
+                <thead className="bg-[#F2EEFF] text-[#5B5678]">
                   <tr>
                     {columnas.map((c) => (
                       <th key={c.campo} scope="col" className="px-2 py-2 text-left">
@@ -247,14 +248,14 @@ export function StudioWizard() {
       ) : null}
 
       {paso === "publicado" && borrador ? (
-        <section className="rounded-2xl border border-[#E8E0FF] bg-white p-6 text-center shadow-sm">
+        <section className="rounded-2xl border border-[#E8E0FF] bg-white p-6 text-center">
           <div className="text-4xl" aria-hidden>
-            {borrador.sinConexion ? "📝" : "✅"}
+            {borrador.sinConexion ? <PencilLineIcon className="h-6 w-6" aria-hidden /> : <CheckCircleIcon weight="fill" className="h-6 w-6" aria-hidden />}
           </div>
           <h2 className="mt-2 font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
             {borrador.sinConexion ? "Ejemplo aprobado" : "Unidad publicada"}
           </h2>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#5B5678]">
             {borrador.sinConexion
               ? "Era un ejemplo: esta unidad no se guardó ni llegó a los estudiantes."
               : `«${borrador.titulo}» ya está disponible para el aula ${borrador.aula}.`}

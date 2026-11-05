@@ -1,20 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
+import { BrainIcon, ClipboardTextIcon, GameControllerIcon, SwordIcon } from "@/components/ui/icons";
 
 export default function Page() {
   return (
     <EstudianteLayout>
       <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
         <header className="mb-6">
-          <p className="text-sm text-[#6B7280]">Aula</p>
+          <p className="text-sm text-[#5B5678]">Aula</p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Aprende con tu equipo
           </h1>
         </header>
 
-        <div className="mb-4 rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
-          <label className="block text-xs font-semibold text-[#6B7280]">Código de aula</label>
+        <div className="mb-4 rounded-2xl border border-[#E8E0FF] bg-white p-4">
+          <label className="block text-xs font-semibold text-[#5B5678]">Código de aula</label>
           <div className="mt-2 flex gap-2">
             <input
               type="text"
@@ -34,41 +35,41 @@ export default function Page() {
         <div className="grid gap-3 sm:grid-cols-2">
           <Link
             href="/estudiante/duelo"
-            className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm"
+            className="rounded-2xl border border-[#E8E0FF] bg-white p-5"
           >
-            <div className="text-3xl">⚔️</div>
+            <SwordIcon weight="duotone" className="h-8 w-8 text-[#5636D9]" aria-hidden />
             <h2 className="mt-2 font-bold text-[#17164F]">Duelo de conocimiento</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#5B5678]">
               Crea preguntas para un compañero y luego intercambian roles.
             </p>
           </Link>
           <Link
             href="/estudiante/juegos"
-            className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm"
+            className="rounded-2xl border border-[#E8E0FF] bg-white p-5"
           >
-            <div className="text-3xl">🎲</div>
+            <GameControllerIcon weight="duotone" className="h-8 w-8 text-[#5636D9]" aria-hidden />
             <h2 className="mt-2 font-bold text-[#17164F]">Tablero en equipo</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#5B5678]">
               Explora casillas con Equipo Galaxia y completa la misión.
             </p>
           </Link>
           <Link
             href="/estudiante/evaluaciones"
-            className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm"
+            className="rounded-2xl border border-[#E8E0FF] bg-white p-5"
           >
-            <div className="text-3xl">📝</div>
+            <ClipboardTextIcon weight="duotone" className="h-8 w-8 text-[#5636D9]" aria-hidden />
             <h2 className="mt-2 font-bold text-[#17164F]">Evaluaciones</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#5B5678]">
               Múltiples formas de demostrar lo aprendido.
             </p>
           </Link>
           <Link
             href="/estudiante/habilidades"
-            className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm"
+            className="rounded-2xl border border-[#E8E0FF] bg-white p-5"
           >
-            <div className="text-3xl">💪</div>
+            <BrainIcon weight="duotone" className="h-8 w-8 text-[#5636D9]" aria-hidden />
             <h2 className="mt-2 font-bold text-[#17164F]">Habilidades</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
+            <p className="mt-1 text-sm text-[#5B5678]">
               Descubre fortalezas más allá de las notas.
             </p>
           </Link>

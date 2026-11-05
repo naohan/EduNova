@@ -58,17 +58,17 @@ export default function Page() {
 
           <button
             type="button"
-            className="mb-4 flex w-full items-center justify-between rounded-2xl border border-[#E8E0FF] bg-white px-4 py-3 text-sm font-semibold shadow-sm"
+            className="mb-4 flex w-full items-center justify-between rounded-2xl border border-[#E8E0FF] bg-white px-4 py-3 text-sm font-semibold"
           >
             {aula}
-            <span className="text-[#9CA3AF]">▾</span>
+            <span className="text-[#6A6586]">▾</span>
           </button>
 
           <div className="space-y-3">
             {competenciasLista.map((c) => (
               <article
                 key={c.nombre}
-                className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm"
+                className="rounded-2xl border border-[#E8E0FF] bg-white p-4"
               >
                 <div className="mb-2 flex justify-end">
                   <EstadoBadge estado={c.estado} />
@@ -84,17 +84,17 @@ export default function Page() {
         {/* Desktop */}
         <div className="hidden lg:block">
           <header className="mb-6">
-            <p className="text-sm text-[#6B7280]">Seguimiento por competencia</p>
+            <p className="text-sm text-[#5B5678]">Seguimiento por competencia</p>
             <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
               Dominio curricular
             </h1>
-            <p className="mt-1 text-[#6B7280]">
-              {classInfo.curso} · {classInfo.grado}
+            <p className="mt-1 text-[#5B5678]">
+              {classInfo.curso}, {classInfo.grado}
             </p>
           </header>
 
           <label className="mb-5 block max-w-xs">
-            <span className="text-xs font-medium text-[#6B7280]">Aula / curso</span>
+            <span className="text-xs font-medium text-[#5B5678]">Aula / curso</span>
             <select
               value={aula}
               onChange={(e) => setAula(e.target.value)}
@@ -109,19 +109,19 @@ export default function Page() {
             {competenciaMastery.map((c) => (
               <div
                 key={c.nombre}
-                className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm"
+                className="rounded-2xl border border-[#E8E0FF] bg-white p-4"
               >
                 <StackedBarChart data={[c]} showLegend={false} />
               </div>
             ))}
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-[#E8E0FF] bg-white p-4">
             <h3 className="mb-3 font-semibold text-[#17164F]">
               Criterios curriculares por estudiante
             </h3>
             <table className="w-full text-sm">
-              <thead className="bg-[#F2EEFF] text-[#6B7280]">
+              <thead className="bg-[#F2EEFF] text-[#5B5678]">
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold">Estudiante</th>
                   {nombres.map((n) => (

@@ -11,9 +11,9 @@ export const AGE_TIERS: AgeTier[] = ["EXPLORADOR_7_9", "AVENTURERO_10_12", "CREA
 export const DEFAULT_AGE_TIER: AgeTier = "AVENTURERO_10_12";
 
 export const ageTierRange: Record<AgeTier, string> = {
-  EXPLORADOR_7_9: "7–9 años",
-  AVENTURERO_10_12: "10–12 años",
-  CREADOR_13_15: "13–15 años",
+  EXPLORADOR_7_9: "7 a 9 años",
+  AVENTURERO_10_12: "10 a 12 años",
+  CREADOR_13_15: "13 a 15 años",
 };
 
 const KEY = "edunova-age-tier";

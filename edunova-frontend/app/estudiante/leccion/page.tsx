@@ -9,7 +9,7 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
         <header className="mb-5">
-          <p className="text-xs text-[#6B7280]">
+          <p className="text-xs text-[#5B5678]">
             {unidadActual.titulo} › Descubre
           </p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
@@ -39,14 +39,14 @@ export default function Page() {
               href="/estudiante/explorar"
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#5636D9] py-4 text-sm font-bold text-white"
             >
-              Explorar en 3D 🌌
+              Explorar en 3D
             </Link>
           </div>
 
           {/* Desktop preview panel */}
-          <div className="hidden overflow-hidden rounded-3xl bg-[#17164F] lg:block">
+          <div className="hidden overflow-hidden rounded-2xl bg-[#17164F] lg:block">
             <div className="flex h-full min-h-[420px] flex-col items-center justify-center p-8 text-center text-white">
-              <div className="mb-4 text-7xl">🌍</div>
+              <Image src="/assets/aprender/holograma_tierra.png" alt="" width={120} height={145} className="mx-auto mb-4 h-28 w-auto" />
               <h2 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold">
                 Vista previa 3D
               </h2>

@@ -11,7 +11,7 @@ export default function Page() {
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Crear unidad
           </h1>
-          <p className="mt-1 text-[#6B7280]">
+          <p className="mt-1 text-[#5B5678]">
             Sube tu material, revisa la rúbrica y publica. Nada llega a tus estudiantes sin tu aprobación.
           </p>
         </header>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { DocenteLayout } from "@/components/docente/DocenteLayout";
-import { BarChart, LineChart, StackedBarChart, DonutChart } from "@/components/docente/charts";
+import { BarChart, LineChart, StackedBarChart } from "@/components/docente/charts";
 import {
   EstadoBadge,
   MobilePageHeader,
@@ -23,6 +23,7 @@ import {
   predictiveDisclaimer,
   rosaRecord,
 } from "@/components/docente/data";
+import { WarningIcon } from "@/components/ui/icons";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -56,19 +57,19 @@ export default function Page() {
   );
 
   const resumenAula = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <h3 className="mb-3 text-sm font-semibold text-[#17164F]">Resumen del aula</h3>
       <div className="grid grid-cols-2 gap-2.5">
-        <MiniStat label="Promedio" value="15.8/20" accent="text-[#2DBE70]" />
+        <MiniStat label="Promedio" value="15.8/20" accent="text-[#127A43]" />
         <MiniStat label="Actividades" value="82%" accent="text-[#5636D9]" />
         <MiniStat label="Estudiantes" value="20" />
-        <MiniStat label="Apoyo" value="4 · 20%" accent="text-[#EF4444]" alert />
+        <MiniStat label="Apoyo" value="4 (20%)" accent="text-[#C62828]" alert />
       </div>
     </div>
   );
 
   const evolucion = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <h3 className="mb-3 text-sm font-semibold text-[#17164F]">
         Evolución del aula (6 semanas)
       </h3>
@@ -77,20 +78,20 @@ export default function Page() {
   );
 
   const dominio = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <h3 className="mb-3 text-sm font-semibold text-[#17164F]">Dominio por competencia</h3>
       <StackedBarChart data={competenciaMastery} />
     </div>
   );
 
   const comparison = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <h3 className="mb-3 text-sm font-semibold text-[#17164F]">Comparación por tema</h3>
       <BarChart
         categories={temas}
         series={[
-          { label: "Promedio aula", values: aulaVals, color: "#17164F" },
-          { label: "Meta esperada", values: metaVals, color: "#A5B4FC" },
+          { label: "Promedio aula", values: aulaVals, color: "#5636D9" },
+          { label: "Meta esperada", values: metaVals, color: "#2F9BE0" },
         ]}
         max={20}
         ariaLabel="Comparación aula vs meta por tema"
@@ -99,7 +100,7 @@ export default function Page() {
   );
 
   const estudiantesTable = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-semibold text-[#17164F]">Estudiantes del aula</h3>
         <input
@@ -107,52 +108,36 @@ export default function Page() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar estudiante"
-          className="min-w-[140px] flex-1 rounded-lg border border-[#EDE9FE] px-3 py-1.5 text-sm"
+          className="min-w-[140px] flex-1 rounded-lg border border-[#E8E0FF] px-3 py-1.5 text-sm"
           aria-label="Buscar estudiante"
         />
       </div>
       <div className="max-h-[280px] overflow-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-[#F2EEFF] text-[#6B7280]">
+          <thead className="sticky top-0 bg-[#F2EEFF] text-[#5B5678]">
             <tr>
               <th className="px-2 py-2 text-left font-semibold">Estudiante</th>
               <th className="px-2 py-2 text-left font-semibold">Prom.</th>
-              <th className="px-2 py-2 text-left font-semibold">Progreso</th>
               <th className="px-2 py-2 text-left font-semibold">Estado</th>
-              <th className="px-2 py-2 text-left font-semibold">Acción</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#EDE9FE]">
+          <tbody className="divide-y divide-[#E8E0FF]">
             {filtered.map((e) => (
               <tr
                 key={e.id}
                 className={e.estado === "En inicio" ? "bg-[#FEE2E2]/35" : undefined}
               >
                 <td className="px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#5636D9] text-[10px] font-semibold text-white">
+                  <Link href={`/docente/estudiante/${e.id}`} className="flex items-center gap-2 hover:underline">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#5636D9] text-[10px] font-semibold text-white">
                       {initials(e.nombre)}
                     </div>
                     <span className="font-medium text-[#17164F]">{e.nombre}</span>
-                  </div>
+                  </Link>
                 </td>
-                <td className="px-2 py-2 font-semibold">{e.nota.toFixed(1)}</td>
-                <td className="px-2 py-2">
-                  <div className="flex w-24 items-center gap-1.5">
-                    <ProgressBar value={e.progreso} ariaLabel={`Progreso de ${e.nombre}`} />
-                    <span className="text-[10px] text-[#6B7280]">{e.progreso}%</span>
-                  </div>
-                </td>
+                <td className="px-2 py-2 font-semibold tabular-nums">{e.nota.toFixed(1)}</td>
                 <td className="px-2 py-2">
                   <EstadoBadge estado={e.estado} />
-                </td>
-                <td className="px-2 py-2">
-                  <Link
-                    href={`/docente/estudiante/${e.id}`}
-                    className="text-xs font-semibold text-[#5636D9]"
-                  >
-                    Ver
-                  </Link>
                 </td>
               </tr>
             ))}
@@ -163,7 +148,7 @@ export default function Page() {
   );
 
   const rosaFicha = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <div className="mb-3 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#5636D9] text-xs font-semibold text-white">
           {initials(rosaRecord.nombre)}
@@ -174,12 +159,12 @@ export default function Page() {
         </div>
         <div className="text-right">
           <div className="text-lg font-bold text-[#17164F]">{rosaRecord.nota.toFixed(1)}/20</div>
-          <div className="text-[11px] text-[#6B7280]">
+          <div className="text-[11px] text-[#5B5678]">
             {rosaRecord.actividades.completadas}/{rosaRecord.actividades.total} act.
           </div>
         </div>
       </div>
-      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+      <h4 className="mb-2 text-xs font-semibold text-[#5B5678]">
         Soft skills
       </h4>
       <div className="space-y-1.5">
@@ -197,14 +182,14 @@ export default function Page() {
   );
 
   const estrategias = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <h3 className="mb-1 text-sm font-semibold text-[#17164F]">Análisis de estrategias</h3>
-      <p className="mb-3 text-xs text-[#6B7280]">{strategyAnalysis.titulo}</p>
+      <p className="mb-3 text-xs text-[#5B5678]">{strategyAnalysis.titulo}</p>
       <div className="flex items-center gap-3">
-        <div className="flex-1 rounded-xl border border-[#EDE9FE] bg-[#F2EEFF] p-3 text-center">
-          <div className="text-xs text-[#6B7280]">Antes</div>
+        <div className="flex-1 rounded-xl border border-[#E8E0FF] bg-[#F2EEFF] p-3 text-center">
+          <div className="text-xs text-[#5B5678]">Antes</div>
           <div className="text-2xl font-bold text-[#17164F]">{strategyAnalysis.antes}</div>
-          <div className="text-xs text-[#6B7280]">{strategyAnalysis.antesPct}% logro</div>
+          <div className="text-xs text-[#5B5678]">{strategyAnalysis.antesPct}% logro</div>
         </div>
         <span aria-hidden className="text-xl text-[#5636D9]">
           →
@@ -224,12 +209,12 @@ export default function Page() {
   );
 
   const alertas = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <div className="mb-1 flex items-center gap-2">
-        <span aria-hidden>⚠️</span>
+        <WarningIcon weight="fill" className="h-4 w-4 shrink-0 text-[#92400E]" aria-hidden />
         <h3 className="text-sm font-semibold text-[#17164F]">Alertas predictivas</h3>
       </div>
-      <p className="mb-3 text-xs text-[#6B7280]">Recomendación para revisión docente</p>
+      <p className="mb-3 text-xs text-[#5B5678]">Recomendación para revisión docente</p>
       <ul className="space-y-2">
         {predictiveAlerts.map((a) => (
           <li
@@ -244,12 +229,12 @@ export default function Page() {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs italic text-[#6B7280]">{predictiveDisclaimer}</p>
+      <p className="mt-3 text-xs italic text-[#5B5678]">{predictiveDisclaimer}</p>
     </div>
   );
 
   const notaInfo = (
-    <div className="rounded-2xl border border-[#EDE9FE] bg-[#F2EEFF] p-4 shadow-sm">
+    <div className="rounded-2xl border border-[#E8E0FF] bg-[#F2EEFF] p-4">
       <h3 className="mb-2 text-sm font-semibold text-[#17164F]">Nota para revisión humana</h3>
       <p className="text-xs leading-relaxed text-[#17164F]/70">{causalidadDisclaimer}</p>
     </div>
@@ -286,8 +271,8 @@ export default function Page() {
       <div className="mx-auto max-w-[1400px] p-4 sm:p-6 lg:p-8">
         {/* Desktop header */}
         <header className="mb-5 hidden lg:block">
-          <p className="text-xs text-[#6B7280]">
-            Analítica educativa <span aria-hidden>›</span> Matemática · 1°B
+          <p className="text-xs text-[#5B5678]">
+            Analítica educativa <span aria-hidden>›</span> Matemática 1°B
           </p>
           <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
             <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
@@ -296,7 +281,7 @@ export default function Page() {
             <div className="flex items-center gap-2">
               <select
                 aria-label="Curso"
-                className="rounded-xl border border-[#EDE9FE] bg-white px-3 py-2 text-sm"
+                className="rounded-xl border border-[#E8E0FF] bg-white px-3 py-2 text-sm"
                 defaultValue="Matemática 1B"
               >
                 <option>Matemática 1B</option>
@@ -304,7 +289,7 @@ export default function Page() {
               </select>
               <select
                 aria-label="Periodo"
-                className="rounded-xl border border-[#EDE9FE] bg-white px-3 py-2 text-sm"
+                className="rounded-xl border border-[#E8E0FF] bg-white px-3 py-2 text-sm"
               >
                 <option>Bimestre 1</option>
                 <option>Bimestre 2</option>
@@ -331,7 +316,7 @@ export default function Page() {
                 className={`rounded-xl px-3.5 py-2 text-sm font-medium ${
                   desktopTab === t.id
                     ? "bg-[#5636D9] text-white"
-                    : "border border-[#EDE9FE] bg-white text-[#6B7280]"
+                    : "border border-[#E8E0FF] bg-white text-[#5B5678]"
                 }`}
               >
                 {t.label}
@@ -349,19 +334,20 @@ export default function Page() {
           <MobilePageHeader title="Reportes" subtitle="Analítica educativa" />
 
           <div className="space-y-4">
-            <div className="flex flex-col items-center rounded-2xl border border-[#EDE9FE] bg-white p-5 shadow-sm">
-              <DonutChart pct={classStats.actividadesCompletadas} label="Completadas" />
-              <p className="mt-2 text-sm text-[#6B7280]">Actividades del aula</p>
+            <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
+              <p className="text-sm text-[#5B5678]">Actividades completadas</p>
+              <p className="mb-3 mt-1 text-5xl font-bold text-[#17164F]">{classStats.actividadesCompletadas}%</p>
+              <ProgressBar value={classStats.actividadesCompletadas} color="#5636D9" ariaLabel="Actividades completadas" />
             </div>
 
-            <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
               <h3 className="mb-3 text-sm font-semibold text-[#17164F]">
                 Dominio por competencia
               </h3>
               <ul className="space-y-3">
                 {competenciaMastery.map((c) => (
                   <li key={c.nombre}>
-                    <div className="mb-1 flex justify-between text-xs text-[#6B7280]">
+                    <div className="mb-1 flex justify-between text-xs text-[#5B5678]">
                       <span>{c.nombre}</span>
                       <span>{c.logrado}% logrado</span>
                     </div>
@@ -371,13 +357,13 @@ export default function Page() {
               </ul>
             </div>
 
-            <div className="rounded-2xl border border-[#EDE9FE] bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
               <h3 className="mb-3 text-sm font-semibold text-[#17164F]">Comparación por tema</h3>
               <BarChart
                 categories={temas}
                 series={[
-                  { label: "Aula", values: aulaVals, color: "#17164F" },
-                  { label: "Meta", values: metaVals, color: "#A5B4FC" },
+                  { label: "Aula", values: aulaVals, color: "#5636D9" },
+                  { label: "Meta", values: metaVals, color: "#2F9BE0" },
                 ]}
                 max={20}
               />
@@ -402,7 +388,7 @@ function MiniStat({
 }) {
   return (
     <div className={`rounded-xl p-2.5 ${alert ? "bg-[#FFF5F5]" : "bg-[#F2EEFF]/70"}`}>
-      <div className="text-[11px] text-[#6B7280]">{label}</div>
+      <div className="text-[11px] text-[#5B5678]">{label}</div>
       <div className={`text-lg font-bold ${accent ?? "text-[#17164F]"}`}>{value}</div>
     </div>
   );

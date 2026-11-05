@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { MathStation, StationStatus } from "./mathMapData";
+import { CheckIcon, LockIcon, StarIcon } from "@/components/ui/icons";
 
 type Props = {
   station: MathStation;
@@ -127,7 +128,7 @@ export function StationMarker({ station, status, selected, onSelect }: Props) {
             if (!locked) onSelect(station.id);
           }}
         >
-          {status === "completed" ? "✓" : status === "locked" ? "🔒" : status === "current" ? "★" : station.order}
+          {status === "completed" ? <CheckIcon weight="bold" aria-label="Completada" /> : status === "locked" ? <LockIcon weight="fill" aria-label="Bloqueada" /> : status === "current" ? <StarIcon weight="fill" aria-label="Actual" /> : station.order}
         </button>
       </Html>
     </group>

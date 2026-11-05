@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { DocenteLayout } from "@/components/docente/DocenteLayout";
 import { classInfo } from "@/components/docente/data";
+import { CheckSquareIcon, FileTextIcon, FlaskIcon, ListChecksIcon, SmileyIcon, SmileyMehIcon, SmileySadIcon } from "@/components/ui/icons";
 
 type TipoId = "cuestionario" | "rubrica" | "cotejo" | "practica" | "autoeval";
 
@@ -11,22 +12,22 @@ const tipos: {
   id: TipoId;
   nombre: string;
   desc: string;
-  icon: string;
+  icon: typeof FileTextIcon;
 }[] = [
-  { id: "cuestionario", nombre: "Cuestionario", desc: "Preguntas con puntaje", icon: "📄" },
-  { id: "rubrica", nombre: "Rúbrica", desc: "Criterios y niveles de logro", icon: "▦" },
-  { id: "cotejo", nombre: "Lista de cotejo", desc: "Verificación de evidencias", icon: "☑️" },
+  { id: "cuestionario", nombre: "Cuestionario", desc: "Preguntas con puntaje", icon: FileTextIcon },
+  { id: "rubrica", nombre: "Rúbrica", desc: "Criterios y niveles de logro", icon: ListChecksIcon },
+  { id: "cotejo", nombre: "Lista de cotejo", desc: "Verificación de evidencias", icon: CheckSquareIcon },
   {
     id: "practica",
     nombre: "Actividad práctica",
     desc: "Proyecto, experimento o reto",
-    icon: "🧪",
+    icon: FlaskIcon,
   },
   {
     id: "autoeval",
     nombre: "Autoevaluación",
-    desc: "Con caritas 😄 😐 ☹️",
-    icon: "😊",
+    desc: "Con caritas de ánimo",
+    icon: SmileyIcon,
   },
 ];
 
@@ -38,11 +39,11 @@ function Formulario({ tipo }: { tipo: TipoId }) {
     return (
       <div className="space-y-3">
         <label className="block">
-          <span className="text-xs font-medium text-[#6B7280]">Pregunta</span>
+          <span className="text-xs font-medium text-[#5B5678]">Pregunta</span>
           <input type="text" className={`${inputCls} mt-1`} placeholder="Escribe la pregunta" />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-[#6B7280]">Puntaje</span>
+          <span className="text-xs font-medium text-[#5B5678]">Puntaje</span>
           <input type="number" className={`${inputCls} mt-1`} defaultValue={2} />
         </label>
         <button type="button" className="text-sm font-semibold text-[#5636D9]">
@@ -56,7 +57,7 @@ function Formulario({ tipo }: { tipo: TipoId }) {
       <div className="space-y-3">
         <div className="overflow-x-auto">
           <table className="w-full overflow-hidden rounded-xl border border-[#E8E0FF] text-sm">
-            <thead className="bg-[#F2EEFF] text-[#6B7280]">
+            <thead className="bg-[#F2EEFF] text-[#5B5678]">
               <tr>
                 <th className="px-2 py-2 text-left">Criterio</th>
                 <th className="px-2 py-2 text-left">Inicio</th>
@@ -108,13 +109,18 @@ function Formulario({ tipo }: { tipo: TipoId }) {
   }
   return (
     <div className="grid grid-cols-3 gap-3">
-      {["😄 Bien", "😐 Regular", "☹️ Difícil"].map((o) => (
+      {[
+        { label: "Bien", Icon: SmileyIcon },
+        { label: "Regular", Icon: SmileyMehIcon },
+        { label: "Difícil", Icon: SmileySadIcon },
+      ].map(({ label, Icon }) => (
         <button
-          key={o}
+          key={label}
           type="button"
-          className="rounded-xl border border-[#E8E0FF] bg-[#F7F4FF] py-4 text-sm font-medium"
+          className="flex flex-col items-center gap-1 rounded-xl border border-[#E8E0FF] bg-[#F7F4FF] py-4 text-sm font-medium"
         >
-          {o}
+          <Icon className="h-6 w-6 text-[#5636D9]" aria-hidden />
+          {label}
         </button>
       ))}
     </div>
@@ -150,14 +156,14 @@ export default function Page() {
                   key={t.id}
                   type="button"
                   onClick={() => setTipo(t.id)}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E0FF] bg-white p-4 text-left shadow-sm"
+                  className="flex w-full items-center gap-3 rounded-2xl border border-[#E8E0FF] bg-white p-4 text-left"
                 >
                   <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F2EEFF] text-xl text-[#5636D9]">
-                    {t.icon}
+                    <t.icon className="h-6 w-6" aria-hidden />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-bold text-[#17164F]">{t.nombre}</span>
-                    <span className="text-xs text-[#6B7280]">{t.desc}</span>
+                    <span className="text-xs text-[#5B5678]">{t.desc}</span>
                   </span>
                   <span className="text-[#C4B5FD]">›</span>
                 </button>
@@ -172,7 +178,7 @@ export default function Page() {
               >
                 ‹ Volver
               </button>
-              <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
+              <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
                 <h2 className="mb-3 font-bold text-[#17164F]">Crear {seleccionado?.nombre}</h2>
                 <Formulario tipo={tipo} />
                 <button
@@ -189,12 +195,12 @@ export default function Page() {
         {/* Desktop */}
         <div className="hidden lg:block">
           <header className="mb-6">
-            <p className="text-sm text-[#6B7280]">Registro de evaluación</p>
+            <p className="text-sm text-[#5B5678]">Registro de evaluación</p>
             <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
               Crear nueva evaluación
             </h1>
-            <p className="mt-1 text-[#6B7280]">
-              {classInfo.curso} · {classInfo.grado}
+            <p className="mt-1 text-[#5B5678]">
+              {classInfo.curso}, {classInfo.grado}
             </p>
           </header>
 
@@ -211,15 +217,15 @@ export default function Page() {
                       : "border-[#E8E0FF] bg-white"
                   }`}
                 >
-                  <span className="text-xl">{t.icon}</span>
+                  <t.icon className="h-6 w-6 text-[#5636D9]" aria-hidden />
                   <span>
                     <span className="block font-bold text-[#17164F]">{t.nombre}</span>
-                    <span className="text-xs text-[#6B7280]">{t.desc}</span>
+                    <span className="text-xs text-[#5B5678]">{t.desc}</span>
                   </span>
                 </button>
               ))}
             </div>
-            <div className="col-span-2 rounded-2xl border border-[#E8E0FF] bg-white p-6 shadow-sm">
+            <div className="col-span-2 rounded-2xl border border-[#E8E0FF] bg-white p-6">
               {tipo ? (
                 <>
                   <h2 className="mb-4 font-bold text-[#17164F]">
@@ -234,7 +240,7 @@ export default function Page() {
                   </button>
                 </>
               ) : (
-                <p className="text-sm text-[#6B7280]">
+                <p className="text-sm text-[#5B5678]">
                   Selecciona un tipo de instrumento a la izquierda.
                 </p>
               )}

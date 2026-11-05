@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { preguntaPractica } from "@/components/estudiante/data";
+import { CheckIcon, StarIcon } from "@/components/ui/icons";
 
 export default function Page() {
   const [sel, setSel] = useState<string | null>(null);
@@ -20,7 +21,7 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-xl p-4 sm:p-6 lg:p-8">
         <header className="mb-5">
-          <p className="text-sm text-[#6B7280]">Casilla · Pregunta</p>
+          <p className="text-sm text-[#5B5678]">Casilla de pregunta</p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
             {preguntaPractica.enunciado}
           </h1>
@@ -39,12 +40,12 @@ export default function Page() {
                 key={op.id}
                 type="button"
                 onClick={() => responder(op.id)}
-                className={`flex w-full items-center gap-3 rounded-2xl border-2 ${cls} px-4 py-3.5 text-left shadow-sm`}
+                className={`flex w-full items-center gap-3 rounded-2xl border-2 ${cls} px-4 py-3.5 text-left`}
               >
-                <span className="text-2xl">{op.emoji}</span>
+                <span className="h-7 w-7 shrink-0 rounded-full" style={{ backgroundColor: op.color }} aria-hidden />
                 <span className="flex-1 font-bold text-[#17164F]">{op.label}</span>
                 {sel === op.id && op.correcta ? (
-                  <span className="text-[#2DBE70]">✓</span>
+                  <CheckIcon weight="bold" className="h-5 w-5 text-[#127A43]" aria-hidden />
                 ) : null}
               </button>
             );
@@ -71,7 +72,7 @@ export default function Page() {
             </div>
             {ok ? (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF6E8] px-3 py-1.5 text-sm font-bold text-[#92400E]">
-                ⭐ +{preguntaPractica.puntos} puntos
+                <StarIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E0A800]" aria-hidden /> +{preguntaPractica.puntos} puntos
               </div>
             ) : null}
           </div>
@@ -89,7 +90,7 @@ export default function Page() {
             <button
               type="button"
               disabled
-              className="w-full rounded-2xl bg-[#E8E0FF] py-4 text-sm font-bold text-[#9CA3AF]"
+              className="w-full rounded-2xl bg-[#E8E0FF] py-4 text-sm font-bold text-[#6A6586]"
             >
               Elige una respuesta
             </button>

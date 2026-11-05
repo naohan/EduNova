@@ -17,7 +17,6 @@ export type OrganId =
 export interface OrganBody {
   id: OrganId;
   name: string;
-  emoji: string;
   descriptor: string;
   sistema: string;
   funcion: string;
@@ -38,7 +37,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "cerebro",
     name: "Cerebro",
-    emoji: "🧠",
     descriptor: "Centro de control",
     sistema: "Sistema nervioso",
     funcion: "Coordina pensamiento y movimiento",
@@ -58,7 +56,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "pulmones",
     name: "Pulmones",
-    emoji: "🫁",
     descriptor: "Órganos respiratorios",
     sistema: "Sistema respiratorio",
     funcion: "Intercambian oxígeno y CO₂",
@@ -78,7 +75,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "corazon",
     name: "Corazón",
-    emoji: "❤️",
     descriptor: "Bomba muscular",
     sistema: "Sistema cardiovascular",
     funcion: "Impulsa la sangre",
@@ -97,7 +93,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "higado",
     name: "Hígado",
-    emoji: "🟤",
     descriptor: "Órgano metabólico",
     sistema: "Sistema digestivo",
     funcion: "Filtra y metaboliza",
@@ -115,7 +110,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "estomago",
     name: "Estómago",
-    emoji: "🟠",
     descriptor: "Reservorio digestivo",
     sistema: "Sistema digestivo",
     funcion: "Mezcla y digiere alimentos",
@@ -134,7 +128,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "intestinos",
     name: "Intestinos",
-    emoji: "🪢",
     descriptor: "Tubo de absorción",
     sistema: "Sistema digestivo",
     funcion: "Absorben nutrientes y agua",
@@ -154,7 +147,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "rinones",
     name: "Riñones",
-    emoji: "🫘",
     descriptor: "Filtros corporales",
     sistema: "Sistema urinario",
     funcion: "Filtran sangre y regulan líquidos",
@@ -172,7 +164,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "pancreas",
     name: "Páncreas",
-    emoji: "🟡",
     descriptor: "Glándula mixta",
     sistema: "Sistema digestivo",
     funcion: "Produce enzimas e insulina",
@@ -189,7 +180,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "tiroides",
     name: "Tiroides",
-    emoji: "🦋",
     descriptor: "Glándula endocrina",
     sistema: "Sistema endocrino",
     funcion: "Regula el metabolismo",
@@ -207,7 +197,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "timo",
     name: "Timo",
-    emoji: "🛡️",
     descriptor: "Órgano inmunitario",
     sistema: "Sistema inmunitario",
     funcion: "Madura linfocitos T",
@@ -225,7 +214,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "vejiga",
     name: "Vejiga",
-    emoji: "💧",
     descriptor: "Reservorio urinario",
     sistema: "Sistema urinario",
     funcion: "Almacena orina",
@@ -242,7 +230,6 @@ export const ORGANOS: OrganBody[] = [
   {
     id: "nasofaringe",
     name: "Nasofaringe",
-    emoji: "👃",
     descriptor: "Vía aérea superior",
     sistema: "Vías respiratorias",
     funcion: "Conduce aire",

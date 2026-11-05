@@ -9,6 +9,8 @@ import { unidadActual } from "@/components/estudiante/data";
 import { MissionReward } from "@/components/estudiante/solar/MissionReward";
 import { SOLAR_BODIES, type PlanetId } from "@/components/estudiante/solar/planetData";
 import { useSolarMissions } from "@/components/estudiante/solar/useSolarMissions";
+import { LightbulbIcon } from "@/components/ui/icons";
+import { PlanetDot } from "@/components/estudiante/solar/PlanetDot";
 
 const SolarSystemViewer = dynamic(
   () => import("@/components/estudiante/solar/SolarSystemViewer"),
@@ -36,15 +38,14 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
         <header className="mb-4">
-          <p className="text-xs text-[#6B7280]">
+          <p className="text-xs text-[#5B5678]">
             {unidadActual.titulo} › Explora en 3D
           </p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F] sm:text-2xl">
             Exploración interactiva
           </h1>
-          <p className="mt-1 text-xs text-[#6B7280]">
-            Motor 3D: <strong className="text-[#5636D9]">Three.js</strong> · Arrastra para rotar ·
-            scroll para zoom · toca un planeta
+          <p className="mt-1 text-xs text-[#5B5678]">
+            Arrastra para girar, acerca con la rueda del ratón y toca un planeta.
           </p>
         </header>
 
@@ -69,9 +70,9 @@ export default function Page() {
               </Link>
             ))}
 
-            <div className="mt-4 rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
+            <div className="mt-4 rounded-2xl border border-[#E8E0FF] bg-white p-4">
               <div className="mb-2 flex items-center gap-2">
-                <span className="text-2xl">{actual.emoji}</span>
+                <PlanetDot color={actual.color} />
                 <h2 className="font-bold text-[#17164F]">{actual.name}</h2>
               </div>
               <dl className="space-y-1.5 text-xs">
@@ -82,12 +83,12 @@ export default function Page() {
                 <Row k="Lunas" v={actual.info.lunas} />
               </dl>
               <p className="mt-3 rounded-xl bg-[#F2EEFF] p-2.5 text-xs text-[#17164F]">
-                💡 {actual.info.dato}
+                <LightbulbIcon weight="duotone" className="mr-1 inline h-4 w-4 align-[-3px] text-[#5636D9]" aria-hidden /> {actual.info.dato}
               </p>
             </div>
           </aside>
 
-          <div className="overflow-hidden rounded-3xl bg-[#0b0a2e] text-white shadow-lg">
+          <div className="overflow-hidden rounded-2xl bg-[#0b0a2e] text-white shadow-lg">
             <div className="relative h-[360px] sm:h-[440px] lg:h-[520px]">
               <SolarSystemViewer
                 selectedId={activo}
@@ -96,7 +97,7 @@ export default function Page() {
               />
 
               <div className="pointer-events-none absolute left-3 top-3 rounded-xl bg-black/40 px-3 py-1.5 text-xs backdrop-blur">
-                {actual.emoji} {actual.name}
+                {actual.name}
               </div>
 
               <div className="absolute bottom-3 left-3 flex max-w-[270px] items-end gap-2">
@@ -149,7 +150,7 @@ export default function Page() {
                     activo === p.id ? "bg-[#5636D9]" : "bg-white/5"
                   }`}
                 >
-                  <span className="text-2xl">{p.emoji}</span>
+                  <PlanetDot color={p.color} />
                   <span className="mt-1 text-[10px]">{p.name}</span>
                 </button>
               ))}
@@ -158,9 +159,9 @@ export default function Page() {
         </div>
 
         {/* Mobile info card */}
-        <div className="mt-4 rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm lg:hidden">
+        <div className="mt-4 rounded-2xl border border-[#E8E0FF] bg-white p-4 lg:hidden">
           <div className="mb-2 flex items-center gap-2">
-            <span className="text-2xl">{actual.emoji}</span>
+            <PlanetDot color={actual.color} />
             <h2 className="font-bold text-[#17164F]">{actual.name}</h2>
           </div>
           <p className="text-sm text-[#17164F]/80">{actual.info.dato}</p>
@@ -194,7 +195,7 @@ export default function Page() {
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div>
-      <dt className="text-[#6B7280]">{k}</dt>
+      <dt className="text-[#5B5678]">{k}</dt>
       <dd className="font-semibold text-[#17164F]">{v}</dd>
     </div>
   );

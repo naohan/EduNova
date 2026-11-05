@@ -72,7 +72,7 @@ export function ActivityQuiz({
   if (finished) {
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#17164F]/50 p-4 backdrop-blur-sm">
-        <div className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl">
+        <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
           <h2 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
             ¡Actividad completada!
           </h2>
@@ -97,7 +97,7 @@ export function ActivityQuiz({
       <div className="mx-auto flex h-full w-full max-w-2xl flex-col p-3 sm:p-5">
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
+            <p className="text-xs font-semibold text-white/70">
               Pregunta {idx + 1}/{questions.length}
             </p>
             <h2 className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-white">
@@ -113,7 +113,7 @@ export function ActivityQuiz({
           </button>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-white p-4 shadow-xl sm:p-5">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white p-4 shadow-xl sm:p-5">
           {intro && idx === 0 && feedback === null && (
             <p className="mb-3 rounded-2xl bg-[#F2EEFF] p-3 text-xs text-[#17164F]">
               {intro}
@@ -143,7 +143,7 @@ export function ActivityQuiz({
 
             {q.type === "order" && (
               <>
-                <p className="text-xs text-[#6B7280]">Toca en el orden correcto:</p>
+                <p className="text-xs text-[#5B5678]">Toca en el orden correcto:</p>
                 <div className="flex flex-wrap gap-2">
                   {shuffledOrder.map((item) => (
                     <button
@@ -162,7 +162,7 @@ export function ActivityQuiz({
                   ))}
                 </div>
                 <p className="text-xs text-[#5B5678]">
-                  Orden: {orderDraft.join(" → ") || "—"}
+                  Orden: {orderDraft.join(", ") || "sin elegir"}
                 </p>
                 <button
                   type="button"
@@ -182,7 +182,7 @@ export function ActivityQuiz({
               onClick={() => setHint(true)}
               className="mt-2 self-start text-xs font-semibold text-[#5636D9]"
             >
-              {hint ? `💡 ${q.pista}` : "Ver pista"}
+              {hint ? q.pista : "Ver pista"}
             </button>
           )}
 

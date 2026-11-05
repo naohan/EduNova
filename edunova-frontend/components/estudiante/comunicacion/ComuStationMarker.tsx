@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { ComuStation, StationStatus } from "./comuMapData";
+import { CheckIcon, LockIcon, StarIcon } from "@/components/ui/icons";
 
 type Props = {
   station: ComuStation;
@@ -102,11 +103,11 @@ export function ComuStationMarker({ station, status, selected, onSelect }: Props
           }}
         >
           {status === "completed"
-            ? "✓"
+            ? <CheckIcon weight="bold" aria-label="Completada" />
             : status === "locked"
-              ? "🔒"
+              ? <LockIcon weight="fill" aria-label="Bloqueada" />
               : status === "current"
-                ? "★"
+                ? <StarIcon weight="fill" aria-label="Actual" />
                 : station.order}
         </button>
       </Html>

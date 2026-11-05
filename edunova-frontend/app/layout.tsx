@@ -15,7 +15,7 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "EduNova – Aprender puede ser una aventura",
+  title: "EduNova: aprender puede ser una aventura",
   description:
     "Plataforma educativa interactiva para niños y adolescentes, basada en el Currículo Nacional del MINEDU.",
 };

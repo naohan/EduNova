@@ -11,7 +11,7 @@ const misiones = [
   },
   {
     titulo: "Desafío final espacial",
-    desc: "10 preguntas · 12 minutos · +200 puntos",
+    desc: "10 preguntas en 12 minutos, +200 puntos",
     pct: 0,
     href: "/estudiante/desafio",
     estado: "Disponible",
@@ -30,7 +30,7 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
         <header className="mb-6">
-          <p className="text-sm text-[#6B7280]">Misiones</p>
+          <p className="text-sm text-[#5B5678]">Misiones</p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Tus misiones activas
           </h1>
@@ -41,12 +41,12 @@ export default function Page() {
             <Link
               key={m.titulo}
               href={m.href}
-              className="block rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm"
+              className="block rounded-2xl border border-[#E8E0FF] bg-white p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="font-bold text-[#17164F]">{m.titulo}</h2>
-                  <p className="mt-1 text-sm text-[#6B7280]">{m.desc}</p>
+                  <p className="mt-1 text-sm text-[#5B5678]">{m.desc}</p>
                 </div>
                 <span className="rounded-full bg-[#F2EEFF] px-2.5 py-1 text-[11px] font-bold text-[#5636D9]">
                   {m.estado}

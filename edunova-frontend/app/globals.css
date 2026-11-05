@@ -11,7 +11,17 @@
   --blanco: #ffffff;
   --background: #ffffff;
   --foreground: #17164f;
+  /* Texto secundario y líneas: un solo gris, teñido de violeta. */
+  --tinta-suave: #5b5678;
+  --tinta-tenue: #6a6586;
+  --linea: #e8e0ff;
 }
+
+/*
+  Reglas de forma: tarjetas rounded-2xl, botones y campos rounded-xl,
+  chips y selectores rounded-full. Las tarjetas se separan con borde, sin sombra.
+  El verde, amarillo y rojo significan estado (logrado, en proceso, en inicio).
+*/
 
 @theme inline {
   --color-background: var(--background);
@@ -33,61 +43,30 @@ body {
   font-family: var(--font-nunito), system-ui, sans-serif;
 }
 
-@keyframes float-y {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+/* Foco visible para quien navega con teclado. */
+:focus-visible {
+  outline: 2px solid var(--morado);
+  outline-offset: 2px;
 }
 
-@keyframes float-slow {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-2deg);
-  }
-  50% {
-    transform: translateY(-6px) rotate(2deg);
+@keyframes entrada {
+  from {
+    opacity: 0;
+    translate: 0 12px;
   }
 }
 
-@keyframes sparkle {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.9);
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
-  50% {
-    opacity: 1;
-    transform: scale(1.15);
-  }
-}
 
-@keyframes drift {
-  0%,
-  100% {
-    transform: translateX(0);
+  /* Confirma el clic con un empujón de 1px. */
+  :where(a, button):active:not(:disabled) {
+    translate: 0 1px;
   }
-  50% {
-    transform: translateX(12px);
+
+  .entrada {
+    animation: entrada 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }
-
-.animate-float-y {
-  animation: float-y 4s ease-in-out infinite;
-}
-
-.animate-float-slow {
-  animation: float-slow 5.5s ease-in-out infinite;
-}
-
-.animate-sparkle {
-  animation: sparkle 2.4s ease-in-out infinite;
-}
-
-.animate-drift {
-  animation: drift 8s ease-in-out infinite;
-}
-

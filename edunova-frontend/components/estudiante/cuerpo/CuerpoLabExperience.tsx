@@ -23,6 +23,7 @@ import {
   type CuerpoProgress,
   DEFAULT_CUERPO_PROGRESS,
 } from "./cuerpoProgress";
+import { CheckIcon, BinocularsIcon, FlaskIcon, StarIcon, TrophyIcon } from "@/components/ui/icons";
 
 const OrganViewer = dynamic(() => import("./OrganViewer"), {
   ssr: false,
@@ -99,17 +100,17 @@ export function CuerpoLabExperience() {
     {
       label: "Explorador",
       ok: discovered >= 3,
-      icon: "🔭",
+      icon: BinocularsIcon,
     },
     {
       label: "Científico",
       ok: progress.quizPassedIds.length >= 2,
-      icon: "🧪",
+      icon: FlaskIcon,
     },
     {
       label: "Misión",
       ok: progress.missionsDone.length >= 1,
-      icon: "🏅",
+      icon: TrophyIcon,
     },
   ];
 
@@ -120,8 +121,7 @@ export function CuerpoLabExperience() {
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background:
-            "radial-gradient(ellipse 70% 50% at 20% 20%, rgba(86,54,217,0.55), transparent 60%), radial-gradient(ellipse 50% 40% at 85% 15%, rgba(37,207,224,0.25), transparent 55%), linear-gradient(180deg, #1a1458 0%, #2a1f7a 45%, #3d2a9e 100%)",
+          background: "#17164F",
         }}
       />
 
@@ -143,13 +143,13 @@ export function CuerpoLabExperience() {
               Laboratorio del cuerpo
             </p>
             <p className="text-[10px] font-semibold text-[#5636D9] sm:text-xs">
-              Explora en 3D · Ciencia
+              Explora en 3D
             </p>
           </div>
 
           <div className="flex items-center gap-1.5 text-[10px] font-bold sm:text-xs">
             <span className="rounded-full bg-white/95 px-2.5 py-1.5 text-[#17164F] shadow">
-              ⭐ {progress.xp} XP
+              <StarIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E0A800]" aria-hidden /> {progress.xp} XP
             </span>
             <span className="rounded-full bg-white/15 px-2.5 py-1.5 text-white backdrop-blur">
               {discovered}/{ORGANOS.length}
@@ -158,17 +158,17 @@ export function CuerpoLabExperience() {
         </header>
 
         {/* Misión */}
-        <section className="rounded-[24px] border border-white/20 bg-white/10 p-3 shadow-lg backdrop-blur-md sm:p-4">
+        <section className="rounded-2xl border border-white/20 bg-white/10 p-3 shadow-lg backdrop-blur-md sm:p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-[#25CFE0]">
+              <p className="text-[10px] font-bold text-[#25CFE0]">
                 Misión activa
               </p>
               <h2 className="font-[family-name:var(--font-fredoka)] text-base font-semibold text-white sm:text-lg">
                 {mission.titulo}
               </h2>
               <p className="mt-0.5 text-xs text-white/70">
-                Explora {done}/{total} órganos · +{mission.xpBonus} XP al completar
+                Explora {done} de {total} órganos y gana {mission.xpBonus} XP
               </p>
             </div>
             <div className="flex gap-1.5">
@@ -182,14 +182,14 @@ export function CuerpoLabExperience() {
                       : "bg-white/10 opacity-40 grayscale"
                   }`}
                 >
-                  {b.icon}
+                  <b.icon weight="fill" className="h-5 w-5 text-[#17164F]" aria-hidden />
                 </div>
               ))}
             </div>
           </div>
           <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/15">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#25CFE0] to-[#A78BFA] transition-all"
+              className="h-full rounded-full bg-[#25CFE0] transition-all"
               style={{ width: `${(done / total) * 100}%` }}
             />
           </div>
@@ -198,7 +198,7 @@ export function CuerpoLabExperience() {
         {/* Layout principal */}
         <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           {/* Visor 3D */}
-          <div className="overflow-hidden rounded-[28px] border border-white/20 bg-[#120f3d]/60 shadow-2xl">
+          <div className="overflow-hidden rounded-2xl border border-white/20 bg-[#120f3d]/60 shadow-2xl">
             <div className="relative h-[300px] sm:h-[380px] lg:h-[480px]">
               {hydrated && (
                 <OrganViewer
@@ -208,12 +208,11 @@ export function CuerpoLabExperience() {
               )}
 
               <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-2xl bg-white/95 px-3 py-2 shadow-lg backdrop-blur">
-                <span className="text-lg">{actual.emoji}</span>
-                <div>
+                                <div>
                   <p className="text-sm font-bold text-[#17164F]">{actual.name}</p>
                   <p className="text-[10px] font-semibold text-[#5636D9]">
                     {actual.sistema}
-                    {conModelo ? " · 3D" : ""}
+                    {conModelo ? ", en 3D" : ""}
                   </p>
                 </div>
               </div>
@@ -239,7 +238,7 @@ export function CuerpoLabExperience() {
 
           {/* Panel info */}
           <aside className="flex flex-col gap-3">
-            <div className="rounded-[28px] bg-white p-4 shadow-xl sm:p-5">
+            <div className="rounded-2xl bg-white p-4 shadow-xl sm:p-5">
               <div className="flex items-start gap-3">
                 <div
                   className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl sm:h-20 sm:w-20"
@@ -254,7 +253,7 @@ export function CuerpoLabExperience() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#5636D9]">
+                  <p className="text-[10px] font-bold text-[#5636D9]">
                     {actual.descriptor}
                   </p>
                   <h3 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
@@ -278,15 +277,15 @@ export function CuerpoLabExperience() {
                   label="Estado"
                   value={
                     progress.discoveredIds.includes(activo)
-                      ? "Descubierto ✓"
+                      ? "Descubierto"
                       : "Nuevo"
                   }
                 />
               </div>
 
               {/* Dato curioso animado */}
-              <div className="mt-3 flex gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-[#F2EEFF] to-[#E0F7FA] p-3">
-                <div className="relative h-14 w-14 shrink-0 animate-pulse">
+              <div className="mt-3 flex gap-3 overflow-hidden rounded-2xl bg-[#F2EEFF] p-3">
+                <div className="relative h-14 w-14 shrink-0">
                   <Image
                     src="/assets/aprender/frasco_ciencia.png"
                     alt=""
@@ -296,7 +295,7 @@ export function CuerpoLabExperience() {
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#5636D9]">
+                  <p className="text-[10px] font-bold text-[#5636D9]">
                     Dato curioso
                   </p>
                   <p className="text-xs font-semibold leading-snug text-[#17164F] sm:text-sm">
@@ -308,7 +307,7 @@ export function CuerpoLabExperience() {
               <button
                 type="button"
                 onClick={() => setQuizOpen(true)}
-                className="mt-4 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#5636D9]/35 transition hover:bg-[#4a2dc0]"
+                className="mt-4 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white transition hover:bg-[#4a2dc0]"
               >
                 {quizDone
                   ? "Repasar lo aprendido →"
@@ -334,12 +333,12 @@ export function CuerpoLabExperience() {
         </div>
 
         {/* Galería por sistemas */}
-        <section className="rounded-[28px] border border-white/15 bg-white/95 p-3 shadow-xl sm:p-4">
+        <section className="rounded-2xl border border-white/15 bg-white/95 p-3 shadow-xl sm:p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-[family-name:var(--font-fredoka)] text-base font-semibold text-[#17164F]">
               Galería de órganos
             </h3>
-            <p className="text-[10px] font-semibold text-[#6B7280]">
+            <p className="text-[10px] font-semibold text-[#5B5678]">
               {progress.missionsDone.includes(activeMission(progress).id)
                 ? "¡Misión lista!"
                 : `${discovered} descubiertos`}
@@ -394,21 +393,21 @@ export function CuerpoLabExperience() {
                     />
                     {passed && (
                       <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#2DBE70] text-[10px] text-white">
-                        ✓
+                        <CheckIcon weight="bold" className="h-4 w-4" aria-label="Descubierto" />
                       </span>
                     )}
                   </span>
                   <span className="text-xs font-bold leading-tight">{o.name}</span>
                   <span
                     className={`mt-0.5 text-[9px] font-semibold ${
-                      selected ? "text-white/80" : "text-[#6B7280]"
+                      selected ? "text-white/80" : "text-[#5B5678]"
                     }`}
                   >
                     {o.sistema.replace("Sistema ", "")}
                   </span>
                   {o.modelo && (
                     <span
-                      className={`mt-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
+                      className={`mt-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold ${
                         selected
                           ? "bg-white/20 text-white"
                           : "bg-[#E0F7FA] text-[#0E7490]"
@@ -449,7 +448,7 @@ export function CuerpoLabExperience() {
 function BadgeCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-[#F7F4FF] px-3 py-2.5">
-      <p className="text-[9px] font-bold uppercase tracking-wide text-[#6B7280]">
+      <p className="text-[9px] font-bold text-[#5B5678]">
         {label}
       </p>
       <p className="mt-0.5 text-xs font-bold leading-snug text-[#17164F]">

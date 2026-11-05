@@ -53,7 +53,7 @@ export default function Page() {
                 </span>
                 <div>
                   <h2 className="font-bold text-[#17164F]">{c.nombre}</h2>
-                  <p className="text-sm text-[#6B7280]">{c.desc}</p>
+                  <p className="text-sm text-[#5B5678]">{c.desc}</p>
                 </div>
               </article>
             );

@@ -7,6 +7,7 @@ import { useApi } from "@/lib/api/use-api";
 import { hipotesisCreador, modoPorEdad } from "./ageContent";
 import { rutaPasos } from "./data";
 import { StoryPlayer } from "./StoryPlayer";
+import Image from "next/image";
 
 // Unidad del backend de la que sale la frase de apertura (primer subtema).
 const UNIT_ID = "unit-solar-system";
@@ -40,7 +41,7 @@ export function LeccionPorEdad() {
 
       <StoryPlayer key={tier} text={texto} prominent={tier === "EXPLORADOR_7_9"} />
 
-      <article className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+      <article className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
         <div
           className={`space-y-3 leading-relaxed text-[#17164F]/80 ${
             tier === "EXPLORADOR_7_9" ? "text-lg" : "text-sm"
@@ -61,21 +62,21 @@ export function LeccionPorEdad() {
             href="/estudiante/explorar"
             className="flex flex-col items-center gap-1 rounded-2xl bg-[#EAF6FF] py-5 text-center text-base font-bold text-[#17164F]"
           >
-            <span className="text-4xl">🪐</span>
+            <Image src="/assets/juego ludico/icon_planeta.png" alt="" width={269} height={194} className="h-12 w-auto" />
             Mira los planetas
           </Link>
           <Link
             href="/estudiante/practica"
             className="flex flex-col items-center gap-1 rounded-2xl bg-[#E9F9F0] py-5 text-center text-base font-bold text-[#17164F]"
           >
-            <span className="text-4xl">🎮</span>
+            <Image src="/assets/juego ludico/icon_dado.png" alt="" width={170} height={173} className="h-12 w-auto" />
             ¡A jugar!
           </Link>
         </div>
       ) : null}
 
       {tier === "AVENTURERO_10_12" ? (
-        <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
           <div className="mb-3 text-sm font-bold text-[#17164F]">Tu ruta</div>
           <ol className="space-y-2">
             {rutaPasos.map((paso, i) => (
@@ -88,7 +89,7 @@ export function LeccionPorEdad() {
                     {i + 1}
                   </span>
                   <span className="font-semibold text-[#17164F]">{paso.titulo}</span>
-                  <span className="text-xs text-[#6B7280]">{paso.desc}</span>
+                  <span className="text-xs text-[#5B5678]">{paso.desc}</span>
                 </Link>
               </li>
             ))}
@@ -100,7 +101,7 @@ export function LeccionPorEdad() {
       ) : null}
 
       {tier === "CREADOR_13_15" ? (
-        <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
           <label htmlFor="hipotesis" className="block text-sm font-bold text-[#17164F]">
             {hipotesisCreador}
           </label>

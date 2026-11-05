@@ -43,7 +43,7 @@ export type MathStage = {
 export const MATH_COURSE = {
   id: "matematica",
   titulo: "Matemática",
-  nivelLabel: "Nivel 1 · Geometría divertida",
+  nivelLabel: "Nivel 1: Geometría divertida",
   storageKey: "edunova-math-map-progress-v1",
 };
 
@@ -80,7 +80,7 @@ export const MATH_STATIONS: MathStation[] = [
     id: "e1",
     stageId: "exploradores",
     order: 1,
-    title: "Lección 1 · Figuras planas",
+    title: "Lección 1: Figuras planas",
     shortTitle: "Figuras planas",
     description:
       "Reconoce círculos, cuadrados y triángulos. Cuenta lados y vértices.",
@@ -92,7 +92,7 @@ export const MATH_STATIONS: MathStation[] = [
     id: "e2",
     stageId: "exploradores",
     order: 2,
-    title: "Lección 2 · El cubo",
+    title: "Lección 2: El cubo",
     shortTitle: "El cubo",
     description:
       "Explora caras, aristas y vértices del cubo en un modelo 3D interactivo.",
@@ -105,7 +105,7 @@ export const MATH_STATIONS: MathStation[] = [
     id: "a1",
     stageId: "aventureros",
     order: 3,
-    title: "Lección 3 · Figuras 3D",
+    title: "Lección 3: Figuras 3D",
     shortTitle: "Figuras 3D",
     description:
       "Compara esferas, conos y cilindros. Compón y descompón cuerpos.",
@@ -118,7 +118,7 @@ export const MATH_STATIONS: MathStation[] = [
     id: "a2",
     stageId: "aventureros",
     order: 4,
-    title: "Lección 4 · Perímetro y área",
+    title: "Lección 4: Perímetro y área",
     shortTitle: "Perímetro y área",
     description:
       "Resuelve retos de medición sobre figuras planas y caras de cuerpos.",
@@ -131,7 +131,7 @@ export const MATH_STATIONS: MathStation[] = [
     id: "c1",
     stageId: "creadores",
     order: 5,
-    title: "Lección 5 · Volumen",
+    title: "Lección 5: Volumen",
     shortTitle: "Volumen",
     description:
       "Calcula volumen y superficie. Construye modelos con restricciones.",
@@ -144,7 +144,7 @@ export const MATH_STATIONS: MathStation[] = [
     id: "c2",
     stageId: "creadores",
     order: 6,
-    title: "Lección 6 · Diseño 3D",
+    title: "Lección 6: Diseño 3D",
     shortTitle: "Diseño 3D",
     description:
       "Diseña una estructura con prismas y cilindros. ¡Abre el cofre final!",

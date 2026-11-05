@@ -48,7 +48,7 @@ export function StoryPlayer({ text, prominent = false }: { text: string; promine
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-2xl border border-[#E8E0FF] bg-white shadow-sm ${
+      className={`flex items-center gap-3 rounded-2xl border border-[#E8E0FF] bg-white ${
         prominent ? "p-5" : "p-4"
       }`}
     >

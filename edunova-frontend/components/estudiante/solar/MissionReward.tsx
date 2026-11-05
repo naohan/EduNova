@@ -27,7 +27,7 @@ export function MissionReward({
       aria-label="Misión completada"
       className="absolute inset-0 z-10 flex items-center justify-center bg-[#0b0a2e]/70 p-4 backdrop-blur-sm"
     >
-      <div className="w-full max-w-sm rounded-3xl bg-white p-5 text-center text-[#17164F] shadow-2xl">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center text-[#17164F] shadow-2xl">
         <Image
           src="/assets/woebling.png"
           alt=""
@@ -43,7 +43,7 @@ export function MissionReward({
             +{logro.mision.coins} NovaCoins
           </span>
         </div>
-        <p className="mt-2 text-xs text-[#6B7280]">{avisoPuntos[logro.puntos]}</p>
+        <p className="mt-2 text-xs text-[#5B5678]">{avisoPuntos[logro.puntos]}</p>
         {logro.puntos === "error" ? (
           <button type="button" onClick={onReintentar} className="mt-1 text-xs font-bold text-[#5636D9]">
             Reintentar

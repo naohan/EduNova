@@ -14,12 +14,12 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
         <header className="mb-5">
-          <p className="text-sm text-[#6B7280]">Perfil de aprendizaje</p>
+          <p className="text-sm text-[#5B5678]">Perfil de aprendizaje</p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Habilidades y fortalezas
           </h1>
-          <p className="mt-1 text-sm text-[#6B7280]">
-            Actividades exploratorias — no son etiquetas ni diagnósticos.
+          <p className="mt-1 text-sm text-[#5B5678]">
+            Actividades exploratorias: no son etiquetas ni diagnósticos.
           </p>
         </header>
 
@@ -38,7 +38,7 @@ export default function Page() {
               className={`shrink-0 rounded-xl px-3.5 py-2 text-sm font-medium ${
                 tab === id
                   ? "bg-[#5636D9] text-white"
-                  : "border border-[#E8E0FF] bg-white text-[#6B7280]"
+                  : "border border-[#E8E0FF] bg-white text-[#5B5678]"
               }`}
             >
               {label}
@@ -48,7 +48,7 @@ export default function Page() {
 
         {tab === "habilidades" ? (
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-3xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
               <h2 className="mb-4 text-sm font-semibold text-[#17164F]">Mapa de fortalezas</h2>
               <RadarChart />
             </div>
@@ -60,7 +60,7 @@ export default function Page() {
                     key={h.id}
                     className="rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] p-3 text-center"
                   >
-                    <div className="text-2xl">{h.emoji}</div>
+                    <h.icon weight="duotone" className="mx-auto h-7 w-7 text-[#5636D9]" aria-hidden />
                     <div className="mt-1 text-xs font-bold text-[#17164F]">{h.nombre}</div>
                     <div className="text-sm font-bold text-[#5636D9]">{h.pct}%</div>
                   </div>
@@ -85,8 +85,8 @@ export default function Page() {
         ) : null}
 
         {tab === "rendimiento" ? (
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
-            <p className="text-sm text-[#6B7280]">
+          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
+            <p className="text-sm text-[#5B5678]">
               Resumen de notas y progreso por unidad.
             </p>
             <Link
@@ -107,7 +107,7 @@ export default function Page() {
             ].map((r) => (
               <div
                 key={r}
-                className="rounded-2xl border border-[#E8E0FF] bg-white p-4 text-sm font-medium text-[#17164F] shadow-sm"
+                className="rounded-2xl border border-[#E8E0FF] bg-white p-4 text-sm font-medium text-[#17164F]"
               >
                 {r}
               </div>

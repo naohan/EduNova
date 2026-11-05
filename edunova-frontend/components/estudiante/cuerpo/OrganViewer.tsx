@@ -327,7 +327,7 @@ export default function OrganViewer({ selectedId, className }: Props) {
       )}
       {status === "fallback" && (
         <div className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold text-[#5636D9] shadow">
-          Vista esquemática · modelo 3D en órganos principales
+          Vista esquemática: el modelo 3D está en los órganos principales
         </div>
       )}
     </div>

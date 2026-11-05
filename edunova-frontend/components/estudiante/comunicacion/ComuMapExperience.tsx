@@ -17,6 +17,7 @@ import {
   type ComuProgress,
   type ComuStation,
 } from "./comuMapData";
+import { StarIcon } from "@/components/ui/icons";
 
 const ComuIslandMap = dynamic(
   () => import("./ComuIslandMap").then((m) => m.ComuIslandMap),
@@ -102,11 +103,11 @@ export function ComuMapExperience() {
           <span className="hidden pr-1 sm:inline">Volver</span>
         </Link>
         <div className="rounded-full bg-white px-3 py-2 text-center text-[11px] font-semibold text-[#17164F] shadow sm:text-sm">
-          {COMU_COURSE.titulo} — {COMU_COURSE.nivelLabel}
+          {COMU_COURSE.titulo}: {COMU_COURSE.nivelLabel}
         </div>
         <div className="flex items-center gap-1.5 text-[10px] font-semibold sm:gap-2 sm:text-sm">
           <span className="rounded-full bg-white px-2 py-1 shadow sm:px-3 sm:py-1.5">
-            ⭐ {progress.xp} XP
+            <StarIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E0A800]" aria-hidden /> {progress.xp} XP
           </span>
           <Image
             src="/assets/usuario.png"
@@ -119,7 +120,7 @@ export function ComuMapExperience() {
       </header>
 
       <p className="pointer-events-none absolute inset-x-0 top-[4.25rem] z-10 text-center text-[11px] font-semibold text-[#17164F]/70 lg:top-[4.75rem]">
-        Toca una estación · arrastra para girar el mapa
+        Toca una estación o arrastra para girar el mapa
       </p>
 
       <div className="absolute inset-0 z-0">
@@ -134,7 +135,7 @@ export function ComuMapExperience() {
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#E9D5FF]/80 to-transparent p-3 pt-10 sm:p-4 lg:bottom-5 lg:px-6">
-        <div className="pointer-events-auto mx-auto max-w-4xl rounded-[28px] border border-white/60 bg-white/92 p-3 shadow-2xl backdrop-blur-md sm:p-4">
+        <div className="pointer-events-auto mx-auto max-w-4xl rounded-2xl border border-white/60 bg-white/92 p-3 shadow-2xl backdrop-blur-md sm:p-4">
           <div className="flex gap-3">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#FFF0F7] sm:h-20 sm:w-20">
               <Image
@@ -160,7 +161,7 @@ export function ComuMapExperience() {
                   disabled={!canStart}
                   onClick={startActivity}
                   className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow lg:hidden ${
-                    canStart ? "bg-[#5636D9]" : "bg-[#9CA3AF]"
+                    canStart ? "bg-[#5636D9]" : "bg-[#6A6586]"
                   }`}
                   aria-label="Continuar"
                 >
@@ -180,16 +181,16 @@ export function ComuMapExperience() {
                   type="button"
                   disabled={!canStart}
                   onClick={startActivity}
-                  className="ml-auto rounded-full bg-[#5636D9] px-5 py-2.5 text-sm font-bold text-white disabled:bg-[#9CA3AF]"
+                  className="ml-auto rounded-full bg-[#5636D9] px-5 py-2.5 text-sm font-bold text-white disabled:bg-[#6A6586]"
                 >
                   {status === "completed" ? "Repasar →" : "Continuar →"}
                 </button>
               </div>
 
               <div className="mt-3">
-                <div className="mb-1 flex justify-between text-[10px] font-semibold text-[#6B7280]">
+                <div className="mb-1 flex justify-between text-[10px] font-semibold text-[#5B5678]">
                   <span>
-                    {done} de {COMU_STATIONS.length} lecciones · {progress.xp} XP
+                    {done} de {COMU_STATIONS.length} lecciones, {progress.xp} XP
                   </span>
                   <span className="text-[#E85D9A]">{stage.nombre}</span>
                 </div>

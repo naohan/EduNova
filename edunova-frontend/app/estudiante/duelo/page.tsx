@@ -14,17 +14,17 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
         <header className="mb-5">
-          <p className="text-sm text-[#6B7280]">Aula colaborativa</p>
+          <p className="text-sm text-[#5B5678]">Aula colaborativa</p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Duelo de conocimiento
           </h1>
         </header>
 
-        <div className="mb-5 overflow-hidden rounded-3xl border border-[#E8E0FF] bg-white shadow-sm">
-          <div className="flex items-center justify-center gap-4 bg-gradient-to-r from-[#F2EEFF] to-[#EAF6FF] px-4 py-6">
+        <div className="mb-5 overflow-hidden rounded-2xl border border-[#E8E0FF] bg-white">
+          <div className="flex items-center justify-center gap-4 bg-[#F2EEFF] px-4 py-6">
             <div className="text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#5636D9] text-2xl text-white">
-                👧
+              <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-white">
+                <Image src="/assets/juego ludico/avatar_estudiante.png" alt="" width={240} height={225} className="h-14 w-auto" />
               </div>
               <div className="mt-1 text-xs font-bold text-[#17164F]">Tú</div>
             </div>
@@ -32,8 +32,8 @@ export default function Page() {
               VS
             </div>
             <div className="text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#4C9EFF] text-2xl text-white">
-                👦
+              <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-white">
+                <Image src="/assets/juego ludico/avatar_nino.png" alt="" width={220} height={225} className="h-14 w-auto" />
               </div>
               <div className="mt-1 text-xs font-bold text-[#17164F]">Compañero</div>
             </div>

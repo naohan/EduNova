@@ -48,7 +48,7 @@ export const SOCIAL_STATIONS: SocialStation[] = [
     id: "s1",
     stageId: "exploradores",
     order: 1,
-    title: "Lección 1 · Nuestro planeta",
+    title: "Lección 1: Nuestro planeta",
     description: "Reconoce la Tierra en el Sistema Solar y por qué es especial.",
     planetId: "tierra",
     questions: [
@@ -87,7 +87,7 @@ export const SOCIAL_STATIONS: SocialStation[] = [
     id: "s2",
     stageId: "exploradores",
     order: 2,
-    title: "Lección 2 · Sol, Luna y mapas",
+    title: "Lección 2: Sol, Luna y mapas",
     description: "Identifica el Sol y reconoce elementos básicos de un mapa.",
     planetId: "sol",
     questions: [
@@ -124,7 +124,7 @@ export const SOCIAL_STATIONS: SocialStation[] = [
     id: "s3",
     stageId: "aventureros",
     order: 3,
-    title: "Lección 3 · Movimientos y continentes",
+    title: "Lección 3: Movimientos y continentes",
     description: "Comprende rotación, traslación y ubica continentes.",
     planetId: "tierra",
     questions: [
@@ -164,7 +164,7 @@ export const SOCIAL_STATIONS: SocialStation[] = [
     id: "s4",
     stageId: "aventureros",
     order: 4,
-    title: "Lección 4 · Cultura y vecinos del cielo",
+    title: "Lección 4: Cultura y vecinos del cielo",
     description: "Compara planetas y explora diversidad cultural.",
     planetId: "marte",
     questions: [
@@ -201,7 +201,7 @@ export const SOCIAL_STATIONS: SocialStation[] = [
     id: "s5",
     stageId: "creadores",
     order: 5,
-    title: "Lección 5 · Escalas e historia",
+    title: "Lección 5: Escalas e historia",
     description: "Analiza Júpiter y relaciona pasado con consecuencias.",
     planetId: "jupiter",
     questions: [
@@ -243,7 +243,7 @@ export const SOCIAL_STATIONS: SocialStation[] = [
     id: "s6",
     stageId: "creadores",
     order: 6,
-    title: "Lección 6 · Ciudadanía y patrimonio",
+    title: "Lección 6: Ciudadanía y patrimonio",
     description: "Cuida la Tierra, valora la diversidad y actúa como ciudadano.",
     planetId: "tierra",
     questions: [

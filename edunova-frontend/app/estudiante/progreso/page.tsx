@@ -7,6 +7,8 @@ import {
   reforzar,
   insignias,
 } from "@/components/estudiante/data";
+import Image from "next/image";
+import { TargetIcon } from "@/components/ui/icons";
 
 export default function Page() {
   const pct = estudiante.progresoTotal;
@@ -17,7 +19,7 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
         <header className="mb-5">
-          <p className="text-sm text-[#6B7280]">Mi progreso</p>
+          <p className="text-sm text-[#5B5678]">Mi progreso</p>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Resumen personal
           </h1>
@@ -31,7 +33,7 @@ export default function Page() {
               className={`shrink-0 rounded-xl px-3.5 py-2 text-sm font-medium ${
                 i === 0
                   ? "bg-[#5636D9] text-white"
-                  : "border border-[#E8E0FF] bg-white text-[#6B7280]"
+                  : "border border-[#E8E0FF] bg-white text-[#5B5678]"
               }`}
             >
               {t}
@@ -41,7 +43,7 @@ export default function Page() {
 
         <div className="grid gap-4 lg:grid-cols-3">
           {/* Donut */}
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
             <h2 className="mb-3 text-sm font-semibold text-[#17164F]">Progreso general</h2>
             <div className="relative mx-auto h-36 w-36">
               <svg viewBox="0 0 120 120" className="h-full w-full" role="img" aria-label={`${pct}%`}>
@@ -60,25 +62,25 @@ export default function Page() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-2xl font-bold text-[#17164F]">{pct}%</span>
-                <span className="text-[11px] text-[#6B7280]">8 de 11 temas</span>
+                <span className="text-[11px] text-[#5B5678]">8 de 11 temas</span>
               </div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-              <Mini n="9" l="Completos" c="text-[#2DBE70]" />
+              <Mini n="9" l="Completos" c="text-[#127A43]" />
               <Mini n="2" l="En proceso" c="text-[#FFC928]" />
-              <Mini n="0" l="Pendientes" c="text-[#EF4444]" />
+              <Mini n="0" l="Pendientes" c="text-[#C62828]" />
             </div>
           </div>
 
           {/* Units */}
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
             <h2 className="mb-3 text-sm font-semibold text-[#17164F]">Progreso por unidad</h2>
             <ul className="space-y-3">
               {unidadesProgreso.map((u) => (
                 <li key={u.nombre}>
                   <div className="mb-1 flex justify-between text-xs">
                     <span className="font-medium text-[#17164F]">{u.nombre}</span>
-                    <span className="text-[#6B7280]">{u.pct}%</span>
+                    <span className="text-[#5B5678]">{u.pct}%</span>
                   </div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-[#E8E0FF]">
                     <div
@@ -92,7 +94,7 @@ export default function Page() {
           </div>
 
           {/* Competencies */}
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
             <h2 className="mb-3 text-sm font-semibold text-[#17164F]">Mis competencias</h2>
             <ul className="space-y-3">
               {competencias.map((c) => (
@@ -116,7 +118,7 @@ export default function Page() {
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <div className="rounded-2xl border border-[#FFF0C2] bg-[#FFFBEB] p-5">
             <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#92400E]">
-              🎯 Para reforzar
+              <TargetIcon weight="duotone" className="mr-1 inline h-4 w-4 align-[-3px] text-[#5636D9]" aria-hidden /> Para reforzar
             </h2>
             <ul className="space-y-2">
               {reforzar.map((r) => (
@@ -127,7 +129,7 @@ export default function Page() {
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-[#17164F]">Insignias recientes</h2>
               <Link href="/estudiante/logros" className="text-sm font-semibold text-[#5636D9]">
@@ -142,7 +144,7 @@ export default function Page() {
                     b.obtenida ? "bg-[#F2EEFF]" : "bg-gray-100 opacity-40"
                   }`}
                 >
-                  {b.emoji}
+                  <Image src={b.img} alt={b.nombre} width={40} height={40} className="h-8 w-8 object-contain" />
                 </div>
               ))}
             </div>
@@ -157,7 +159,7 @@ function Mini({ n, l, c }: { n: string; l: string; c: string }) {
   return (
     <div className="rounded-xl bg-[#F7F4FF] p-2">
       <div className={`text-lg font-bold ${c}`}>{n}</div>
-      <div className="text-[10px] text-[#6B7280]">{l}</div>
+      <div className="text-[10px] text-[#5B5678]">{l}</div>
     </div>
   );
 }

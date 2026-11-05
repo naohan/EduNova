@@ -10,6 +10,7 @@ import { BOARD_TILES, COURSE_OPTIONS, TERRITORIES } from "./boardData";
 import { GameBoard } from "./GameBoard";
 import { useGameRoom } from "./useGameRoom";
 import type { GameRoom, PlayerState } from "./gameTypes";
+import { CrownIcon, LockIcon } from "@/components/ui/icons";
 
 type Step = "curso" | "sala" | "lobby" | "play";
 
@@ -39,7 +40,7 @@ export function ExploradoresGame() {
   async function handleCreate() {
     const room = await game.createRoom({
       courseId,
-      topic: `${course.nombre} – ${topic}`,
+      topic: `${course.nombre}: ${topic}`,
       mission: course.mission,
       maxPlayers,
       hostName: name || "Anfitrión",
@@ -71,8 +72,7 @@ export function ExploradoresGame() {
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 15% 10%, rgba(124,58,237,0.5), transparent 55%), radial-gradient(ellipse 60% 40% at 90% 20%, rgba(76,158,255,0.35), transparent 50%), linear-gradient(180deg,#1a1458 0%,#2a1f7a 40%,#4C3AB5 100%)",
+          background: "#17164F",
         }}
       />
 
@@ -178,7 +178,7 @@ export function ExploradoresGame() {
             pending.type === "cooperacion"
               ? "¡Comenten en equipo y elijan juntos la respuesta!"
               : !game.isMyTurn
-                ? `Turno de ${game.room?.players[game.room.turnIndex]?.name ?? "compañero"} — tú lanzas por el equipo`
+                ? `Turno de ${game.room?.players[game.room.turnIndex]?.name ?? "compañero"}. Tú lanzas por el equipo`
                 : undefined
           }
           questions={[pending.question]}
@@ -194,7 +194,7 @@ export function ExploradoresGame() {
         (pending.type === "recompensa" || pending.type === "descanso") &&
         game.canControlTurn && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17164F]/50 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-sm rounded-[28px] bg-white p-6 text-center shadow-2xl">
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
               <Image
                 src={
                   pending.type === "recompensa"
@@ -211,7 +211,7 @@ export function ExploradoresGame() {
               </h3>
               <p className="mt-2 text-sm text-[#5B5678]">{pending.message}</p>
               {"xp" in pending && (
-                <p className="mt-2 text-sm font-bold text-[#2DBE70]">
+                <p className="mt-2 text-sm font-bold text-[#127A43]">
                   +{pending.xp} XP
                 </p>
               )}
@@ -235,7 +235,7 @@ export function ExploradoresGame() {
 
       {tileInfo != null && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center">
-          <div className="w-full max-w-sm rounded-[24px] bg-white p-4 shadow-2xl">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-2xl">
             <div className="flex items-center gap-3">
               <span
                 className="flex h-12 w-12 items-center justify-center rounded-2xl"
@@ -249,7 +249,7 @@ export function ExploradoresGame() {
                 />
               </span>
               <div>
-                <p className="text-[10px] font-bold uppercase text-[#6B7280]">
+                <p className="text-[10px] font-bold text-[#5B5678]">
                   Casilla {tileInfo + 1}
                 </p>
                 <h3 className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-[#17164F]">
@@ -286,7 +286,7 @@ export function ExploradoresGame() {
 
       {game.room?.phase === "finished" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#17164F]/60 p-4 backdrop-blur">
-          <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
             <Image
               src={JUEGO_ASSETS.trofeo}
               alt=""
@@ -345,11 +345,11 @@ function CourseSelect({
         />
       </header>
 
-      <div className="rounded-[28px] bg-white/95 p-4 shadow-2xl sm:p-6">
+      <div className="rounded-2xl bg-white/95 p-4 shadow-2xl sm:p-6">
         <h1 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F] sm:text-2xl">
           ¿Qué quieres estudiar hoy?
         </h1>
-        <p className="mt-1 text-xs text-[#6B7280]">
+        <p className="mt-1 text-xs text-[#5B5678]">
           Todos los jugadores de la partida usarán el mismo curso.
         </p>
 
@@ -386,7 +386,7 @@ function CourseSelect({
                 <span className="mt-2 text-sm font-bold text-[#17164F]">
                   {c.nombre}
                 </span>
-                <span className="mt-1 text-[10px] leading-snug text-[#6B7280]">
+                <span className="mt-1 text-[10px] leading-snug text-[#5B5678]">
                   {c.desc}
                 </span>
               </button>
@@ -397,13 +397,13 @@ function CourseSelect({
         <button
           type="button"
           onClick={onContinue}
-          className="mt-5 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#5636D9]/35"
+          className="mt-5 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white"
         >
           Continuar
         </button>
         <Link
           href="/estudiante"
-          className="mt-2 block text-center text-xs font-semibold text-[#6B7280]"
+          className="mt-2 block text-center text-xs font-semibold text-[#5B5678]"
         >
           Volver al inicio
         </Link>
@@ -461,7 +461,7 @@ function RoomSetup({
         ← Cambiar curso
       </button>
 
-      <div className="rounded-[28px] bg-white p-4 shadow-2xl sm:p-5">
+      <div className="rounded-2xl bg-white p-4 shadow-2xl sm:p-5">
         <div className="mb-4 grid grid-cols-2 gap-1 rounded-full bg-[#F2EEFF] p-1">
           {(["crear", "unir"] as const).map((t) => (
             <button
@@ -477,7 +477,7 @@ function RoomSetup({
           ))}
         </div>
 
-        <label className="text-[10px] font-bold uppercase text-[#6B7280]">
+        <label className="text-[10px] font-bold text-[#5B5678]">
           Tu nombre
         </label>
         <input
@@ -487,7 +487,7 @@ function RoomSetup({
           className="mt-1 w-full rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] px-3 py-2.5 text-sm font-semibold text-[#17164F] outline-none focus:ring-2 focus:ring-[#5636D9]"
         />
 
-        <p className="mt-3 text-[10px] font-bold uppercase text-[#6B7280]">
+        <p className="mt-3 text-[10px] font-bold text-[#5B5678]">
           Avatar
         </p>
         <div className="mt-1 flex gap-2">
@@ -513,7 +513,7 @@ function RoomSetup({
 
         {tab === "crear" ? (
           <>
-            <label className="mt-3 block text-[10px] font-bold uppercase text-[#6B7280]">
+            <label className="mt-3 block text-[10px] font-bold text-[#5B5678]">
               Tema
             </label>
             <select
@@ -523,13 +523,13 @@ function RoomSetup({
             >
               {course.topics.map((t) => (
                 <option key={t} value={t}>
-                  {course.nombre} – {t}
+                  {course.nombre}: {t}
                 </option>
               ))}
             </select>
 
-            <label className="mt-3 block text-[10px] font-bold uppercase text-[#6B7280]">
-              Jugadores (2–6)
+            <label className="mt-3 block text-[10px] font-bold text-[#5B5678]">
+              Jugadores (2 a 6)
             </label>
             <div className="mt-1 flex items-center gap-3">
               <button
@@ -553,7 +553,7 @@ function RoomSetup({
 
             <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#F2EEFF] p-3">
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase text-[#5636D9]">
+                <p className="text-[10px] font-bold text-[#5636D9]">
                   Misión del equipo
                 </p>
                 <p className="text-sm font-bold text-[#17164F]">
@@ -580,7 +580,7 @@ function RoomSetup({
           </>
         ) : (
           <>
-            <label className="mt-3 block text-[10px] font-bold uppercase text-[#6B7280]">
+            <label className="mt-3 block text-[10px] font-bold text-[#5B5678]">
               Código de sala
             </label>
             <input
@@ -641,18 +641,18 @@ function LobbyScreen({
 
   return (
     <div className="mx-auto max-w-md">
-      <div className="rounded-[28px] bg-white p-4 shadow-2xl sm:p-5">
+      <div className="rounded-2xl bg-white p-4 shadow-2xl sm:p-5">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
               Sala del equipo
             </h2>
-            <p className="text-xs text-[#6B7280]">{room.teamName}</p>
+            <p className="text-xs text-[#5B5678]">{room.teamName}</p>
           </div>
           <button
             type="button"
             onClick={onLeave}
-            className="text-xs font-bold text-[#6B7280]"
+            className="text-xs font-bold text-[#5B5678]"
           >
             Salir
           </button>
@@ -660,7 +660,7 @@ function LobbyScreen({
 
         <div className="mt-3 flex items-center justify-between rounded-2xl bg-[#F2EEFF] px-3 py-2">
           <div>
-            <p className="text-[10px] font-bold uppercase text-[#5636D9]">
+            <p className="text-[10px] font-bold text-[#5636D9]">
               Código
             </p>
             <p className="font-[family-name:var(--font-fredoka)] text-2xl font-bold tracking-widest text-[#17164F]">
@@ -678,11 +678,11 @@ function LobbyScreen({
         </div>
 
         <p className="mt-3 text-xs text-[#5B5678]">
-          {room.topic} · {room.mission}
+          {room.topic}. {room.mission}
         </p>
         <p className="mt-1 text-[11px] font-semibold text-[#5636D9]">
           {room.players.length}/{room.maxPlayers} jugadores
-          {canAdd ? " · toca + para agregar compañeros" : ""}
+          {canAdd ? ". Toca + para agregar compañeros" : ""}
         </p>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
@@ -735,7 +735,7 @@ function LobbyScreen({
                   {p.name}
                 </span>
                 {p.ready ? (
-                  <span className="mt-1 flex items-center gap-0.5 text-[9px] font-bold text-[#2DBE70]">
+                  <span className="mt-1 flex items-center gap-0.5 text-[9px] font-bold text-[#127A43]">
                     <Image
                       src={JUEGO_ASSETS.checkVerde}
                       alt=""
@@ -745,7 +745,7 @@ function LobbyScreen({
                     Listo
                   </span>
                 ) : (
-                  <span className="mt-1 text-[9px] font-bold text-[#9CA3AF]">
+                  <span className="mt-1 text-[9px] font-bold text-[#6A6586]">
                     Preparando…
                   </span>
                 )}
@@ -783,7 +783,7 @@ function LobbyScreen({
             type="button"
             disabled={busy || room.players.length < 2}
             onClick={onStart}
-            className="mt-2 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white disabled:bg-[#9CA3AF]"
+            className="mt-2 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white disabled:bg-[#6A6586]"
           >
             {room.players.length < 2
               ? "Agrega al menos 1 compañero"
@@ -792,7 +792,7 @@ function LobbyScreen({
         )}
 
         {!me.isHost && (
-          <p className="mt-3 text-center text-xs text-[#6B7280]">
+          <p className="mt-3 text-center text-xs text-[#5B5678]">
             Esperando a que el anfitrión inicie…
           </p>
         )}
@@ -909,7 +909,7 @@ function PlayScreen({
   }
 
   return (
-    <div className="relative mx-auto min-h-[calc(100dvh-0.75rem)] w-full max-w-6xl overflow-hidden rounded-[28px]">
+    <div className="relative mx-auto min-h-[calc(100dvh-0.75rem)] w-full max-w-6xl overflow-hidden rounded-2xl">
       <div
         className="absolute inset-0"
         style={{
@@ -974,9 +974,9 @@ function PlayScreen({
                 <div className="min-w-0">
                   <p className="truncate text-[10px] font-bold text-[#17164F]">
                     {p.name}
-                    {p.id === leaderId ? " 👑" : ""}
+                    {p.id === leaderId ? <CrownIcon weight="fill" className="ml-1 inline h-4 w-4 align-[-2px] text-[#E0A800]" aria-label="Líder" /> : null}
                   </p>
-                  <p className="text-[9px] font-semibold text-[#6B7280]">
+                  <p className="text-[9px] font-semibold text-[#5B5678]">
                     {p.xp} XP
                   </p>
                 </div>
@@ -985,7 +985,7 @@ function PlayScreen({
           })}
         </div>
         <div className="rounded-2xl bg-white px-2 py-1.5 text-center shadow-lg">
-          <p className="text-[9px] font-bold uppercase text-[#6B7280]">Turno</p>
+          <p className="text-[9px] font-bold text-[#5B5678]">Turno</p>
           <p className="text-xs font-bold text-[#5636D9]">{current?.name}</p>
         </div>
       </aside>
@@ -993,7 +993,7 @@ function PlayScreen({
       {/* Misión compacta */}
       <aside className="absolute right-2 top-14 z-30 hidden w-[170px] lg:block">
         <div className="rounded-2xl bg-white/95 p-2.5 shadow-xl backdrop-blur">
-          <p className="text-[9px] font-bold uppercase text-[#5636D9]">
+          <p className="text-[9px] font-bold text-[#5636D9]">
             Misión
           </p>
           <p className="mt-0.5 text-[11px] font-bold leading-snug text-[#17164F]">
@@ -1007,7 +1007,7 @@ function PlayScreen({
               }}
             />
           </div>
-          <p className="mt-1 text-[9px] font-semibold text-[#6B7280]">
+          <p className="mt-1 text-[9px] font-semibold text-[#5B5678]">
             {unlocked}/{TERRITORIES.length} territorios
           </p>
         </div>
@@ -1063,7 +1063,7 @@ function PlayScreen({
           })}
         </div>
 
-        <div className="flex items-center gap-2.5 rounded-[26px] bg-white px-3 py-2 shadow-2xl">
+        <div className="flex items-center gap-2.5 rounded-2xl bg-white px-3 py-2 shadow-2xl">
           <button
             type="button"
             disabled={!canRoll}
@@ -1090,14 +1090,14 @@ function PlayScreen({
             type="button"
             disabled={!canRoll}
             onClick={handleRoll}
-            className="rounded-full bg-[#5636D9] px-5 py-3 text-sm font-extrabold text-white shadow-[0_6px_0_#3d2799] disabled:bg-[#9CA3AF] disabled:shadow-none"
+            className="rounded-full bg-[#5636D9] px-5 py-3 text-sm font-extrabold text-white shadow-[0_6px_0_#3d2799] disabled:bg-[#6A6586] disabled:shadow-none"
           >
             {rolling
               ? "Moviendo…"
               : room.pending
                 ? "Actividad pendiente"
                 : canControlTurn && !isMyTurn
-                  ? `Lanzar · ${current?.name}`
+                  ? `Lanzar: ${current?.name}`
                   : "Lanzar dado"}
           </button>
         </div>
@@ -1122,7 +1122,7 @@ function PlayScreen({
 
       {showProgress && (
         <div className="absolute bottom-[5.5rem] left-1/2 z-40 w-[min(92%,340px)] -translate-x-1/2 rounded-2xl bg-white p-3 text-center text-[11px] font-semibold text-[#17164F] shadow-2xl">
-          Misión {unlocked}/{TERRITORIES.length} · XP equipo{" "}
+          Misión {unlocked} de {TERRITORIES.length}. XP del equipo:{" "}
           {room.players.reduce((s, p) => s + p.xp, 0)}
         </div>
       )}
@@ -1159,13 +1159,13 @@ function TerritoriesModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#17164F]/45 p-3 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-lg rounded-[28px] bg-white p-4 shadow-2xl sm:p-5">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-4 shadow-2xl sm:p-5">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-[#17164F]">
               Territorios del equipo
             </h3>
-            <p className="text-xs text-[#6B7280]">
+            <p className="text-xs text-[#5B5678]">
               {unlocked.length}/{TERRITORIES.length} conquistados
             </p>
           </div>
@@ -1202,7 +1202,7 @@ function TerritoriesModal({
                     className="absolute right-2 top-2"
                   />
                 ) : (
-                  <span className="absolute right-2 top-2 text-xs">🔒</span>
+                  <LockIcon weight="fill" className="absolute right-2 top-2 h-4 w-4 text-[#5B5678]" aria-label="Bloqueado" />
                 )}
               </div>
             );

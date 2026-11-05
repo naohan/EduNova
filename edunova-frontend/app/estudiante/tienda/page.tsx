@@ -74,13 +74,13 @@ export default function Page() {
     <EstudianteLayout>
       <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
         <header className="mb-5">
-          <Link href="/estudiante/ligas" className="text-sm text-[#6B7280]">
+          <Link href="/estudiante/ligas" className="text-sm text-[#5B5678]">
             ‹ Ligas
           </Link>
           <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
             Tienda de tu mascota
           </h1>
-          <p className="mt-1 text-sm text-[#6B7280]">Usa tus NovaCoins para darle estilo a tu robot.</p>
+          <p className="mt-1 text-sm text-[#5B5678]">Usa tus NovaCoins para darle estilo a tu robot.</p>
         </header>
 
         {error ? (
@@ -95,10 +95,10 @@ export default function Page() {
         ) : null}
 
         <div className="grid gap-5 md:grid-cols-[260px_1fr]">
-          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5 text-center shadow-sm">
+          <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5 text-center">
             <Mascota puestos={puestos} />
             {inventario ? (
-              <p className="mt-3 text-sm text-[#6B7280]">
+              <p className="mt-3 text-sm text-[#5B5678]">
                 Tienes{" "}
                 <strong className="text-lg text-[#92400E]">{inventario.novaCoins.toLocaleString("es-PE")}</strong>{" "}
                 NovaCoins
@@ -121,14 +121,14 @@ export default function Page() {
               const alcanza = (inventario?.novaCoins ?? 0) >= item.price;
               const bloqueado = !inventario || catalogo.status !== "ok" || ocupado !== null;
               return (
-                <li key={item.id} className="rounded-2xl border border-[#E8E0FF] bg-white p-4 shadow-sm">
+                <li key={item.id} className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
                   <div className="flex items-center gap-3">
                     <span aria-hidden className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F2EEFF] text-2xl">
                       {item.emoji}
                     </span>
                     <span className="min-w-0">
                       <span className="block font-bold text-[#17164F]">{item.name}</span>
-                      <span className="text-xs text-[#6B7280]">
+                      <span className="text-xs text-[#5B5678]">
                         {tengo ? "Ya es tuyo" : `${item.price} NovaCoins`}
                       </span>
                     </span>

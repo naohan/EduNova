@@ -255,7 +255,7 @@ export function GeometryExplorer({
       <div className="mx-auto flex h-full w-full max-w-5xl flex-col p-3 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
+            <p className="text-xs font-semibold text-white/70">
               Explorar en 3D
             </p>
             <h2 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-white">
@@ -272,7 +272,7 @@ export function GeometryExplorer({
         </div>
 
         <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="relative min-h-[280px] overflow-hidden rounded-[28px] bg-gradient-to-b from-[#2a1f7a] to-[#17164F] shadow-xl">
+          <div className="relative min-h-[280px] overflow-hidden rounded-2xl bg-[#17164F]">
             <Canvas
               camera={{ position: [2.4, 1.8, 2.8], fov: 42 }}
               dpr={[1, 1.75]}
@@ -291,8 +291,8 @@ export function GeometryExplorer({
               />
             </Canvas>
             <p className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/35 px-3 py-1 text-[11px] text-white">
-              Arrastra para rotar · pellizca / scroll para zoom
-              {isCubeLesson ? " · toca cara, arista o vértice" : ""}
+              Arrastra para girar y pellizca o usa la rueda para acercar
+              {isCubeLesson ? ". Toca una cara, arista o vértice" : ""}
             </p>
           </div>
 

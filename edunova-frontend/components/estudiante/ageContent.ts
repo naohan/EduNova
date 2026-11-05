@@ -22,8 +22,8 @@ export const modoPorEdad: Record<AgeTier, ModoEdad> = {
     gancho:
       "Hace mucho tiempo, una estrella gigante llamada Sol tenía ocho planetas amigos que giraban a su alrededor.",
     parrafos: [
-      "Nosotros vivimos en el tercer planeta. ¡Se llama Tierra! 🌍",
-      "El Sol nos da luz y calor todos los días. ☀️",
+      "Nosotros vivimos en el tercer planeta. ¡Se llama Tierra!",
+      "El Sol nos da luz y calor todos los días.",
     ],
   },
   AVENTURERO_10_12: {

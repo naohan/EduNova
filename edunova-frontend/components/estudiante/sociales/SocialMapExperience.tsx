@@ -20,6 +20,8 @@ import {
   getSocialStatus,
   type SocialStation,
 } from "./socialMapData";
+import { CheckIcon, LightbulbIcon, LockIcon, StarIcon } from "@/components/ui/icons";
+import { PlanetDot } from "@/components/estudiante/solar/PlanetDot";
 
 const SolarSystemViewer = dynamic(
   () => import("@/components/estudiante/solar/SolarSystemViewer"),
@@ -106,11 +108,11 @@ export function SocialMapExperience() {
           <span className="hidden pr-1 sm:inline">Volver</span>
         </Link>
         <div className="rounded-full bg-white/95 px-3 py-2 text-center text-[11px] font-semibold text-[#17164F] shadow sm:text-sm">
-          {SOCIAL_COURSE.titulo} — {SOCIAL_COURSE.nivelLabel}
+          {SOCIAL_COURSE.titulo}: {SOCIAL_COURSE.nivelLabel}
         </div>
         <div className="flex items-center gap-1.5 text-[10px] font-semibold text-white sm:text-sm">
           <span className="rounded-full bg-white/15 px-2 py-1 backdrop-blur sm:px-3">
-            ⭐ {progress.xp} XP
+            <StarIcon weight="fill" className="mr-1 inline h-4 w-4 align-[-3px] text-[#E0A800]" aria-hidden /> {progress.xp} XP
           </span>
           <Image
             src="/assets/usuario.png"
@@ -156,10 +158,10 @@ export function SocialMapExperience() {
                 }`}
               >
                 <span className="text-lg">
-                  {SOLAR_BODIES.find((p) => p.id === st.planetId)?.emoji}
+                  <PlanetDot color={SOLAR_BODIES.find((p) => p.id === st.planetId)?.color ?? 0x5636d9} />
                 </span>
                 <span className="mt-0.5 max-w-[72px] truncate">
-                  {locked ? "🔒" : stStatus === "completed" ? "✓" : st.order}
+                  {locked ? <LockIcon weight="fill" aria-label="Bloqueada" /> : stStatus === "completed" ? <CheckIcon weight="bold" aria-label="Completada" /> : st.order}
                 </span>
               </button>
             );
@@ -169,21 +171,21 @@ export function SocialMapExperience() {
 
       {/* Tarjeta inferior */}
       <div className="absolute inset-x-0 bottom-0 z-20 p-3 sm:p-4">
-        <div className="mx-auto max-w-4xl rounded-[28px] bg-white p-3 shadow-2xl sm:p-4">
+        <div className="mx-auto max-w-4xl rounded-2xl bg-white p-3 shadow-2xl sm:p-4">
           <div className="flex gap-3">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#0b0a2e] text-3xl sm:h-20 sm:w-20">
-              {planet.emoji}
+              <PlanetDot color={planet.color} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#5636D9]">
-                {stage.nombre} · {planet.name}
+              <p className="text-[10px] font-semibold text-[#5636D9]">
+                {stage.nombre}, {planet.name}
               </p>
               <h2 className="font-[family-name:var(--font-fredoka)] text-base font-semibold text-[#17164F] sm:text-lg">
                 {selected.title}
               </h2>
               <p className="mt-0.5 text-xs text-[#5B5678]">{selected.description}</p>
-              <p className="mt-1 hidden text-[11px] text-[#6B7280] sm:block">
-                💡 {planet.info.dato}
+              <p className="mt-1 hidden text-[11px] text-[#5B5678] sm:block">
+                <LightbulbIcon weight="duotone" className="mr-1 inline h-4 w-4 align-[-3px] text-[#5636D9]" aria-hidden /> {planet.info.dato}
               </p>
 
               <div className="mt-3 flex items-center gap-2">
@@ -192,13 +194,13 @@ export function SocialMapExperience() {
                   disabled={!canStart}
                   onClick={() => setQuizOpen(true)}
                   className={`rounded-full px-5 py-2.5 text-sm font-bold text-white ${
-                    canStart ? "bg-[#5636D9]" : "bg-[#9CA3AF]"
+                    canStart ? "bg-[#5636D9]" : "bg-[#6A6586]"
                   }`}
                 >
                   {status === "completed" ? "Repasar →" : "Responder →"}
                 </button>
-                <span className="text-[10px] font-semibold text-[#6B7280]">
-                  {done}/{SOCIAL_STATIONS.length} · {progress.xp} XP
+                <span className="text-[10px] font-semibold text-[#5B5678]">
+                  {done} de {SOCIAL_STATIONS.length}, {progress.xp} XP
                 </span>
               </div>
 

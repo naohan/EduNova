@@ -6,6 +6,7 @@ import Link from "next/link";
 import { analyzeHandwrittenPhoto, syncProgress } from "@/lib/api/client";
 import type { HandwrittenAnalysis, StepVerdict } from "@/lib/api/edunova-contract";
 import { useSessionUser } from "@/lib/api/use-session";
+import { CameraIcon, ImageIcon } from "@/components/ui/icons";
 
 const veredictos: Record<StepVerdict, { label: string; icono: string; cls: string }> = {
   CORRECT: { label: "Correcto", icono: "✓", cls: "bg-[#D1FAE5] text-[#065F46]" },
@@ -106,7 +107,7 @@ export function NotebookPhotoScanner() {
           </p>
         ) : null}
 
-        <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+        <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
           <h2 className="font-bold text-[#17164F]">
             {porRevisar
               ? `Vas bien: hay ${porRevisar === 1 ? "1 paso" : `${porRevisar} pasos`} por revisar`
@@ -167,7 +168,7 @@ export function NotebookPhotoScanner() {
         </p>
       ) : null}
 
-      <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
         {foto ? (
           <div className="text-center">
             <Image
@@ -191,14 +192,14 @@ export function NotebookPhotoScanner() {
           <div className="grid grid-cols-2 gap-3">
             <label className={botonFotoCls}>
               <span className="text-3xl" aria-hidden>
-                📷
+                <CameraIcon weight="duotone" className="h-7 w-7" aria-hidden />
               </span>
               Tomar foto
               <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={elegirFoto} />
             </label>
             <label className={botonFotoCls}>
               <span className="text-3xl" aria-hidden>
-                🖼️
+                <ImageIcon weight="duotone" className="h-7 w-7" aria-hidden />
               </span>
               Subir imagen
               <input type="file" accept="image/*" className="sr-only" onChange={elegirFoto} />
@@ -207,9 +208,9 @@ export function NotebookPhotoScanner() {
         )}
       </section>
 
-      <label className="block rounded-2xl border border-[#E8E0FF] bg-white p-5 shadow-sm">
+      <label className="block rounded-2xl border border-[#E8E0FF] bg-white p-5">
         <span className="text-sm font-bold text-[#17164F]">Explica cómo lo hiciste</span>
-        <span className="mt-0.5 block text-xs text-[#6B7280]">Si lo explicas con tus palabras, ganas puntos extra.</span>
+        <span className="mt-0.5 block text-xs text-[#5B5678]">Si lo explicas con tus palabras, ganas puntos extra.</span>
         <textarea
           rows={3}
           value={explicacion}

@@ -1,5 +1,7 @@
+import { ListChecksIcon, BookOpenIcon, BrainIcon, CameraIcon, ChatCircleIcon, CubeIcon, FlagIcon, HandshakeIcon, LightbulbIcon, LightningIcon, ListNumbersIcon, MicroscopeIcon, PencilLineIcon, QuestionIcon, TargetIcon, TrophyIcon, UsersIcon } from "@/components/ui/icons";
+
 export const estudiante = {
-  nombre: "usuario",
+  nombre: "Gloria",
   apellido: "",
   nivel: "Aventurero",
   edad: 11,
@@ -115,30 +117,30 @@ export const unidadActual = {
 };
 
 export const casillasTablero = [
-  { icon: "❓", nombre: "Pregunta", desc: "Resuelve un ejercicio del tema" },
-  { icon: "🏆", nombre: "Desafío", desc: "Aplica el concepto en una situación nueva" },
-  { icon: "🤝", nombre: "Cooperación", desc: "Ayuda a otro jugador con una pista" },
-  { icon: "⚡", nombre: "Evento", desc: "Resuelve una situación inesperada" },
-  { icon: "📘", nombre: "Descanso", desc: "Revisa una tarjeta de teoría" },
-  { icon: "🚩", nombre: "Meta", desc: "El grupo demuestra lo aprendido" },
+  { icon: QuestionIcon, nombre: "Pregunta", desc: "Resuelve un ejercicio del tema" },
+  { icon: TrophyIcon, nombre: "Desafío", desc: "Aplica el concepto en una situación nueva" },
+  { icon: HandshakeIcon, nombre: "Cooperación", desc: "Ayuda a otro jugador con una pista" },
+  { icon: LightningIcon, nombre: "Evento", desc: "Resuelve una situación inesperada" },
+  { icon: BookOpenIcon, nombre: "Descanso", desc: "Revisa una tarjeta de teoría" },
+  { icon: FlagIcon, nombre: "Meta", desc: "El grupo demuestra lo aprendido" },
 ];
 
 export const habilidades = [
-  { id: "razonamiento", nombre: "Razonamiento", pct: 85, emoji: "🧠" },
-  { id: "espacial", nombre: "Espacial", pct: 80, emoji: "🧊" },
-  { id: "comunicacion", nombre: "Comunicación", pct: 75, emoji: "💬" },
-  { id: "colaboracion", nombre: "Colaboración", pct: 90, emoji: "👥" },
-  { id: "creatividad", nombre: "Creatividad", pct: 78, emoji: "💡" },
-  { id: "autonomia", nombre: "Autonomía", pct: 82, emoji: "🎯" },
+  { id: "razonamiento", nombre: "Razonamiento", pct: 85, icon: BrainIcon },
+  { id: "espacial", nombre: "Espacial", pct: 80, icon: CubeIcon },
+  { id: "comunicacion", nombre: "Comunicación", pct: 75, icon: ChatCircleIcon },
+  { id: "colaboracion", nombre: "Colaboración", pct: 90, icon: UsersIcon },
+  { id: "creatividad", nombre: "Creatividad", pct: 78, icon: LightbulbIcon },
+  { id: "autonomia", nombre: "Autonomía", pct: 82, icon: TargetIcon },
 ];
 
 export const tiposEvaluacion = [
-  { id: "opcion", nombre: "Selección múltiple", desc: "Evalúa conceptos básicos", icon: "☑️" },
-  { id: "abierta", nombre: "Respuesta abierta", desc: "Explica con tus propias palabras", icon: "✍️" },
-  { id: "pasos", nombre: "Resolución paso a paso", desc: "Muestra cómo llegaste a la respuesta", icon: "🔢" },
-  { id: "foto", nombre: "Foto de ejercicio", desc: "Sube una imagen de tu procedimiento", icon: "📷" },
-  { id: "practica", nombre: "Evaluación práctica", desc: "Resuelve un desafío o simulación", icon: "🔬" },
-  { id: "pares", nombre: "Evaluación entre pares", desc: "Un compañero revisa con rúbrica", icon: "🤝" },
+  { id: "opcion", nombre: "Selección múltiple", desc: "Evalúa conceptos básicos", icon: ListChecksIcon },
+  { id: "abierta", nombre: "Respuesta abierta", desc: "Explica con tus propias palabras", icon: PencilLineIcon },
+  { id: "pasos", nombre: "Resolución paso a paso", desc: "Muestra cómo llegaste a la respuesta", icon: ListNumbersIcon },
+  { id: "foto", nombre: "Foto de ejercicio", desc: "Sube una imagen de tu procedimiento", icon: CameraIcon },
+  { id: "practica", nombre: "Evaluación práctica", desc: "Resuelve un desafío o simulación", icon: MicroscopeIcon },
+  { id: "pares", nombre: "Evaluación entre pares", desc: "Un compañero revisa con rúbrica", icon: HandshakeIcon },
 ];
 
 export const rutaPasos = [
@@ -165,16 +167,6 @@ export const rutaPasos = [
   },
 ];
 
-export const planetas = [
-  { id: "sol", nombre: "Sol", emoji: "☀️" },
-  { id: "mercurio", nombre: "Mercurio", emoji: "🌑" },
-  { id: "venus", nombre: "Venus", emoji: "🟠" },
-  { id: "tierra", nombre: "Tierra", emoji: "🌍", activo: true },
-  { id: "marte", nombre: "Marte", emoji: "🔴" },
-  { id: "jupiter", nombre: "Júpiter", emoji: "🪐" },
-  { id: "saturno", nombre: "Saturno", emoji: "💍" },
-];
-
 export const teoria = {
   titulo: "¿Qué es el Sistema Solar?",
   audioLabel: "Escuchar explicación",
@@ -188,10 +180,10 @@ export const teoria = {
 export const preguntaPractica = {
   enunciado: "¿Cuál es el planeta más grande del sistema solar?",
   opciones: [
-    { id: "a", label: "Tierra", emoji: "🌍", correcta: false },
-    { id: "b", label: "Júpiter", emoji: "🪐", correcta: true },
-    { id: "c", label: "Marte", emoji: "🔴", correcta: false },
-    { id: "d", label: "Saturno", emoji: "💍", correcta: false },
+    { id: "a", label: "Tierra", color: "#2F7BD1", correcta: false },
+    { id: "b", label: "Júpiter", color: "#C9A27A", correcta: true },
+    { id: "c", label: "Marte", color: "#C4512D", correcta: false },
+    { id: "d", label: "Saturno", color: "#D8BC7A", correcta: false },
   ],
   puntos: 50,
   feedbackCorrecto: "¡Correcto! Júpiter es el gigante gaseoso más grande.",
@@ -213,11 +205,11 @@ export const logro = {
 };
 
 export const insignias = [
-  { id: "1", nombre: "Cohete", emoji: "🚀", obtenida: true },
-  { id: "2", nombre: "Planeta", emoji: "🪐", obtenida: true },
-  { id: "3", nombre: "Estrella", emoji: "⭐", obtenida: true },
-  { id: "4", nombre: "Órbita", emoji: "🌌", obtenida: false },
-  { id: "5", nombre: "Explorador", emoji: "🧭", obtenida: false },
+  { id: "1", nombre: "Cohete", img: "/assets/cohete.png", obtenida: true },
+  { id: "2", nombre: "Planeta", img: "/assets/juego ludico/icon_planeta.png", obtenida: true },
+  { id: "3", nombre: "Estrella", img: "/assets/juego ludico/icon_estrella.png", obtenida: true },
+  { id: "4", nombre: "Órbita", img: "/assets/aprender/holograma_tierra.png", obtenida: false },
+  { id: "5", nombre: "Explorador", img: "/assets/matematica/compas.png", obtenida: false },
 ];
 
 export const unidadesProgreso = [

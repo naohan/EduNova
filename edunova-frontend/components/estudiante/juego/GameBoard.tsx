@@ -5,6 +5,7 @@ import Image from "next/image";
 import { BOARD_TILES, tilePosition } from "./boardData";
 import { JUEGO_ASSETS } from "./assets";
 import type { PlayerState } from "./gameTypes";
+import { CheckIcon } from "@/components/ui/icons";
 
 type Props = {
   players: PlayerState[];
@@ -54,7 +55,7 @@ export function GameBoard({
 
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[720px]">
-      <div className="absolute inset-0 overflow-hidden rounded-[32px] shadow-[0_20px_50px_rgba(23,22,79,0.3)]">
+      <div className="absolute inset-0 overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(23,22,79,0.3)]">
         {/* Cielo */}
         <div
           className="absolute inset-0"
@@ -237,7 +238,7 @@ export function GameBoard({
                 />
                 {isCompleted && !isCurrentTurnTile && (
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#2DBE70] text-[8px] font-bold text-white shadow">
-                    ✓
+                    <CheckIcon weight="bold" className="h-4 w-4" aria-label="Superada" />
                   </span>
                 )}
                 {isSalida && (
