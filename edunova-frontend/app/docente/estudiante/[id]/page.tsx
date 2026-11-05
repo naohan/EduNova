@@ -4,21 +4,20 @@
 // cacheComponents).
 
 import { DocenteLayout } from "@/components/docente/DocenteLayout";
-import { EstudianteDetalle } from "@/components/docente/EstudianteDetalle";
-import { estudiantes } from "@/components/docente/data";
+import { FichaEstudiante } from "@/components/docente/FichaEstudiante";
+import { estudiantes, idsAulaDemo } from "@/components/docente/data";
 
 export async function generateStaticParams() {
-  return estudiantes.map((e) => ({ id: e.id }));
+  return [...estudiantes.map((e) => e.id), ...idsAulaDemo].map((id) => ({ id }));
 }
 
 export default async function Page({
   params,
 }: PageProps<"/docente/estudiante/[id]">) {
   const { id } = await params;
-  const student = estudiantes.find((e) => e.id === id) ?? estudiantes[0];
   return (
     <DocenteLayout>
-      <EstudianteDetalle student={student} />
+      <FichaEstudiante id={id} />
     </DocenteLayout>
   );
 }

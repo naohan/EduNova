@@ -12,10 +12,6 @@ import {
 } from "@/components/docente/ui";
 import {
   classInfo,
-  classStats,
-  estudiantes,
-  classroomWeekly,
-  competenciaMastery,
   topicComparison,
   strategyAnalysis,
   causalidadDisclaimer,
@@ -23,6 +19,8 @@ import {
   predictiveDisclaimer,
   rosaRecord,
 } from "@/components/docente/data";
+import { AlertasExplicables, FuenteDatos, RadarTalentos } from "@/components/docente/PanelesAula";
+import { useAula } from "@/components/docente/useAula";
 import { WarningIcon } from "@/components/ui/icons";
 
 function initials(name: string) {
@@ -48,6 +46,16 @@ const desktopTabs: { id: DesktopTab; label: string }[] = [
 export default function Page() {
   const [desktopTab, setDesktopTab] = useState<DesktopTab>("dashboard");
   const [search, setSearch] = useState("");
+  const {
+    alertas: alertasAula,
+    avisoTalentos,
+    competencias: competenciaMastery,
+    enVivo,
+    estudiantes,
+    evolucion: classroomWeekly,
+    stats: classStats,
+    talentos,
+  } = useAula();
 
   const temas = topicComparison.map((t) => t.tema);
   const aulaVals = topicComparison.map((t) => t.aula);
@@ -60,10 +68,10 @@ export default function Page() {
     <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <h3 className="mb-3 text-sm font-semibold text-[#17164F]">Resumen del aula</h3>
       <div className="grid grid-cols-2 gap-2.5">
-        <MiniStat label="Promedio" value="15.8/20" accent="text-[#127A43]" />
-        <MiniStat label="Actividades" value="82%" accent="text-[#5636D9]" />
-        <MiniStat label="Estudiantes" value="20" />
-        <MiniStat label="Apoyo" value="4 (20%)" accent="text-[#C62828]" alert />
+        <MiniStat label="Promedio" value={`${classStats.promedio}/20`} accent="text-[#127A43]" />
+        <MiniStat label="Actividades" value={`${classStats.actividadesCompletadas}%`} accent="text-[#5636D9]" />
+        <MiniStat label="Estudiantes" value={String(classStats.totalEstudiantes)} />
+        <MiniStat label="Apoyo" value={`${classStats.apoyo} (${classStats.apoyoPct}%)`} accent="text-[#C62828]" alert />
       </div>
     </div>
   );
@@ -208,7 +216,9 @@ export default function Page() {
     </div>
   );
 
-  const alertas = (
+  const alertas = enVivo ? (
+    <AlertasExplicables alertas={alertasAula} />
+  ) : (
     <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <div className="mb-1 flex items-center gap-2">
         <WarningIcon weight="fill" className="h-4 w-4 shrink-0 text-[#92400E]" aria-hidden />
@@ -250,7 +260,7 @@ export default function Page() {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         {comparison}
         {estudiantesTable}
-        {rosaFicha}
+        {enVivo ? <RadarTalentos talentos={talentos} aviso={avisoTalentos} /> : rosaFicha}
       </div>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         {estrategias}
@@ -303,6 +313,10 @@ export default function Page() {
             </div>
           </div>
         </header>
+
+        <div className="mb-3 hidden lg:block">
+          <FuenteDatos enVivo={enVivo} />
+        </div>
 
         <div className="mb-5 hidden lg:block">
           <div role="tablist" aria-label="Secciones de analítica" className="flex flex-wrap gap-2">

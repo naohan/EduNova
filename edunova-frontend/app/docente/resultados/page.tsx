@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { DocenteLayout } from "@/components/docente/DocenteLayout";
 import { EstadoBadge, ProgressBar } from "@/components/docente/ui";
-import { classInfo, estudiantes } from "@/components/docente/data";
+import { classInfo } from "@/components/docente/data";
+import { FuenteDatos } from "@/components/docente/PanelesAula";
+import { useAula } from "@/components/docente/useAula";
 
 const cursos = ["Matemática", "Comunicación", "Ciencia"];
 const temas = ["Fracciones", "Decimales", "Proporciones", "Porcentajes"];
@@ -22,6 +24,7 @@ function pctBadge(progreso: number) {
 }
 
 export default function Page() {
+  const { enVivo, estudiantes } = useAula();
   const [curso, setCurso] = useState(cursos[0]);
   const [tema, setTema] = useState(temas[0]);
   const [periodo, setPeriodo] = useState(periodos[0]);
@@ -49,6 +52,10 @@ export default function Page() {
             {classInfo.curso}, {classInfo.grado}
           </p>
         </header>
+
+        <div className="mb-4">
+          <FuenteDatos enVivo={enVivo} />
+        </div>
 
         {/* Filters */}
         <div className="mb-4 space-y-3 lg:grid lg:grid-cols-3 lg:gap-3 lg:space-y-0">

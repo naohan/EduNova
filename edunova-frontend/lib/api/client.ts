@@ -1,10 +1,12 @@
 import type {
+  AssessmentRecord,
   BenchmarkResult,
   ClassAnalytics,
   ClassStudent,
   ExplainableAlert,
   GamificationAndBenchmarkProfile,
   HandwrittenAnalysis,
+  HypothesisReview,
   Inventory,
   LabMissionComplete,
   LeaderboardEntry,
@@ -122,6 +124,11 @@ export const syncProgress = (studentId: string, events: Array<{ xp?: number; coi
 export const analyzeHandwrittenPhoto = (input: { imageBase64?: string; explanation?: string }) =>
   request<HandwrittenAnalysis>("POST", "/ai/analyze-handwritten-photo", input);
 
+export const submitReasoning = (input: { studentId: string; analysis: HandwrittenAnalysis; reasoning?: string }) =>
+  request<AssessmentRecord>("POST", "/assess/submit-reasoning", input, WRITE_TIMEOUT_MS);
+export const validateHypothesis = (hypothesis: string, labType?: string) =>
+  request<HypothesisReview>("POST", "/ai/validate-hypothesis", { hypothesis, labType });
+
 // ---- Juegos y ligas ----
 export const getLeaderboard = (league: "mastery" | "effort" = "mastery") =>
   request<LeaderboardEntry[]>("GET", `/leagues/leaderboard?league=${league}`);
@@ -150,3 +157,7 @@ export const getClassAnalytics = (classCode: string) =>
   request<ClassAnalytics>("GET", `/classes/${encodeURIComponent(classCode)}/analytics`);
 export const getExplainableAlerts = (classId: string) =>
   request<ExplainableAlert[]>("GET", `/analytics/explainable-alerts?classId=${encodeURIComponent(classId)}`);
+export const getClassAssessments = (classCode: string) =>
+  request<AssessmentRecord[]>("GET", `/classes/${encodeURIComponent(classCode)}/assessments`);
+export const overrideAssessment = (assessmentId: string, score: number | null) =>
+  request<AssessmentRecord>("PUT", `/teacher/assessments/${encodeURIComponent(assessmentId)}/override`, { score }, WRITE_TIMEOUT_MS);

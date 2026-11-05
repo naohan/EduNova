@@ -135,6 +135,30 @@ export interface HandwrittenAnalysis {
   usedFallback: boolean; // RNF-03: true si respondió el modo determinista
 }
 
+// ---- Evaluación de procedimiento (RF-04) ----
+// La nota de la IA nunca es definitiva: el docente puede reemplazarla con teacherOverrideScore.
+export interface AssessmentRecord {
+  id: string;
+  studentId: string;
+  alias: string;
+  classroomCode?: string;
+  source: 'HANDWRITTEN_PHOTO';
+  aiScore: number; // sobre 20
+  teacherOverrideScore: number | null; // null mientras el docente no la cambie
+  stepsToReview: number;
+  firstErrorFeedback?: string;
+  reasoning?: string;
+  reasoningBonusXP: number;
+  createdAt: string; // ISO 8601
+}
+
+// ---- Hipótesis en laboratorios 3D (HU-03, modo Creador) ----
+export interface HypothesisReview {
+  valid: boolean;
+  feedback: string;
+  bonusXP: number;
+}
+
 // ---- Alertas explicables (RF-04) ----
 export interface ExplainableAlert {
   id: string;
@@ -229,4 +253,8 @@ export interface LabMissionComplete {
 // GET  /api/students/:id/profile         -> StudentProfile   (estudiante, su tutor o su docente)
 // GET  /api/classes/:code/students       -> ClassStudent[]   (solo docente del aula)
 // GET  /api/classes/:code/analytics      -> ClassAnalytics   (solo docente del aula)
-// Estos tres piden: Authorization: Bearer <token de /api/auth/login>
+// GET  /api/classes/:code/assessments    -> AssessmentRecord[] (solo docente del aula)
+// PUT  /api/teacher/assessments/:id/override  body: { score: number | null } -> AssessmentRecord (solo docente del aula)
+// POST /api/assess/submit-reasoning      body: { studentId, analysis, reasoning? } -> AssessmentRecord (el propio estudiante)
+// POST /api/ai/validate-hypothesis       body: { hypothesis, labType? } -> HypothesisReview
+// Los de perfil, aula y evaluación piden: Authorization: Bearer <token de /api/auth/login>

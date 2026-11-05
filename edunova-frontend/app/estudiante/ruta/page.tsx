@@ -3,6 +3,7 @@ import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { cursosAprender, estudiante } from "@/components/estudiante/data";
 import { NombreAlumno } from "@/components/estudiante/NombreAlumno";
+import { UnidadesPublicadas } from "@/components/estudiante/UnidadesPublicadas";
 
 export default function Page() {
   return (
@@ -77,6 +78,8 @@ export default function Page() {
             </p>
           </div>
         </section>
+
+        <UnidadesPublicadas />
 
         {/* Course grid */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4">

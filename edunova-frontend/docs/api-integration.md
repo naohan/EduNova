@@ -56,22 +56,26 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 ## Qué endpoint corresponde a cada pantalla
 | Pantalla | Hoy usa | Endpoint |
 |---|---|---|
-| `/estudiante` (inicio, insignias, puntos) | `estudiante`, `insignias` | `getStudentProfile` |
-| `/estudiante/ruta` | `unidadActual`, `rutaPasos` | `getUnit` |
+| `/estudiante` (racha y puntos) | **Conectada** | `getStudentProfile` (`ResumenPuntos.tsx`). Las insignias siguen fijas |
+| `/estudiante/progreso` | **Conectada** (porcentaje general) | `getStudentProfile` |
+| `/estudiante/ruta` | **Conectada** | `listUnits`: lo que el docente publica en Studio aparece en "De tu docente" |
 | `/estudiante/leccion` | `teoria` | **Conectada:** la frase de apertura de cada edad sale de `getUnit("unit-solar-system")` (`LeccionPorEdad.tsx`); el cuerpo sigue local en `ageContent.ts`. Si el servidor falla, se usa el respaldo local, que copia la semilla del backend |
-| `/estudiante/practica` (tarjetas) | `preguntaPractica` | `getUnit` → `stages.practice.flashcards` |
+| `/estudiante/flashcards` | **Conectada** | `getUnit` → `stages.practice.flashcards`, unidas a un mazo local |
 | `/estudiante/explorar` (Sistema Solar) | **Conectada** | `getUnit` para las misiones y `completeMission` al completarlas (`useSolarMissions.ts`) |
-| `/estudiante/cuerpo` (al completar misión) | — | `completeMission` |
-| `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `syncProgress` para el bono. La imagen no se envía: el análisis simulado no la usa |
+| `/estudiante/cuerpo` | **Conectada** | `completeMission` al aprobar un quiz o completar una misión |
+| `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `submitReasoning`, que guarda la nota para el docente y suma el bono. La imagen no se envía: el análisis simulado no la usa |
 | `/estudiante/duelo` | — | `validateDuelQuestion`, `getGhostOpponent`, `reportDuelResult` |
 | `/estudiante/ligas` | **Conectada** | `getLeaderboard` y `getStudentProfile` |
 | `/estudiante/tienda` | **Conectada** | `getShopItems`, `buyItem`, `toggleItem` (piden sesión de estudiante) |
-| `/docente` (totales del aula) | `classStats` | `getClassAnalytics("EDU-402")` → `studentCount`, `averageMasteryPercent` |
-| `/docente/resultados`, `/docente/estudiante/[id]` | `estudiantes` | `getClassStudents("EDU-402")` |
-| `/docente/competencias` | `competenciaMastery`, `estudiantes` | `getClassAnalytics` → `criteria` y `getClassStudents` |
-| `/docente/reportes` (alertas) | `predictiveAlerts` | `getClassAnalytics` → `alerts` |
-| Studio (subir PDF) | — | `ingestDocument` + `approveRubric` |
+| `/docente`, `/docente/resultados`, `/docente/competencias`, `/docente/reportes`, `/docente/estudiante/[id]` | **Conectadas** | `useAula.ts`: `getClassAnalytics` y `getClassStudents`, con sesión de docente. Sin sesión muestran los datos fijos |
+| `/docente/evaluacion` | **Conectada** | `getClassAssessments` y `overrideAssessment` (`RevisionNotasIA.tsx`) |
+| Studio (subir PDF) | **Conectada** | `ingestDocument` + `approveRubric` |
 | `/familia` | **Conectada** | `getStudentProfile`, `getBenchmark`, `getFamilyExplanation`, `getPassport`. El pacto es de solo lectura, con una meta fija |
+
+## Modo sin internet
+`public/sw.js` guarda inicio, lección, flashcards y práctica (347 KB comprimidos, el plan pide menos de 500 KB). `lib/api/offline-queue.ts` guarda lo ganado sin red y lo envía al volver internet; usa `guardarMision` y `guardarProgreso` en vez de llamar directo a `completeMission` o `syncProgress`.
+
+El service worker **solo se registra en producción**, para probarlo: `npm run build && npm start`. Con `npm run dev` funciona el indicador de conexión, pero no la caché. Si cambias `sw.js`, sube `VERSION`.
 
 ## Diferencias que hay que tener en cuenta
 El backend sigue el **Plan Maestro**, no los datos fijos de `data.ts`:

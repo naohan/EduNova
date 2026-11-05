@@ -1,13 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { DocenteLayout } from "@/components/docente/DocenteLayout";
 import { LineChart } from "@/components/docente/charts";
-import { classStats, classroomWeekly, estudiantes } from "@/components/docente/data";
+import { AlertasExplicables, FuenteDatos } from "@/components/docente/PanelesAula";
+import { useAula } from "@/components/docente/useAula";
 import { ArrowRightIcon, WarningIcon } from "@/components/ui/icons";
 
 const semanas = ["Sem 1", "Sem 2", "Sem 3", "Sem 4", "Sem 5", "Sem 6"];
 
 export default function Page() {
-  const apoyo = estudiantes.filter((e) => e.estado === "En inicio").sort((a, b) => a.nota - b.nota);
+  const { alertas, apoyo, enVivo, evolucion, stats } = useAula();
 
   return (
     <DocenteLayout>
@@ -18,19 +21,22 @@ export default function Page() {
             Resumen del aula
           </h1>
           <p className="mt-1 text-[#5B5678]">
-            Matemática, 1° Secundaria, sección B. {classStats.totalEstudiantes} estudiantes, III bimestre.
+            Matemática, 1° Secundaria, sección B. {stats.totalEstudiantes} estudiantes, III bimestre.
           </p>
+          <div className="mt-2">
+            <FuenteDatos enVivo={enVivo} />
+          </div>
         </header>
 
         <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-[#E8E0FF] bg-[#E8E0FF] lg:grid-cols-4">
-          <Stat label="Promedio del aula" value={`${classStats.promedio} / 20`} />
-          <Stat label="Actividades completadas" value={`${classStats.actividadesCompletadas}%`} />
+          <Stat label="Promedio del aula" value={`${stats.promedio} / 20`} />
+          <Stat label="Actividades completadas" value={`${stats.actividadesCompletadas}%`} />
           <Stat
             label="Requieren apoyo"
-            value={`${classStats.apoyo} (${classStats.apoyoPct}%)`}
+            value={`${stats.apoyo} (${stats.apoyoPct}%)`}
             icon={<WarningIcon weight="fill" className="h-5 w-5 text-[#C62828]" aria-hidden />}
           />
-          <Stat label="Mejora vs bimestre" value={`+${classStats.mejora}`} />
+          <Stat label="Mejora vs bimestre" value={`+${stats.mejora}`} />
         </dl>
 
         <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
@@ -45,7 +51,7 @@ export default function Page() {
                 <ArrowRightIcon weight="bold" className="h-3.5 w-3.5" aria-hidden />
               </Link>
             </div>
-            <LineChart data={classroomWeekly} labels={semanas} ariaLabel="Promedio del aula por semana" />
+            <LineChart data={evolucion} labels={semanas} ariaLabel="Promedio del aula por semana" />
           </section>
 
           <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
@@ -73,6 +79,8 @@ export default function Page() {
             </Link>
           </section>
         </div>
+
+        <AlertasExplicables alertas={alertas} />
       </div>
     </DocenteLayout>
   );

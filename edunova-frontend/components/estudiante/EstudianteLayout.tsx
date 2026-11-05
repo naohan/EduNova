@@ -12,6 +12,7 @@ import {
   BrainIcon,
   ChalkboardTeacherIcon,
   ChartBarIcon,
+  CheckSquareIcon,
   ClipboardTextIcon,
   GameControllerIcon,
   HouseIcon,
@@ -22,6 +23,7 @@ import {
   UserIcon,
   XIcon,
 } from "@/components/ui/icons";
+import { ConexionBadge } from "@/components/ui/ConexionBadge";
 import { AgeTierSwitcher } from "./AgeTierSwitcher";
 import { NombreAlumno } from "./NombreAlumno";
 
@@ -36,6 +38,7 @@ const sideNav: Item[] = [
   { href: "/estudiante", label: "Inicio", icon: HouseIcon, match: "^/estudiante$" },
   { href: "/estudiante/ruta", label: "Aprender", icon: BookOpenIcon },
   { href: "/estudiante/juegos", label: "Juegos", icon: GameControllerIcon },
+  { href: "/estudiante/flashcards", label: "Flashcards", icon: CheckSquareIcon },
   { href: "/estudiante/aula", label: "Aula", icon: ChalkboardTeacherIcon },
   { href: "/estudiante/progreso", label: "Mi progreso", icon: ChartBarIcon },
   { href: "/estudiante/habilidades", label: "Habilidades", icon: BrainIcon },
@@ -219,7 +222,8 @@ export function EstudianteLayout({
       ) : null}
 
       <main className="min-h-screen pb-[72px] lg:ml-[248px] lg:pb-0">
-        <div className="flex justify-end px-4 pt-3 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center justify-end gap-2 px-4 pt-3 sm:px-6 lg:px-8">
+          <ConexionBadge />
           <AgeTierSwitcher />
         </div>
         {children}

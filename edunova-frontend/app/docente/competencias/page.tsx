@@ -5,7 +5,9 @@ import Link from "next/link";
 import { DocenteLayout } from "@/components/docente/DocenteLayout";
 import { StackedBarChart } from "@/components/docente/charts";
 import { EstadoBadge } from "@/components/docente/ui";
-import { competenciaMastery, estudiantes, classInfo } from "@/components/docente/data";
+import { estudiantes, classInfo } from "@/components/docente/data";
+import { FuenteDatos } from "@/components/docente/PanelesAula";
+import { useAula } from "@/components/docente/useAula";
 import type { Estado } from "@/components/docente/data";
 
 const sampleIds = ["1", "2", "3", "4", "5"];
@@ -36,10 +38,23 @@ const competenciasLista = [
   },
 ];
 
+function estadoPredominante(c: { logrado: number; proceso: number; inicio: number }): Estado {
+  if (c.logrado >= c.proceso && c.logrado >= c.inicio) return "Logrado";
+  return c.proceso >= c.inicio ? "En proceso" : "En inicio";
+}
+
 export default function Page() {
   const [aula, setAula] = useState("Matemática 1B");
-  const sample = estudiantes.filter((e) => sampleIds.includes(e.id));
-  const nombres = competenciaMastery.map((c) => c.nombre);
+  const { competencias, enVivo, matriz } = useAula();
+  const filas =
+    matriz ??
+    estudiantes
+      .filter((e) => sampleIds.includes(e.id))
+      .map((e) => ({ id: e.id, nombre: e.nombre, estados: matrizEstados[e.id] }));
+  const nombres = competencias.map((c) => c.nombre);
+  const lista: { nombre: string; estado: Estado }[] = enVivo
+    ? competencias.map((c) => ({ nombre: c.nombre, estado: estadoPredominante(c) }))
+    : competenciasLista;
 
   return (
     <DocenteLayout>
@@ -65,7 +80,7 @@ export default function Page() {
           </button>
 
           <div className="space-y-3">
-            {competenciasLista.map((c) => (
+            {lista.map((c) => (
               <article
                 key={c.nombre}
                 className="rounded-2xl border border-[#E8E0FF] bg-white p-4"
@@ -93,6 +108,10 @@ export default function Page() {
             </p>
           </header>
 
+          <div className="mb-4">
+            <FuenteDatos enVivo={enVivo} />
+          </div>
+
           <label className="mb-5 block max-w-xs">
             <span className="text-xs font-medium text-[#5B5678]">Aula / curso</span>
             <select
@@ -106,7 +125,7 @@ export default function Page() {
           </label>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
-            {competenciaMastery.map((c) => (
+            {competencias.map((c) => (
               <div
                 key={c.nombre}
                 className="rounded-2xl border border-[#E8E0FF] bg-white p-4"
@@ -132,10 +151,10 @@ export default function Page() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F2EEFF]">
-                {sample.map((e) => (
+                {filas.map((e) => (
                   <tr key={e.id}>
                     <td className="px-3 py-2 font-medium">{e.nombre}</td>
-                    {matrizEstados[e.id].map((est, i) => (
+                    {e.estados.map((est, i) => (
                       <td key={i} className="px-3 py-2">
                         <EstadoBadge estado={est} />
                       </td>

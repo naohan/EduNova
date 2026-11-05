@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
+import { RegistrarServiceWorker } from "@/components/ui/RegistrarServiceWorker";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -20,13 +21,20 @@ export const metadata: Metadata = {
     "Plataforma educativa interactiva para niños y adolescentes, basada en el Currículo Nacional del MINEDU.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#5636d9",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
       className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <RegistrarServiceWorker />
+      </body>
     </html>
   );
 }

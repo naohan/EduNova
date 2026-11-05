@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { completeMission, getUnit } from "@/lib/api/client";
+import { getUnit } from "@/lib/api/client";
+import { guardarMision } from "@/lib/api/offline-queue";
 import { useApi } from "@/lib/api/use-api";
 import { useSessionUser } from "@/lib/api/use-session";
 import { SOLAR_BODIES, type PlanetId } from "./planetData";
@@ -45,7 +46,7 @@ const MISIONES: Mision[] = [
   },
 ];
 
-export type EstadoPuntos = "guardando" | "guardado" | "sinSesion" | "error";
+export type EstadoPuntos = "guardando" | "guardado" | "enCola" | "sinSesion" | "error";
 export type Logro = { mision: Mision; dato: string; puntos: EstadoPuntos };
 
 // El backend suma puntos en cada llamada, así que se recuerda aquí qué misiones ya se cobraron.
@@ -120,14 +121,14 @@ export function useSolarMissions() {
       return;
     }
     cambiar("guardando");
-    const r = await completeMission({
+    const resultado = await guardarMision({
       studentId: estudianteId,
       labType: "SOLAR_SYSTEM",
       subtopicId: mision.subtopicId,
       rewardXP: mision.xp,
       rewardCoins: mision.coins,
     });
-    cambiar(r.ok ? "guardado" : "error");
+    cambiar(resultado);
   }
 
   /** Se llama cuando el estudiante toca un planeta, en el modelo 3D o en la barra. */

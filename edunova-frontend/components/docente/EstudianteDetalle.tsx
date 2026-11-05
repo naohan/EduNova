@@ -28,6 +28,8 @@ export function EstudianteDetalle({ student }: { student: Estudiante }) {
     nota: student.nota,
     estado: student.estado,
     progreso: Math.round(student.progreso / 20),
+    competencias: student.competencias ?? rosaRecord.competencias,
+    observacion: "",
   };
 
   return (

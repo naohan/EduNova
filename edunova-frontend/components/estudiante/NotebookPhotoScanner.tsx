@@ -3,7 +3,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { analyzeHandwrittenPhoto, syncProgress } from "@/lib/api/client";
+import { analyzeHandwrittenPhoto, submitReasoning } from "@/lib/api/client";
 import type { HandwrittenAnalysis, StepVerdict } from "@/lib/api/edunova-contract";
 import { useSessionUser } from "@/lib/api/use-session";
 import { CameraIcon, ImageIcon } from "@/components/ui/icons";
@@ -65,13 +65,14 @@ export function NotebookPhotoScanner() {
     setFoto(URL.createObjectURL(archivo));
   }
 
-  async function guardarBono(xp: number) {
+  // El docente recibe la nota de la IA para revisarla; el servidor suma el bono por explicar.
+  async function guardarEvaluacion(analisis: HandwrittenAnalysis, reasoning: string) {
     if (usuario?.role !== "STUDENT") {
       setPuntos("Inicia sesión como estudiante para guardar tus puntos.");
       return;
     }
-    const r = await syncProgress(usuario.id, [{ xp }]);
-    setPuntos(r.ok ? "Tus puntos ya se guardaron." : "No se pudieron guardar tus puntos.");
+    const r = await submitReasoning({ studentId: usuario.id, analysis: analisis, reasoning: reasoning || undefined });
+    setPuntos(r.ok ? "Tus puntos ya se guardaron y tu docente puede ver tu hoja." : "No se pudieron guardar tus puntos.");
   }
 
   async function analizar() {
@@ -85,7 +86,7 @@ export function NotebookPhotoScanner() {
     setResultado(analisis);
     setAnalizando(false);
     // Después de mostrar el resultado: guardar en la base puede tardar varios segundos.
-    if (delServidor && analisis.reasoningBonusXP > 0) await guardarBono(analisis.reasoningBonusXP);
+    if (delServidor) await guardarEvaluacion(analisis, texto);
   }
 
   function reiniciar() {

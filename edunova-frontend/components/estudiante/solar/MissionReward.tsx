@@ -5,6 +5,7 @@ import type { EstadoPuntos, Logro } from "./useSolarMissions";
 const avisoPuntos: Record<EstadoPuntos, string> = {
   guardando: "Guardando tus puntos…",
   guardado: "Tus puntos ya se guardaron.",
+  enCola: "Sin internet: tus puntos se enviarán al volver la conexión.",
   sinSesion: "Inicia sesión como estudiante para guardar tus puntos.",
   error: "No se pudieron guardar tus puntos.",
 };

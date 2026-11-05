@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { NombreAlumno } from "@/components/estudiante/NombreAlumno";
-import { estudiante, unidadActual, insignias } from "@/components/estudiante/data";
-import { ArrowRightIcon, DiamondIcon, FireIcon } from "@/components/ui/icons";
+import { ResumenPuntos } from "@/components/estudiante/ResumenPuntos";
+import { unidadActual, insignias } from "@/components/estudiante/data";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 const shortcuts = [
   { href: "/estudiante/ruta", label: "Aprender", img: "/assets/juego ludico/icon_libro_abierto.png" },
@@ -23,22 +24,7 @@ export default function Page() {
             </h1>
             <p className="mt-1 text-[#5B5678]">Sigamos explorando el Sistema Solar y jugando en equipo.</p>
           </div>
-          <dl className="flex gap-6">
-            <div className="flex items-center gap-2">
-              <FireIcon weight="fill" className="h-6 w-6 text-[#E8590C]" aria-hidden />
-              <div>
-                <dt className="text-xs text-[#5B5678]">Racha</dt>
-                <dd className="font-bold text-[#17164F]">{estudiante.racha} días</dd>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <DiamondIcon weight="fill" className="h-6 w-6 text-[#4C9EFF]" aria-hidden />
-              <div>
-                <dt className="text-xs text-[#5B5678]">Puntos</dt>
-                <dd className="font-bold text-[#17164F]">{estudiante.puntos.toLocaleString("es-PE")}</dd>
-              </div>
-            </div>
-          </dl>
+          <ResumenPuntos />
         </header>
 
         <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">

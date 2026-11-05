@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
+import { guardarMision } from "@/lib/api/offline-queue";
+import { useSessionUser } from "@/lib/api/use-session";
 import { ActivityQuiz } from "@/components/estudiante/shared/ActivityQuiz";
 import {
   ORGANOS,
@@ -12,7 +14,7 @@ import {
   organHint,
   type OrganId,
 } from "./organData";
-import { ORGAN_QUIZZES } from "./organQuizData";
+import { CUERPO_MISSIONS, ORGAN_QUIZZES } from "./organQuizData";
 import {
   activeMission,
   discoverOrgan,
@@ -34,6 +36,8 @@ const OrganViewer = dynamic(() => import("./OrganViewer"), {
   ),
 });
 
+const MONEDAS_POR_MISION = 50;
+
 const ROBOT_MSGS = [
   "¡Gira el órgano con el dedo o el ratón!",
   "Cada órgano descubierto te da XP.",
@@ -49,6 +53,9 @@ export function CuerpoLabExperience() {
   const [filterSistema, setFilterSistema] = useState<string>("todos");
   const [toast, setToast] = useState<string | null>(null);
   const [robotIdx, setRobotIdx] = useState(0);
+  const usuario = useSessionUser();
+  const estudianteId = usuario?.role === "STUDENT" ? usuario.id : undefined;
+  const misionesVistas = useRef<string[] | null>(null);
 
   useEffect(() => {
     const p = loadCuerpoProgress();
@@ -71,6 +78,28 @@ export function CuerpoLabExperience() {
     setRobotIdx((i) => (i + 1) % ROBOT_MSGS.length);
   }, [activo, hydrated]);
 
+  // HU-03: al completar una misión del laboratorio se envían sus puntos al servidor.
+  useEffect(() => {
+    if (!hydrated) return;
+    const antes = misionesVistas.current;
+    misionesVistas.current = progress.missionsDone;
+    if (!antes) return;
+    for (const mision of CUERPO_MISSIONS) {
+      if (!progress.missionsDone.includes(mision.id) || antes.includes(mision.id)) continue;
+      setToast(`¡Misión completada! +${mision.xpBonus} XP y +${MONEDAS_POR_MISION} NovaCoins`);
+      setTimeout(() => setToast(null), 2600);
+      if (estudianteId) {
+        void guardarMision({
+          studentId: estudianteId,
+          labType: "HUMAN_BODY",
+          subtopicId: `cuerpo-mision-${mision.id}`,
+          rewardXP: mision.xpBonus,
+          rewardCoins: MONEDAS_POR_MISION,
+        });
+      }
+    }
+  }, [progress.missionsDone, hydrated, estudianteId]);
+
   const actual = getOrganById(activo);
   const conModelo = Boolean(actual.modelo);
   const { mission, done, total } = missionProgress(progress);
@@ -90,6 +119,15 @@ export function CuerpoLabExperience() {
 
   function onQuizPass(xp: number) {
     const next = passOrganQuiz(activo, progress, xp);
+    if (next !== progress && estudianteId) {
+      void guardarMision({
+        studentId: estudianteId,
+        labType: "HUMAN_BODY",
+        subtopicId: `cuerpo-quiz-${activo}`,
+        rewardXP: xp,
+        rewardCoins: 0,
+      });
+    }
     setProgress(next);
     setQuizOpen(false);
     setToast(`¡+${xp} XP! Dominaste ${actual.name}`);

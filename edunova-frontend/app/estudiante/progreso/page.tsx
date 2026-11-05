@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import {
@@ -7,11 +9,13 @@ import {
   reforzar,
   insignias,
 } from "@/components/estudiante/data";
+import { usePerfilAlumno } from "@/components/estudiante/usePerfilAlumno";
 import Image from "next/image";
 import { TargetIcon } from "@/components/ui/icons";
 
 export default function Page() {
-  const pct = estudiante.progresoTotal;
+  const perfil = usePerfilAlumno();
+  const pct = perfil?.overallProgressPercent ?? estudiante.progresoTotal;
   const circ = 2 * Math.PI * 45;
   const dash = (pct / 100) * circ;
 

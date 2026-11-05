@@ -10,6 +10,7 @@ export interface Estudiante {
   nota: number; // sobre 20
   progreso: number; // %
   estado: Estado;
+  competencias?: CompetenciaNota[]; // solo con datos reales del aula
 }
 
 export interface CompetenciaNota {
@@ -57,6 +58,9 @@ export interface PredictiveAlert {
 }
 
 // ── Aula ────────────────────────────────────────────────────────────────────
+// Ids del aula de demostración en el backend: la ficha del estudiante se genera para ellos.
+export const idsAulaDemo = ["u-student-1", "u-student-2", "u-student-3", "u-student-seed-5", "u-student-seed-6", "u-student-seed-9"];
+
 export const classInfo = {
   curso: "Matemática 1B",
   grado: "1.° de Secundaria",

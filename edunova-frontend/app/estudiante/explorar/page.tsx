@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { unidadActual } from "@/components/estudiante/data";
+import { HipotesisCard } from "@/components/estudiante/solar/HipotesisCard";
 import { MissionReward } from "@/components/estudiante/solar/MissionReward";
 import { SOLAR_BODIES, type PlanetId } from "@/components/estudiante/solar/planetData";
 import { useSolarMissions } from "@/components/estudiante/solar/useSolarMissions";
@@ -172,6 +173,8 @@ export default function Page() {
             <Row k="Lunas" v={actual.info.lunas} />
           </dl>
         </div>
+
+        <HipotesisCard />
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <Link

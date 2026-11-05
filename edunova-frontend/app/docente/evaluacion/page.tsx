@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { DocenteLayout } from "@/components/docente/DocenteLayout";
 import { classInfo } from "@/components/docente/data";
+import { RevisionNotasIA } from "@/components/docente/RevisionNotasIA";
 import { CheckSquareIcon, FileTextIcon, FlaskIcon, ListChecksIcon, SmileyIcon, SmileyMehIcon, SmileySadIcon } from "@/components/ui/icons";
 
 type TipoId = "cuestionario" | "rubrica" | "cotejo" | "practica" | "autoeval";
@@ -134,6 +135,8 @@ export default function Page() {
   return (
     <DocenteLayout>
       <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+        <RevisionNotasIA />
+
         {/* Mobile */}
         <div className="lg:hidden">
           <div className="mb-1 flex items-center gap-2">
