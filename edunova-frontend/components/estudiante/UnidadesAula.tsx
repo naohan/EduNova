@@ -1,13 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { CaretLeftIcon, CheckCircleIcon, LightbulbIcon, WarningIcon } from "@/components/ui/icons";
+import {
+  CaretLeftIcon,
+  CheckCircleIcon,
+  LightbulbIcon,
+  SpeakerHighIcon,
+  SpeakerSimpleSlashIcon,
+  WarningIcon,
+} from "@/components/ui/icons";
 import { AGE_TIER_EVENT, useAgeTier } from "@/lib/age-tier";
 import { listUnits, pictogramUrl } from "@/lib/api/client";
 import { ageTierLabel } from "@/lib/api/helpers";
 import type { AgeTier, LearningUnit, SubtopicNode, UnitQuestion } from "@/lib/api/edunova-contract";
 import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
+import { hasSpeech, noopSubscribe, speak, stopSpeech } from "@/lib/speech";
 import { useApi } from "@/lib/api/use-api";
 import { useSessionUser } from "@/lib/api/use-session";
 import { StoryPlayer } from "./StoryPlayer";
@@ -29,11 +37,34 @@ function Pregunta({
   const [acerto, setAcerto] = useState(false);
   const [pistas, setPistas] = useState(0);
   const [avisoBono, setAvisoBono] = useState<string | null>(null);
+  const [leyendo, setLeyendo] = useState(false);
+  const soportaVoz = useSyncExternalStore(noopSubscribe, hasSpeech, () => false);
   const inicio = useRef(0);
 
   useEffect(() => {
     inicio.current = marcaDeTiempo();
+    return () => {
+      stopSpeech();
+    };
   }, []);
+
+  function toggleVoz() {
+    if (leyendo) {
+      stopSpeech();
+      setLeyendo(false);
+      return;
+    }
+    const textoCompleto = [
+      pregunta.prompt,
+      ...pregunta.options.map((op, i) => `Opción ${i + 1}: ${op}`),
+    ].join(". ");
+
+    const ok = speak(textoCompleto, {
+      onEnd: () => setLeyendo(false),
+      onError: () => setLeyendo(false),
+    });
+    if (ok) setLeyendo(true);
+  }
 
   function responder(indice: number) {
     if (acerto || descartadas.includes(indice)) return;
@@ -56,7 +87,29 @@ function Pregunta({
 
   return (
     <div className={tarjetaCls}>
-      <h3 className="font-bold text-[#17164F]">{pregunta.prompt}</h3>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="font-bold text-[#17164F]">{pregunta.prompt}</h3>
+        {soportaVoz ? (
+          <button
+            type="button"
+            onClick={toggleVoz}
+            aria-label={leyendo ? "Detener lectura" : "Escuchar pregunta"}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] px-3 py-1.5 text-xs font-semibold text-[#5636D9] transition-colors hover:bg-[#F2EEFF]"
+          >
+            {leyendo ? (
+              <>
+                <SpeakerSimpleSlashIcon className="h-4 w-4" aria-hidden />
+                <span>Detener lectura</span>
+              </>
+            ) : (
+              <>
+                <SpeakerHighIcon className="h-4 w-4" aria-hidden />
+                <span>Escuchar pregunta</span>
+              </>
+            )}
+          </button>
+        ) : null}
+      </div>
       <div className="mt-3 space-y-2">
         {pregunta.options.map((opcion, i) => {
           const descartada = descartadas.includes(i);

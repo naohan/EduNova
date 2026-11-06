@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-
-const noopSubscribe = () => () => {};
-const hasSpeech = () => "speechSynthesis" in window;
-
-// Quita emojis: algunos lectores de voz los leen como "cara sonriente".
-const speakable = (text: string) => text.replace(/\p{Extended_Pictographic}/gu, "").replace(/\s+/g, " ").trim();
+import { hasSpeech, noopSubscribe, speak, stopSpeech } from "@/lib/speech";
 
 /**
  * Lee el texto en voz alta con la Web Speech API. Con `prominent` (modo Explorador 7–9)
@@ -19,23 +14,20 @@ export function StoryPlayer({ text, prominent = false }: { text: string; promine
   const [speaking, setSpeaking] = useState(false);
 
   // speechSynthesis es global: si el componente se desmonta (otra pantalla u otra edad), hay que cortarla.
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => () => stopSpeech(), []);
 
   function toggle() {
-    const synth = window.speechSynthesis;
     if (speaking) {
-      synth.cancel();
+      stopSpeech();
       setSpeaking(false);
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(speakable(text));
-    utterance.lang = "es-ES";
-    utterance.rate = prominent ? 0.85 : 1;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    synth.cancel();
-    synth.speak(utterance);
-    setSpeaking(true);
+    const ok = speak(text, {
+      rate: prominent ? 0.85 : 1,
+      onEnd: () => setSpeaking(false),
+      onError: () => setSpeaking(false),
+    });
+    if (ok) setSpeaking(true);
   }
 
   if (!supported) {
