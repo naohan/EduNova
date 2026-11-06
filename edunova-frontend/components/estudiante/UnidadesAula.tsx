@@ -109,6 +109,31 @@ function Pregunta({
   );
 }
 
+function PictogramaItem({ word, id }: { word: string; id: number }) {
+  const [fallo, setFallo] = useState(false);
+
+  if (fallo) {
+    return (
+      <span className="rounded-xl border border-[#E8E0FF] bg-[#F2EEFF] px-2.5 py-1 text-xs font-semibold text-[#17164F]">
+        {word}
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex w-20 flex-col items-center rounded-xl border border-[#E8E0FF] bg-white p-2 text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/backend/pictograms/${id}`}
+        alt={word}
+        onError={() => setFallo(true)}
+        className="h-14 w-14 object-contain"
+      />
+      <span className="mt-1 w-full truncate text-[11px] font-semibold text-[#17164F]">{word}</span>
+    </div>
+  );
+}
+
 function Subtema({
   subtema,
   onFin,
@@ -121,20 +146,74 @@ function Subtema({
   tier: AgeTier;
 }) {
   const [numero, setNumero] = useState(0);
-  const texto = subtema.stages.discover.storyTextByAge[tier];
+  const [lecturaFacilActiva, setLecturaFacilActiva] = useState(false);
+
+  const easyReadText = subtema.stages.discover.easyReadText;
+  const pictograms = subtema.stages.discover.pictograms ?? [];
+
+  const textoNormal = subtema.stages.discover.storyTextByAge[tier];
+  const textoParaAudio = lecturaFacilActiva && easyReadText ? easyReadText : textoNormal;
   const preguntas = subtema.stages.demonstrate.questions ?? [];
   const pregunta = preguntas[numero];
 
+  const frasesFaciles = easyReadText
+    ? easyReadText
+        .split(/(?<=[.!?])\s+/)
+        .map((f) => f.trim())
+        .filter(Boolean)
+    : [];
+
   return (
     <div className="space-y-4">
-      <StoryPlayer key={`${subtema.id}-${tier}`} text={texto} prominent={tier === "EXPLORADOR_7_9"} />
+      <StoryPlayer
+        key={`${subtema.id}-${tier}-${lecturaFacilActiva}`}
+        text={textoParaAudio}
+        prominent={tier === "EXPLORADOR_7_9"}
+      />
       <article className={tarjetaCls}>
-        <h2 className="font-bold text-[#17164F]">{subtema.title}</h2>
-        <p
-          className={`mt-2 leading-relaxed text-[#17164F]/85 ${tier === "EXPLORADOR_7_9" ? "text-lg" : "text-sm"}`}
-        >
-          {texto}
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-bold text-[#17164F]">{subtema.title}</h2>
+          {easyReadText ? (
+            <label className="inline-flex cursor-pointer select-none items-center gap-2 rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] px-2.5 py-1 text-xs font-semibold text-[#5636D9]">
+              <input
+                type="checkbox"
+                checked={lecturaFacilActiva}
+                onChange={(e) => setLecturaFacilActiva(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-[#E8E0FF] text-[#5636D9] focus:ring-[#5636D9]"
+              />
+              Lectura fácil
+            </label>
+          ) : null}
+        </div>
+
+        {lecturaFacilActiva && easyReadText ? (
+          <div className="mt-3">
+            <div className="space-y-2 text-base font-medium leading-relaxed text-[#17164F] sm:text-lg">
+              {frasesFaciles.map((frase, idx) => (
+                <p key={idx}>{frase}</p>
+              ))}
+            </div>
+
+            {pictograms.length > 0 && (
+              <div className="mt-4 border-t border-[#E8E0FF] pt-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {pictograms.map((p) => (
+                    <PictogramaItem key={p.id} word={p.word} id={p.id} />
+                  ))}
+                </div>
+                <p className="mt-2.5 text-[11px] text-[#5B5678]">
+                  Pictogramas: Sergio Palao. Origen: ARASAAC (arasaac.org). Licencia: CC BY-NC-SA. Propiedad: Gobierno de Aragón.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p
+            className={`mt-2 leading-relaxed text-[#17164F]/85 ${tier === "EXPLORADOR_7_9" ? "text-lg" : "text-sm"}`}
+          >
+            {textoNormal}
+          </p>
+        )}
       </article>
 
       {pregunta ? (

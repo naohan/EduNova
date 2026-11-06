@@ -64,7 +64,12 @@ export interface SubtopicNode {
     rewardCoins: number;
   };
   stages: {
-    discover: { storyTextByAge: Record<AgeTier, string>; audioUrl: string };
+    discover: {
+      storyTextByAge: Record<AgeTier, string>;
+      audioUrl: string;
+      easyReadText?: string;
+      pictograms?: Array<{ word: string; id: number }>;
+    };
     practice: { flashcards: Flashcard[]; gameMode: string };
     demonstrate: {
       questions: UnitQuestion[];

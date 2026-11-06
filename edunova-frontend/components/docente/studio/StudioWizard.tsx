@@ -251,6 +251,14 @@ export function StudioWizard() {
                             <dd>{s.textos?.[e.tier]}</dd>
                           </div>
                         ))}
+                        {s.lecturaFacil ? (
+                          <div>
+                            <dt className="text-xs font-bold text-[#5B5678]">Lectura fácil (con pictogramas)</dt>
+                            <dd className="rounded-lg border border-[#E8E0FF] bg-[#FAF9FF] p-2 text-xs leading-relaxed text-[#17164F]">
+                              {s.lecturaFacil}
+                            </dd>
+                          </div>
+                        ) : null}
                       </dl>
                     </details>
                   ) : null}

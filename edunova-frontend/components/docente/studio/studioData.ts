@@ -6,6 +6,7 @@ export type SubtemaBorrador = {
   titulo: string;
   lab: Lab3DType;
   textos?: Record<AgeTier, string>;
+  lecturaFacil?: string;
   tarjetas: number;
   preguntas: number;
 };
@@ -76,6 +77,7 @@ export function aBorrador(unidad: IngestedUnit): Borrador | null {
       titulo: s.title,
       lab: s.lab3DIntegration?.type ?? "NONE",
       textos: s.stages?.discover?.storyTextByAge,
+      lecturaFacil: s.stages?.discover?.easyReadText,
       tarjetas: s.stages?.practice?.flashcards?.length ?? 0,
       preguntas: s.stages?.demonstrate?.questions?.length ?? 0,
     })),
