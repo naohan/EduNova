@@ -10,6 +10,7 @@ export interface Estudiante {
   nota: number; // sobre 20
   progreso: number; // %
   estado: Estado;
+  lecturasTier?: string; // e.g. "Lecturas: Explorador" (solo si diagnosticTier difiere de ageTier)
   competencias?: CompetenciaNota[]; // solo con datos reales del aula
 }
 

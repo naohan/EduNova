@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { CaretLeftIcon, CheckCircleIcon, LightbulbIcon } from "@/components/ui/icons";
 import { useAgeTier } from "@/lib/age-tier";
 import { listUnits } from "@/lib/api/client";
-import type { LearningUnit, SubtopicNode, UnitQuestion } from "@/lib/api/edunova-contract";
+import type { AgeTier, LearningUnit, SubtopicNode, UnitQuestion } from "@/lib/api/edunova-contract";
 import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
 import { useApi } from "@/lib/api/use-api";
 import { useSessionUser } from "@/lib/api/use-session";
 import { StoryPlayer } from "./StoryPlayer";
+import { usePerfilAlumno } from "./usePerfilAlumno";
 
 const tarjetaCls = "rounded-2xl border border-[#E8E0FF] bg-white p-5";
 const botonCls = "rounded-xl bg-[#5636D9] px-5 py-3 text-sm font-bold text-white disabled:opacity-50";
@@ -107,8 +109,17 @@ function Pregunta({
   );
 }
 
-function Subtema({ subtema, onFin, esUltimo }: { subtema: SubtopicNode; onFin: () => void; esUltimo: boolean }) {
-  const [tier] = useAgeTier();
+function Subtema({
+  subtema,
+  onFin,
+  esUltimo,
+  tier,
+}: {
+  subtema: SubtopicNode;
+  onFin: () => void;
+  esUltimo: boolean;
+  tier: AgeTier;
+}) {
   const [numero, setNumero] = useState(0);
   const texto = subtema.stages.discover.storyTextByAge[tier];
   const preguntas = subtema.stages.demonstrate.questions ?? [];
@@ -142,7 +153,15 @@ function Subtema({ subtema, onFin, esUltimo }: { subtema: SubtopicNode; onFin: (
   );
 }
 
-function Unidad({ unidad, onVolver }: { unidad: LearningUnit; onVolver: () => void }) {
+function Unidad({
+  unidad,
+  onVolver,
+  tier,
+}: {
+  unidad: LearningUnit;
+  onVolver: () => void;
+  tier: AgeTier;
+}) {
   const [indice, setIndice] = useState(0);
   const subtema = unidad.subtopics[indice];
 
@@ -167,6 +186,7 @@ function Unidad({ unidad, onVolver }: { unidad: LearningUnit; onVolver: () => vo
             subtema={subtema}
             esUltimo={indice + 1 === unidad.subtopics.length}
             onFin={() => setIndice(indice + 1)}
+            tier={tier}
           />
         </div>
       ) : (
@@ -188,6 +208,21 @@ function Unidad({ unidad, onVolver }: { unidad: LearningUnit; onVolver: () => vo
 /** Unidades que el docente publicó para el aula, adaptadas a la edad elegida. */
 export function UnidadesAula() {
   const usuario = useSessionUser();
+  const perfil = usePerfilAlumno();
+  const [manualTier] = useAgeTier();
+  const [manualOverride, setManualOverride] = useState<AgeTier | null>(null);
+  const prevManualRef = useRef(manualTier);
+
+  useEffect(() => {
+    if (prevManualRef.current !== manualTier) {
+      setManualOverride(manualTier);
+      prevManualRef.current = manualTier;
+    }
+  }, [manualTier]);
+
+  const effectiveTier: AgeTier =
+    manualOverride ?? perfil?.diagnosticTier ?? usuario?.ageTier ?? manualTier;
+
   const unidades = useApi(listUnits, []);
   const [abierta, setAbierta] = useState<string | null>(null);
 
@@ -204,26 +239,49 @@ export function UnidadesAula() {
   // Lo más reciente primero: lo último que publicó el docente es lo que toca hoy.
   const lista = unidades.data.filter((u) => !aula || u.classroomCode === aula).reverse();
   const unidad = lista.find((u) => u.id === abierta);
-  if (unidad) return <Unidad key={unidad.id} unidad={unidad} onVolver={() => setAbierta(null)} />;
-
-  if (!lista.length) return <p className="text-sm text-[#5B5678]">Tu docente todavía no publicó unidades.</p>;
+  if (unidad) {
+    return (
+      <Unidad
+        key={unidad.id}
+        unidad={unidad}
+        onVolver={() => setAbierta(null)}
+        tier={effectiveTier}
+      />
+    );
+  }
 
   return (
-    <ul className="space-y-3">
-      {lista.map((u) => (
-        <li key={u.id}>
-          <button
-            type="button"
-            onClick={() => setAbierta(u.id)}
-            className="w-full rounded-2xl border border-[#E8E0FF] bg-white p-4 text-left"
+    <div>
+      {!perfil?.diagnosticTier && (
+        <div className="mb-3 flex justify-end">
+          <Link
+            href="/estudiante/diagnostico"
+            className="text-xs font-semibold text-[#5B5678] underline hover:text-[#5636D9]"
           >
-            <span className="block font-bold text-[#17164F]">{u.title}</span>
-            <span className="text-sm text-[#5B5678]">
-              {u.subtopics.length} {u.subtopics.length === 1 ? "tema" : "temas"}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
+            Ajustar mis lecturas
+          </Link>
+        </div>
+      )}
+      {!lista.length ? (
+        <p className="text-sm text-[#5B5678]">Tu docente todavía no publicó unidades.</p>
+      ) : (
+        <ul className="space-y-3">
+          {lista.map((u) => (
+            <li key={u.id}>
+              <button
+                type="button"
+                onClick={() => setAbierta(u.id)}
+                className="w-full rounded-2xl border border-[#E8E0FF] bg-white p-4 text-left"
+              >
+                <span className="block font-bold text-[#17164F]">{u.title}</span>
+                <span className="text-sm text-[#5B5678]">
+                  {u.subtopics.length} {u.subtopics.length === 1 ? "tema" : "temas"}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

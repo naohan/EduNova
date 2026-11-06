@@ -3,6 +3,8 @@ import type {
   BenchmarkResult,
   ClassAnalytics,
   ClassStudent,
+  DiagnosticQuestion,
+  DiagnosticResult,
   ExplainableAlert,
   GamificationAndBenchmarkProfile,
   HandwrittenAnalysis,
@@ -136,6 +138,10 @@ export const submitReasoning = (input: { studentId: string; analysis: Handwritte
   request<AssessmentRecord>("POST", "/assess/submit-reasoning", input, WRITE_TIMEOUT_MS);
 export const validateHypothesis = (hypothesis: string, labType?: string) =>
   request<HypothesisReview>("POST", "/ai/validate-hypothesis", { hypothesis, labType });
+export const getDiagnosticQuestions = () =>
+  request<DiagnosticQuestion[]>("GET", "/diagnostic/questions");
+export const submitDiagnostic = (answers: Array<{ questionId: string; optionIndex: number }>) =>
+  request<DiagnosticResult>("POST", "/diagnostic/submit", { answers }, WRITE_TIMEOUT_MS);
 
 // ---- Juegos y ligas ----
 export const getLeaderboard = (league: "mastery" | "effort" = "mastery") =>

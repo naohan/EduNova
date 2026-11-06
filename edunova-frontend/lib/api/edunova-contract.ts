@@ -100,6 +100,8 @@ export interface GamificationAndBenchmarkProfile {
   badges: string[];
   equippedItems: string[]; // ids de accesorios del avatar
   ownedItems?: string[]; // ids de accesorios comprados
+  diagnosticTier?: AgeTier;
+  diagnosedAt?: string;
 }
 
 // Fila pública de una liga. Safe-Play: nada de saldo, racha ni vínculos familiares de otros niños.
@@ -214,11 +216,25 @@ export interface ClassStudent {
   studentId: string;
   alias: string;
   ageTier?: AgeTier;
+  diagnosticTier?: AgeTier;
   streakDays: number;
   division: GamificationAndBenchmarkProfile['leagues']['division'];
   overallMasteryPercent: number;
   needsSupport: boolean;
   mastery: CriterionMastery[];
+}
+
+export interface DiagnosticQuestion {
+  id: string;
+  tier: AgeTier;
+  prompt: string;
+  options: string[];
+}
+
+export interface DiagnosticResult {
+  diagnosticTier: AgeTier;
+  correctCount: number;
+  total: number;
 }
 
 // Radar de Talentos (RF-04): sugerencias exploratorias, nunca etiquetas clínicas.
