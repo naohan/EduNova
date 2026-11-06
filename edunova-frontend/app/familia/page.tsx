@@ -95,6 +95,12 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
             <span className="font-[family-name:var(--font-fredoka)] text-xl font-semibold">EduNova Familia</span>
           </Link>
           <div className="flex items-center gap-3">
+            <Link
+              href="/familia/saberes"
+              className="rounded-xl border border-[#E8E0FF] bg-[#F7F4FF] px-3 py-1.5 text-xs font-bold text-[#5636D9] hover:bg-[#EAE5FF]"
+            >
+              Saberes de casa
+            </Link>
             <span className="hidden text-sm font-bold md:inline">{tutor.alias}</span>
             <button
               type="button"
@@ -145,6 +151,27 @@ function Portal({ tutor, studentId, onSalir }: { tutor: SessionUser; studentId: 
             detalle={`Supera al ${comparacion.percentile}% de su edad`}
           />
         </div>
+
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#E8E0FF] bg-white p-5 sm:p-6">
+          <div className="max-w-xl">
+            <span className="inline-block rounded-full bg-[#EAE5FF] px-2.5 py-0.5 text-xs font-bold text-[#5636D9]">
+              Saberes de casa
+            </span>
+            <h2 className="mt-1 font-[family-name:var(--font-fredoka)] text-xl font-bold text-[#17164F]">
+              Enseña lo que sabes
+            </h2>
+            <p className="mt-0.5 text-xs text-[#5B5678] sm:text-sm">
+              Enseña a tu hijo lo que la escuela no enseña: cocina, plantas, oficios o tradiciones.
+              Tú cuentas lo que sabes, la IA lo ordena como lección y tú la apruebas para tu hijo.
+            </p>
+          </div>
+          <Link
+            href="/familia/saberes"
+            className="rounded-xl bg-[#5636D9] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          >
+            Enseña lo que sabes →
+          </Link>
+        </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="flex flex-col justify-between rounded-2xl border border-[#E8E0FF] bg-white p-6">

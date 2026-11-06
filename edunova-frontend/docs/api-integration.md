@@ -75,6 +75,7 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/diagnostico` | **Conectada** | `getDiagnosticQuestions` y `submitDiagnostic`: el nivel de lectura va separado de la edad |
 | `/etica` | Estática | Cómo se usa la IA. Si cambia qué se envía a terceros, hay que actualizarla |
 | `/familia` | **Conectada** | `getStudentProfile`, `getBenchmark`, `getFamilyExplanation`, `getPassport`. El pacto es de solo lectura, con una meta fija |
+| `/familia/saberes` | **Conectada** | `createFamilyDraft`, `listFamilyUnits`, `publishFamilyUnit`: lecciones familiares aprobadas por el tutor |
 
 ## Modo sin internet
 `public/sw.js` guarda inicio, lección, flashcards y práctica (347 KB comprimidos, el plan pide menos de 500 KB). `lib/api/offline-queue.ts` guarda lo ganado sin red y lo envía al volver internet; usa `guardarMision` y `guardarProgreso` en vez de llamar directo a `completeMission` o `syncProgress`.

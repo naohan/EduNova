@@ -5,6 +5,14 @@
 export type AgeTier = 'EXPLORADOR_7_9' | 'AVENTURERO_10_12' | 'CREADOR_13_15';
 export type UserRole = 'STUDENT' | 'TEACHER' | 'FAMILY_TUTOR';
 export type LearningContext = 'SCHOOL_CLASSROOM' | 'INDEPENDENT_HOME' | 'EXTERNAL_INSTITUTION';
+export type FamilyCategory =
+  | 'CAMPO_Y_LUGAR'
+  | 'SALUD_Y_PLANTAS'
+  | 'COCINA'
+  | 'OFICIOS_Y_HOGAR'
+  | 'AHORRO'
+  | 'IDIOMAS'
+  | 'OTRO';
 export type Lab3DType =
   | 'SOLAR_SYSTEM'
   | 'HUMAN_BODY'
@@ -87,6 +95,15 @@ export interface LearningUnit {
   classroomCode: string;
   subtopics: SubtopicNode[];
   rubric: RubricCriterion[];
+  familyStudentId?: string;
+  familyCategory?: FamilyCategory;
+  safetyNote?: string;
+}
+
+export interface FamilyDraftResponse {
+  unit: LearningUnit;
+  usedFallback: boolean;
+  aiNotice?: string;
 }
 
 export interface GamificationAndBenchmarkProfile {

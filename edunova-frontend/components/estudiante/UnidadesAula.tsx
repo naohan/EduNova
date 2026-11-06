@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CaretLeftIcon, CheckCircleIcon, LightbulbIcon } from "@/components/ui/icons";
+import { CaretLeftIcon, CheckCircleIcon, LightbulbIcon, WarningIcon } from "@/components/ui/icons";
 import { AGE_TIER_EVENT, useAgeTier } from "@/lib/age-tier";
 import { listUnits, pictogramUrl } from "@/lib/api/client";
 import { ageTierLabel } from "@/lib/api/helpers";
@@ -265,6 +265,13 @@ function Unidad({
         {subtema ? ` · Tema ${indice + 1} de ${unidad.subtopics.length}` : ""}
       </p>
 
+      {unidad.safetyNote ? (
+        <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-3.5 text-xs font-bold text-[#9A3412]">
+          <WarningIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#EA580C]" aria-hidden />
+          <span>{unidad.safetyNote}</span>
+        </div>
+      ) : null}
+
       {subtema ? (
         <div className="mt-3">
           <Subtema
@@ -321,8 +328,13 @@ export function UnidadesAula() {
   }
 
   const aula = usuario?.classroomCode;
-  // Lo más reciente primero: lo último que publicó el docente es lo que toca hoy.
-  const lista = unidades.data.filter((u) => !aula || u.classroomCode === aula).reverse();
+  // Lo más reciente primero: incluye las de su aula y las creadas por su familia para él
+  const lista = unidades.data
+    .filter((u) => {
+      if (u.familyStudentId) return u.familyStudentId === usuario?.id;
+      return !aula || u.classroomCode === aula;
+    })
+    .reverse();
   const unidad = lista.find((u) => u.id === abierta);
   if (unidad) {
     return (
@@ -363,7 +375,14 @@ export function UnidadesAula() {
                 onClick={() => setAbierta(u.id)}
                 className="w-full rounded-2xl border border-[#E8E0FF] bg-white p-4 text-left"
               >
-                <span className="block font-bold text-[#17164F]">{u.title}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="block font-bold text-[#17164F]">{u.title}</span>
+                  {u.familyStudentId ? (
+                    <span className="shrink-0 rounded-full bg-[#EAE5FF] px-2.5 py-0.5 text-xs font-bold text-[#5636D9]">
+                      De tu familia
+                    </span>
+                  ) : null}
+                </div>
                 <span className="text-sm text-[#5B5678]">
                   {u.subtopics.length} {u.subtopics.length === 1 ? "tema" : "temas"}
                 </span>

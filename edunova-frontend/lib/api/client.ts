@@ -7,6 +7,8 @@ import type {
   DiagnosticResult,
   EventsBatchResponse,
   ExplainableAlert,
+  FamilyCategory,
+  FamilyDraftResponse,
   GamificationAndBenchmarkProfile,
   HandwrittenAnalysis,
   HypothesisReview,
@@ -181,6 +183,12 @@ export const reportDuelResult = (input: { studentId: string; won: boolean; quest
 // ---- Familia y benchmark ----
 export const getFamilyExplanation = (topic?: string) =>
   request<{ explanation: string }>("POST", "/ai/family-home-explainer", { topic }, 15000);
+export const createFamilyDraft = (input: { category: FamilyCategory; text: string; title?: string }) =>
+  request<FamilyDraftResponse>("POST", "/family/units/draft", input, 35000);
+export const listFamilyUnits = () =>
+  request<LearningUnit[]>("GET", "/family/units");
+export const publishFamilyUnit = (unitId: string) =>
+  request<LearningUnit>("PUT", `/family/units/${encodeURIComponent(unitId)}/publish`, {}, WRITE_TIMEOUT_MS);
 export const getBenchmark = (studentId: string) =>
   request<BenchmarkResult>("GET", `/benchmark/external/${encodeURIComponent(studentId)}`);
 export const getPassport = (studentId: string) =>

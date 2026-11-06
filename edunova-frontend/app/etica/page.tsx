@@ -98,6 +98,10 @@ export default function EticaPage() {
                 <CheckCircleIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
                 <span><strong>Control de notas y criterios:</strong> en evaluaciones donde el sistema sugiere una valoración de razonamiento, el docente tiene la potestad de ajustar, anular o corregir la nota sugerida.</span>
               </li>
+              <li className="flex items-start gap-2">
+                <CheckCircleIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
+                <span><strong>Aprobación familiar:</strong> en Saberes de casa, la lección solo llega al estudiante cuando su familia la aprueba.</span>
+              </li>
             </ul>
           </section>
 
@@ -113,6 +117,7 @@ export default function EticaPage() {
                 <ul className="mt-2 space-y-1.5 text-xs text-[#17164F]">
                   <li>• El material pedagógico que sube el docente para preparar su clase.</li>
                   <li>• El tema general consultado en &ldquo;Explicar en casa&rdquo;.</li>
+                  <li>• Lo que la familia cuenta para preparar una lección de Saberes de casa.</li>
                   <li>• El curso y el tema del duelo para generar preguntas del rival. El tema lo escribe el estudiante, hasta 80 caracteres, y le pedimos no poner nombres ni datos personales.</li>
                 </ul>
               </div>
