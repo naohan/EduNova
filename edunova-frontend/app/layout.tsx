@@ -19,6 +19,8 @@ const atkinson = Atkinson_Hyperlegible({
   variable: "--font-atkinson",
   subsets: ["latin"],
   weight: ["400", "700"],
+  // Solo se descarga si el estudiante la elige: en datos móviles cada fuente cuesta.
+  preload: false,
 });
 
 export const metadata: Metadata = {

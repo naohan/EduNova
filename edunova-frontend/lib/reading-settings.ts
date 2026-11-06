@@ -63,3 +63,4 @@ export function saveReadingSettings(settings: ReadingSettings): void {
   }
   applyReadingSettings(settings);
 }
+

@@ -119,7 +119,7 @@ export default function EticaPage() {
               <div className="rounded-xl border border-[#E8E0FF] bg-[#F7F4FF] p-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#5636D9]">Qué sí recibe</h3>
                 <ul className="mt-2 space-y-1.5 text-xs text-[#17164F]">
-                  <li>• El material pedagógico que sube el docente para preparar su clase.</li>
+                  <li>• El material pedagógico que sube el docente para preparar su clase y, si lo escribe, el lugar donde viven sus estudiantes.</li>
                   <li>• El tema general consultado en &ldquo;Explicar en casa&rdquo;.</li>
                   <li>• Lo que la familia cuenta para preparar una lección de Saberes de casa.</li>
                   <li>• El curso y el tema del duelo para generar preguntas del rival. El tema lo escribe el estudiante, hasta 80 caracteres, y le pedimos no poner nombres ni datos personales.</li>

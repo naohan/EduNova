@@ -85,6 +85,7 @@ export function AjustesLectura() {
                   <button
                     key={s.id}
                     type="button"
+                    aria-pressed={settings.size === s.id}
                     onClick={() => cambiar("size", s.id)}
                     className={`rounded-xl px-2 py-2 text-center font-bold transition-colors ${
                       settings.size === s.id
@@ -111,6 +112,7 @@ export function AjustesLectura() {
                   <button
                     key={sp.id}
                     type="button"
+                    aria-pressed={settings.spacing === sp.id}
                     onClick={() => cambiar("spacing", sp.id)}
                     className={`rounded-xl px-2 py-2 text-center font-bold transition-colors ${
                       settings.spacing === sp.id
@@ -137,6 +139,7 @@ export function AjustesLectura() {
                   <button
                     key={c.id}
                     type="button"
+                    aria-pressed={settings.contrast === c.id}
                     onClick={() => cambiar("contrast", c.id)}
                     className={`rounded-xl px-2 py-2 text-center font-bold transition-colors ${
                       settings.contrast === c.id
@@ -163,6 +166,7 @@ export function AjustesLectura() {
                   <button
                     key={f.id}
                     type="button"
+                    aria-pressed={settings.font === f.id}
                     onClick={() => cambiar("font", f.id)}
                     className={`rounded-xl px-2 py-2 text-center font-bold transition-colors ${
                       settings.font === f.id

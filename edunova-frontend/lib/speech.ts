@@ -38,3 +38,4 @@ export function speak(text: string, options?: SpeakOptions): boolean {
   window.speechSynthesis.speak(utterance);
   return true;
 }
+
