@@ -62,7 +62,7 @@ export default function EticaPage() {
               <h2 className={tituloSeccion}>1. Qué hace la IA</h2>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-[#5B5678]">
-              EduNova utiliza modelos de lenguaje para tres tareas concretas de preparación pedagógica:
+              EduNova utiliza modelos de lenguaje para cuatro tareas concretas de preparación pedagógica:
             </p>
             <ul className="mt-3 space-y-2 text-sm text-[#17164F]">
               <li className="flex items-start gap-2">
@@ -76,6 +76,10 @@ export default function EticaPage() {
               <li className="flex items-start gap-2">
                 <CheckCircleIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
                 <span><strong>Preguntas del rival en el duelo:</strong> en el duelo, genera preguntas para el adversario simulado basándose en el curso y el tema elegidos.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircleIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
+                <span><strong>Saberes de casa:</strong> ordena como lección lo que cuenta la familia, sin agregar datos propios.</span>
               </li>
             </ul>
           </section>
@@ -143,7 +147,7 @@ export default function EticaPage() {
               calificaciones de terceros ni datos personales privados.
             </p>
             <p className="mt-2 text-sm leading-relaxed text-[#5B5678]">
-              Para los pictogramas de lectura fácil, nuestro servidor consulta en ARASAAC palabras clave del material del docente, sin datos de estudiantes.
+              Para los pictogramas de lectura fácil, nuestro servidor consulta en ARASAAC palabras clave del material del docente o de la familia, sin datos de estudiantes.
               El servicio externo de procesamiento (Google Gemini) trata los documentos y textos que recibe de acuerdo con
               sus propias condiciones de servicio y políticas de uso de datos.
             </p>

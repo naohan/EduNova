@@ -104,6 +104,7 @@ export interface FamilyDraftResponse {
   unit: LearningUnit;
   usedFallback: boolean;
   aiNotice?: string;
+  safetyNotice?: string; // el servidor quitó cantidades o promesas de cura
 }
 
 export interface GamificationAndBenchmarkProfile {

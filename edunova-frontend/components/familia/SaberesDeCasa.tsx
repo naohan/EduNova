@@ -24,6 +24,9 @@ const categorias: Array<{ id: FamilyCategory; label: string; desc: string }> = [
   { id: "OTRO", label: "Otro", desc: "Cualquier otro saber o vivencia que quieras transmitir" },
 ];
 
+// El servidor recorta en este límite: aquí se avisa para que nada se pierda sin que la familia lo sepa.
+const LIMITE_TEXTO = 4000;
+
 const tarjetaCls = "rounded-2xl border border-[#E8E0FF] bg-white p-5 sm:p-6";
 const botonCls = "rounded-xl bg-[#5636D9] px-5 py-3 text-sm font-bold text-white disabled:opacity-50 hover:bg-[#4324bd] transition-colors";
 
@@ -146,7 +149,7 @@ export function SaberesDeCasa() {
   }
 
   if (borradorResp) {
-    const { unit, usedFallback, aiNotice } = borradorResp;
+    const { unit, usedFallback, aiNotice, safetyNotice } = borradorResp;
     const textoCompleto = unit.subtopics
       .map((st) => `${st.title}. ${st.stages.discover.storyTextByAge.AVENTURERO_10_12}`)
       .join(" ");
@@ -190,6 +193,12 @@ export function SaberesDeCasa() {
           </div>
         )}
 
+        {safetyNotice ? (
+          <div role="status" className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-4 text-xs font-bold text-[#9A3412]">
+            {safetyNotice}
+          </div>
+        ) : null}
+
         <div className={tarjetaCls}>
           <div className="border-b border-[#E8E0FF] pb-4">
             <span className="text-xs font-bold text-[#5636D9] uppercase tracking-wide">Borrador de lección</span>
@@ -212,6 +221,36 @@ export function SaberesDeCasa() {
                 <p className="mt-2 text-sm leading-relaxed text-[#17164F]/85">
                   {st.stages.discover.storyTextByAge.AVENTURERO_10_12}
                 </p>
+
+                <details className="mt-3 text-xs text-[#17164F]">
+                  <summary className="cursor-pointer font-bold text-[#5636D9]">Ver todo lo que leerá tu hijo</summary>
+                  <dl className="mt-2 space-y-2">
+                    <div>
+                      <dt className="font-bold text-[#5B5678]">Para 7 a 9 años</dt>
+                      <dd>{st.stages.discover.storyTextByAge.EXPLORADOR_7_9}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-[#5B5678]">Para 13 a 15 años</dt>
+                      <dd>{st.stages.discover.storyTextByAge.CREADOR_13_15}</dd>
+                    </div>
+                    {st.stages.discover.easyReadText ? (
+                      <div>
+                        <dt className="font-bold text-[#5B5678]">Lectura fácil</dt>
+                        <dd>{st.stages.discover.easyReadText}</dd>
+                      </div>
+                    ) : null}
+                    {st.stages.practice.flashcards.length ? (
+                      <div>
+                        <dt className="font-bold text-[#5B5678]">Tarjetas de repaso</dt>
+                        {st.stages.practice.flashcards.map((f) => (
+                          <dd key={f.id}>
+                            {f.front}: {f.back}
+                          </dd>
+                        ))}
+                      </div>
+                    ) : null}
+                  </dl>
+                </details>
 
                 {st.stages.demonstrate.questions?.length ? (
                   <div className="mt-4 border-t border-[#E8E0FF] pt-3">
@@ -328,6 +367,7 @@ export function SaberesDeCasa() {
           </label>
           <textarea
             rows={7}
+            maxLength={LIMITE_TEXTO}
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Cuéntalo como se lo contarías a tu hijo. También puedes tocar el micrófono de tu teclado y hablar."
@@ -336,6 +376,11 @@ export function SaberesDeCasa() {
           <p className="mt-1 text-xs text-[#5B5678]">
             Cuéntalo como se lo contarías a tu hijo. También puedes tocar el micrófono de tu teclado y hablar.
           </p>
+          {texto.length >= LIMITE_TEXTO * 0.9 ? (
+            <p className="text-xs font-bold text-[#92400E]">
+              Te quedan {LIMITE_TEXTO - texto.length} letras. Si necesitas más, prepara otra lección.
+            </p>
+          ) : null}
         </div>
 
         {/* 3. Aviso */}
@@ -359,3 +404,4 @@ export function SaberesDeCasa() {
     </div>
   );
 }
+
