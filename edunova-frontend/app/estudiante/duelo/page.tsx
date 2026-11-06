@@ -7,7 +7,8 @@ import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { NombreAlumno } from "@/components/estudiante/NombreAlumno";
 import { BotonSalir, BotonVoz, Opcion, PuntosAvance } from "@/components/estudiante/shared/kit";
 import { JUEGO_ASSETS } from "@/components/estudiante/juego/assets";
-import { validateDuelQuestion, getDuelOpponentQuestions } from "@/lib/api/client";
+import { validateDuelQuestion, getDuelOpponentQuestions, reportDuelResult } from "@/lib/api/client";
+import { useSessionUser } from "@/lib/api/use-session";
 import {
   ArrowCounterClockwiseIcon,
   ArrowLeftIcon,
@@ -124,6 +125,14 @@ const campoCls =
 const chipCls = (on: boolean) =>
   `rounded-xl px-3 py-2 text-sm font-bold transition-colors ${on ? "bg-[#5636D9] text-white" : "bg-white text-[#17164F]"}`;
 
+type Premio = { xp: number; coins: number; estado: "guardando" | "guardado" | "sin-guardar" | "sin-sesion" };
+
+// Los mismos valores de POST /api/duel/result: se muestran al instante y luego se confirman con lo que guardó el servidor.
+const premioDelDuelo = (gano: boolean, preguntasCreadas: number) => ({
+  xp: (gano ? 100 : 40) + preguntasCreadas * 10,
+  coins: gano ? 30 : 10,
+});
+
 function formatAnswerText(text: string): string {
   if (!text) return "";
   return text
@@ -171,6 +180,11 @@ export default function DueloPage() {
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [timeLeft, setTimeLeft] = useState(45);
   const [opponentBattleScore, setOpponentBattleScore] = useState(0);
+
+  const usuario = useSessionUser();
+  const [premio, setPremio] = useState<Premio | null>(null);
+  // Un duelo paga una sola vez, aunque la última respuesta y el reloj lleguen juntos.
+  const premioEnviado = useRef(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -348,7 +362,37 @@ export default function DueloPage() {
   const startBattle = () => {
     setCurrentBattleIndex(0);
     setUserAnswers([]);
+    setPremio(null);
+    premioEnviado.current = false;
     setPhase("duel_battle");
+  };
+
+  // Calculate final score
+  const calculateScore = (respuestas: number[] = userAnswers) => {
+    return respuestas.reduce((score, ans, idx) => {
+      if (battleQuestions[idx] && ans === battleQuestions[idx].correctIndex) {
+        return score + 1;
+      }
+      return score;
+    }, 0);
+  };
+
+  const guardarPremio = async (respuestas: number[]) => {
+    if (premioEnviado.current) return;
+    premioEnviado.current = true;
+
+    const gano = calculateScore(respuestas) > opponentBattleScore;
+    const calculado = premioDelDuelo(gano, totalQuestions);
+    if (usuario?.role !== "STUDENT") {
+      setPremio({ ...calculado, estado: "sin-sesion" });
+      return;
+    }
+
+    setPremio({ ...calculado, estado: "guardando" });
+    const r = await reportDuelResult({ studentId: usuario.id, won: gano, questionsCreated: totalQuestions });
+    setPremio(
+      r.ok ? { xp: r.data.xp, coins: r.data.coins, estado: "guardado" } : { ...calculado, estado: "sin-guardar" },
+    );
   };
 
   // Tocar una opción ya es responder. Con -1 se agotó el tiempo.
@@ -362,6 +406,7 @@ export default function DueloPage() {
       setCurrentBattleIndex(currentBattleIndex + 1);
     } else {
       setPhase("duel_results");
+      void guardarPremio(updatedAnswers);
     }
   };
 
@@ -371,14 +416,12 @@ export default function DueloPage() {
       const resetId = setTimeout(() => setTimeLeft(secondsPerQuestion), 0);
       if (timerRef.current) clearInterval(timerRef.current);
 
+      // Se cuenta fuera de setTimeLeft: React puede repetir esa función y aquí se responde y se paga.
+      let restante = secondsPerQuestion;
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            handleAnswerConfirm(-1);
-            return 0;
-          }
-          return prev - 1;
-        });
+        restante -= 1;
+        setTimeLeft(Math.max(0, restante));
+        if (restante <= 0) handleAnswerConfirm(-1);
       }, 1000);
 
       return () => {
@@ -388,16 +431,6 @@ export default function DueloPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, currentBattleIndex, hasTimeLimit, secondsPerQuestion]);
-
-  // Calculate final score
-  const calculateScore = () => {
-    return userAnswers.reduce((score, ans, idx) => {
-      if (battleQuestions[idx] && ans === battleQuestions[idx].correctIndex) {
-        return score + 1;
-      }
-      return score;
-    }, 0);
-  };
 
   // Handle mock file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -915,14 +948,22 @@ export default function DueloPage() {
                     </div>
                   </div>
 
-                  <p className="mt-6 flex items-center justify-center gap-5 text-xl font-black text-[#17164F]">
-                    <span className="inline-flex items-center gap-1.5">
-                      <LightningIcon weight="fill" className="h-6 w-6 text-[#1B8A4F]" aria-hidden />+{isWin ? 180 : 120}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <DiamondIcon weight="fill" className="h-6 w-6 text-[#C98F00]" aria-hidden />+{isWin ? 60 : 40}
-                    </span>
-                  </p>
+                  <div role="status" className="mt-6 min-h-8">
+                    {premio?.estado === "guardando" || premio?.estado === "guardado" ? (
+                      <p className="flex items-center justify-center gap-5 text-xl font-black text-[#17164F]">
+                        <span className="inline-flex items-center gap-1.5" aria-label={`${premio.xp} puntos`}>
+                          <LightningIcon weight="fill" className="h-6 w-6 text-[#1B8A4F]" aria-hidden />+{premio.xp}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5" aria-label={`${premio.coins} monedas`}>
+                          <DiamondIcon weight="fill" className="h-6 w-6 text-[#C98F00]" aria-hidden />+{premio.coins}
+                        </span>
+                      </p>
+                    ) : premio?.estado === "sin-guardar" ? (
+                      <p className="font-bold text-[#17164F]">No se guardaron tus puntos.</p>
+                    ) : premio?.estado === "sin-sesion" ? (
+                      <p className="font-bold text-[#17164F]">Entra como estudiante para guardar puntos.</p>
+                    ) : null}
+                  </div>
                 </div>
 
                 <details className="mt-6 rounded-2xl bg-white p-4">

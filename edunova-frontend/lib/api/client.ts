@@ -181,7 +181,7 @@ export const validateDuelQuestion = (question: string, topic?: string) =>
 export const getGhostOpponent = (ageTier?: string) =>
   request<GhostOpponent>("GET", `/duel/ghost-opponent${ageTier ? `?ageTier=${ageTier}` : ""}`);
 export const reportDuelResult = (input: { studentId: string; won: boolean; questionsCreated?: number }) =>
-  request<{ xp: number; coins: number; profile: GamificationAndBenchmarkProfile }>("POST", "/duel/result", input);
+  request<{ xp: number; coins: number; profile: GamificationAndBenchmarkProfile }>("POST", "/duel/result", input, WRITE_TIMEOUT_MS);
 
 // ---- Familia y benchmark ----
 export const getFamilyExplanation = (topic?: string) =>

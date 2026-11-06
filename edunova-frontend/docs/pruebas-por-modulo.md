@@ -135,7 +135,7 @@ Los modelos 3D tardan unos segundos. Prueba con buena conexión.
 | [ ] | J-05 | Juega hasta terminar | Muestra el resultado final sin trabarse |
 | [ ] | J-06 | Prueba los botones de música y efectos | Se activan y se silencian |
 | [ ] | J-07 | Abre `/estudiante/juegos/casillas` | Lista los tipos de casilla |
-| [ ] | J-08 | Abre `/estudiante/duelo` y completa un duelo | Muestra el resultado |
+| [ ] | J-08 | Abre `/estudiante/duelo` y completa un duelo | Muestra el resultado y, al abrir Inicio, los puntos subieron |
 | [ ] | J-09 | Crea una pregunta en el duelo | La valida y permite continuar |
 | [ ] | J-10 | Abre `/estudiante/flashcards` y voltea varias tarjetas | Se voltean y avanzan |
 

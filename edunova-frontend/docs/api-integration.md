@@ -65,7 +65,7 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/explorar` (Sistema Solar) | **Conectada** | `getUnit` para las misiones y `completeMission` al completarlas (`useSolarMissions.ts`) |
 | `/estudiante/cuerpo` | **Conectada** | `completeMission` al aprobar un quiz o completar una misión |
 | `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `submitReasoning`, que guarda la nota para el docente y suma el bono. La imagen no se envía: el análisis simulado no la usa |
-| `/estudiante/duelo` | **Conectada** | `getDuelOpponentQuestions` (IA segura en backend), `validateDuelQuestion`, `getGhostOpponent`, `reportDuelResult` |
+| `/estudiante/duelo` | **Conectada** | `getDuelOpponentQuestions` (IA segura en backend), `validateDuelQuestion` y `reportDuelResult`, que guarda los premios al terminar |
 | `/estudiante/jugar` | Estática | Puerta a tablero, duelo, aventuras, ligas y tienda |
 | `/estudiante/ligas` | **Conectada** | `getLeaderboard` y `getLeaderboardAroundMe` |
 | `/estudiante/tienda` | **Conectada** | `getShopItems`, `buyItem`, `toggleItem` (piden sesión de estudiante) |
