@@ -2,7 +2,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpenIcon, XIcon } from "@/components/ui/icons";
+import { GearIcon, XIcon } from "@/components/ui/icons";
+import { AgeTierSwitcher } from "./AgeTierSwitcher";
 import {
   applyReadingSettings,
   loadReadingSettings,
@@ -45,21 +46,21 @@ export function AjustesLectura() {
         type="button"
         onClick={() => setAbierto(!abierto)}
         aria-expanded={abierto}
-        aria-label="Ajustes de lectura"
-        className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[#E8E0FF] bg-white px-3 py-1.5 text-xs font-bold text-[#17164F] transition-colors hover:bg-[#F2EEFF]"
+        aria-label="Ajustes"
+        title="Ajustes"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#5636D9] transition-colors hover:bg-[#F2EEFF]"
       >
-        <BookOpenIcon className="h-4 w-4 text-[#5636D9]" aria-hidden />
-        <span>Ajustes de lectura</span>
+        <GearIcon weight="fill" className="h-6 w-6" aria-hidden />
       </button>
 
       {abierto ? (
         <div
           role="dialog"
-          aria-label="Panel de ajustes de lectura"
+          aria-label="Panel de ajustes"
           className="absolute right-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border-2 border-[#E8E0FF] bg-white p-4 text-[#17164F] shadow-lg"
         >
           <div className="mb-3 flex items-center justify-between border-b border-[#E8E0FF] pb-2">
-            <span className="text-sm font-bold text-[#17164F]">Ajustes de lectura</span>
+            <span className="text-sm font-bold text-[#17164F]">Ajustes</span>
             <button
               type="button"
               onClick={() => setAbierto(false)}
@@ -71,6 +72,12 @@ export function AjustesLectura() {
           </div>
 
           <div className="space-y-3.5 text-xs">
+            {/* Edad: el modo Camaleón */}
+            <div>
+              <span className="mb-1.5 block font-bold text-[#5B5678]">Edad</span>
+              <AgeTierSwitcher />
+            </div>
+
             {/* Tamaño */}
             <div>
               <span className="mb-1.5 block font-bold text-[#5B5678]">Tamaño</span>

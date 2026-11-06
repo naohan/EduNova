@@ -229,7 +229,9 @@ export function rollDice(code: string, playerId: string, extraSteps = 0) {
   }
 
   const baseDice = Math.floor(Math.random() * 6) + 1;
-  const dice = baseDice + extraSteps;
+  const turbo = extraSteps > 0 && !current.usedAbility ? extraSteps : 0;
+  if (turbo) current.usedAbility = true;
+  const dice = baseDice + turbo;
   room.dice = dice;
   const from = current.position;
   const nextPos = (from + dice) % BOARD_TILES.length;

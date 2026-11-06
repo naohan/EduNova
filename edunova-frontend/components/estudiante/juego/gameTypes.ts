@@ -45,7 +45,7 @@ export type CharacterProfile = {
   passiveDesc: string;
   activeName: string;
   activeDesc: string;
-  activeIcon: string;
+  activeShort: string;
 };
 
 export type GameLevel = {

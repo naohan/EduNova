@@ -40,12 +40,7 @@ export function UnidadesPublicadas() {
               className="flex items-center gap-3 rounded-2xl border border-[#E8E0FF] bg-white p-3 hover:bg-[#F7F4FF]"
             >
               <BookOpenIcon weight="duotone" className="h-6 w-6 shrink-0 text-[#5636D9]" aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-bold text-[#17164F]">{u.title}</span>
-                <span className="text-xs text-[#5B5678]">
-                  {u.subtopics.length === 1 ? "1 tema" : `${u.subtopics.length} temas`}
-                </span>
-              </span>
+              <span className="min-w-0 flex-1 truncate font-bold text-[#17164F]">{u.title}</span>
               <ArrowRightIcon weight="bold" className="h-4 w-4 shrink-0 text-[#5636D9]" aria-hidden />
             </Link>
           </li>

@@ -98,8 +98,8 @@ Entra como Gloria.
 | OK | Código | Pasos | Resultado esperado |
 |---|---|---|---|
 | [ ] | E-01 | Abre `/estudiante` | Saluda con "¡Hola, Gloria!" y muestra racha y puntos |
-| [ ] | E-02 | Cambia a Explorador, Aventurero y Creador arriba | La interfaz cambia en cada modo |
-| [ ] | E-03 | Recorre el menú lateral completo | Todas las pantallas abren sin error |
+| [ ] | E-02 | Abre el engranaje de arriba a la derecha y cambia a Explorador, Aventurero y Creador | La interfaz cambia en cada modo |
+| [ ] | E-03 | Recorre los 5 lugares del menú (Inicio, Aprender, Juegos, Aula, Perfil) y entra a cada mosaico | Todas las pantallas abren sin error |
 | [ ] | E-04 | Abre `/estudiante/ruta` | Aparecen las cuatro áreas |
 | [ ] | E-05 | Entra a cada área | Abre su mapa o laboratorio |
 | [ ] | E-06 | Abre `/estudiante/leccion` y usa "Escuchar explicación" | La voz lee el texto |
@@ -164,11 +164,11 @@ Los modelos 3D tardan unos segundos. Prueba con buena conexión.
 | [ ] | V-02 | Abre Foto de ejercicio y sube `hoja-cuaderno-1.jpg` | Analiza paso a paso y marca el error de la línea 2: `1/3 + 1/4 = 2/7` |
 | [ ] | V-03 | Prueba la foto con la cámara del celular | Permite tomar y subir la foto |
 | [ ] | V-04 | Abre `/estudiante/progreso` y sus pestañas | Muestran datos sin error |
-| [ ] | V-05 | Abre `/estudiante/habilidades` | Muestra el mapa de fortalezas |
+| [ ] | V-05 | Abre `/estudiante/habilidades` | Muestra tus 4 habilidades con su barra |
 | [ ] | V-06 | Haz el test diario de habilidades | Se puede completar y da un resultado |
 | [ ] | V-07 | Abre `/estudiante/logros` | Muestra las insignias obtenidas y las pendientes |
-| [ ] | V-08 | Abre `/estudiante/ligas` | Muestra Liga de Maestría y Liga de Superación |
-| [ ] | V-09 | Abre `/estudiante/tienda` y compra un accesorio | Bajan las NovaCoins y aparece "Ya es tuyo" |
+| [ ] | V-08 | Abre `/estudiante/ligas` y cambia entre Maestría y Superación | Cada botón muestra su liga |
+| [ ] | V-09 | Abre `/estudiante/tienda` y compra un accesorio | Bajan las monedas y aparece el botón "Poner" |
 | [ ] | V-10 | Recarga la tienda | La compra se mantiene |
 | [ ] | V-11 | Intenta comprar algo que no alcanza | No deja comprarlo |
 | [ ] | V-12 | Abre `/estudiante/aula` | Cargan sus accesos |
@@ -212,10 +212,10 @@ Haz estas pruebas en Chrome con la app ya abierta una vez. Usa `npm run build` y
 
 | OK | Código | Pasos | Resultado esperado |
 |---|---|---|---|
-| [ ] | O-01 | Con internet, revisa el aviso arriba | Dice "Online" |
-| [ ] | O-02 | Desconecta el wifi | El aviso cambia a "Modo Offline" |
+| [ ] | O-01 | Con internet, mira arriba a la derecha | No hay aviso de conexión |
+| [ ] | O-02 | Desconecta el wifi | Aparece el aviso "Sin internet" |
 | [ ] | O-03 | Sin internet, abre `/estudiante/leccion` y `/estudiante/flashcards` | Las dos funcionan |
-| [ ] | O-04 | Vuelve a conectar | El aviso regresa a "Online" |
+| [ ] | O-04 | Vuelve a conectar | El aviso desaparece |
 
 ## Prueba de punta a punta
 

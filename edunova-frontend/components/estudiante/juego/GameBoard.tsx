@@ -225,7 +225,7 @@ export function GameBoard({
               onClick={() => onTileClick?.(i)}
               onMouseEnter={() => setHoverTile(i)}
               onMouseLeave={() => setHoverTile(null)}
-              className="absolute z-20 -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 focus:outline-none"
+              className="absolute z-20 transition-transform duration-200 focus:outline-none"
               style={{
                 left: pos.left,
                 top: pos.top,

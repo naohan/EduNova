@@ -17,6 +17,8 @@ import { GameBoard } from "./GameBoard";
 import { useGameRoom } from "./useGameRoom";
 import type { CharacterClass, GameRoom, PlayerState } from "./gameTypes";
 import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
   CheckIcon,
   CrownIcon,
   DiamondIcon,
@@ -24,19 +26,33 @@ import {
   LightningIcon,
   LockIcon,
   MusicNotesIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  SignInIcon,
   SpeakerHighIcon,
   SpeakerSimpleSlashIcon,
   StarIcon,
-  StorefrontIcon,
   TrophyIcon,
+  UsersIcon,
+  XIcon,
 } from "@/components/ui/icons";
+import { BotonSalir, PuntosAvance } from "@/components/estudiante/shared/kit";
 import { Dice3D } from "./Dice3D";
-import { CharacterCard } from "./CharacterCard";
+import { CharacterCard, iconoHabilidad } from "./CharacterCard";
 import { GameQuizModal } from "./GameQuizModal";
 import { soundManager } from "./soundEffects";
 
 type Step = "curso" | "personaje" | "sala" | "lobby" | "play";
-type AgeTier = "EXPLORADOR_7_9" | "AVENTURERO_10_12" | "CREADOR_13_15";
+
+const QUE_HACE_CASILLA: Record<string, string> = {
+  salida: "Aquí empiezas. Pasar da premio.",
+  pregunta: "Responde y gana puntos.",
+  desafio: "Una pregunta más difícil.",
+  recompensa: "Un cofre con premio.",
+  cooperacion: "Respondan en equipo.",
+  evento: "Una sorpresa.",
+  descanso: "Recuperas un corazón.",
+};
 
 export function ExploradoresGame() {
   const game = useGameRoom();
@@ -54,7 +70,6 @@ export function ExploradoresGame() {
   const [tileInfo, setTileInfo] = useState<number | null>(null);
   const [muted, setMuted] = useState(soundManager.isMuted());
   const [bgmActive, setBgmActive] = useState(!soundManager.isBgmMuted());
-  const [ageTier, setAgeTier] = useState<AgeTier>("AVENTURERO_10_12");
   const [levelUpAlert, setLevelUpAlert] = useState<number | null>(null);
 
   const course = COURSE_OPTIONS.find((c) => c.id === courseId)!;
@@ -140,106 +155,58 @@ export function ExploradoresGame() {
         className="pointer-events-none fixed inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_0%,#5636D9_0%,#17164F_50%,#0B0A26_100%)]"
       />
 
-      {/* Top Header Global (Referencia Visual B del Plan Maestro) */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#17164F]/90 px-3 py-2 backdrop-blur-md sm:px-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          {/* Logo & Navigation */}
-          <div className="flex items-center gap-2">
-            <Link href="/estudiante" className="flex items-center gap-1.5 hover:opacity-85">
-              <Image src={JUEGO_ASSETS.logoLibro} alt="EduNova" width={32} height={32} />
-              <span className="font-[family-name:var(--font-fredoka)] text-base sm:text-lg font-bold text-white">
-                EduNova <span className="text-[#FFC928]">Juegos</span>
-              </span>
-            </Link>
-          </div>
-
-          {/* Selector Camaleón de Edad (HU-02) */}
-          <div className="hidden sm:flex items-center gap-1 rounded-full bg-white/10 p-1 text-[11px] font-bold">
-            <button
-              type="button"
-              onClick={() => setAgeTier("EXPLORADOR_7_9")}
-              className={`rounded-full px-2.5 py-1 transition-all ${
-                ageTier === "EXPLORADOR_7_9" ? "bg-[#FFC928] text-[#17164F] shadow" : "text-white/70 hover:text-white"
-              }`}
-            >
-              7–9 Exp
-            </button>
-            <button
-              type="button"
-              onClick={() => setAgeTier("AVENTURERO_10_12")}
-              className={`rounded-full px-2.5 py-1 transition-all ${
-                ageTier === "AVENTURERO_10_12" ? "bg-[#5636D9] text-white shadow" : "text-white/70 hover:text-white"
-              }`}
-            >
-              10–12 Avent
-            </button>
-            <button
-              type="button"
-              onClick={() => setAgeTier("CREADOR_13_15")}
-              className={`rounded-full px-2.5 py-1 transition-all ${
-                ageTier === "CREADOR_13_15" ? "bg-[#25CFE0] text-[#17164F] shadow" : "text-white/70 hover:text-white"
-              }`}
-            >
-              13–15 Cread
-            </button>
-          </div>
-
-          {/* PWA Offline Badge & Sound Toggle */}
-          <div className="flex items-center gap-2">
-            {/* PWA Sync Badge (HU-08) */}
-            <div className="hidden md:flex items-center gap-1.5 rounded-full bg-[#127A43]/20 border border-[#2DBE70]/40 px-2.5 py-1 text-[10px] font-bold text-[#4ADE80]">
-              <span className="h-2 w-2 rounded-full bg-[#2DBE70] animate-pulse" />
-              <span>PWA Sincronizada</span>
-            </div>
-
-            {/* Hub Shortcut to Tienda */}
-            <Link
-              href="/estudiante/tienda"
-              className="flex min-h-[44px] items-center gap-1.5 rounded-xl border border-[#C98F00]/40 border-b-2 border-b-[#C98F00] bg-[#FFC928] px-3 py-1.5 text-xs font-bold text-[#17164F]"
-              title="Ir a la Tienda de la Mascota"
-            >
-              <StorefrontIcon weight="bold" className="h-4 w-4" aria-hidden />
-              <span className="hidden sm:inline">Tienda</span>
-            </Link>
-
-            {/* Botón de música de fondo */}
-            <button
-              type="button"
-              onClick={handleToggleBgm}
-              className={`flex min-h-[44px] items-center gap-1.5 rounded-xl border border-b-2 px-3 py-1.5 text-xs font-bold transition-all ${
-                bgmActive
-                  ? "border-[#C98F00] bg-[#FFC928] text-[#17164F]"
-                  : "border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
-              }`}
-              title={bgmActive ? "Pausar música de fondo" : "Activar música de fondo"}
-            >
-              {bgmActive ? (
-                <MusicNotesIcon weight="bold" className="h-4 w-4" aria-hidden />
-              ) : (
-                <SpeakerSimpleSlashIcon weight="bold" className="h-4 w-4" aria-hidden />
-              )}
-              <span className="hidden sm:inline">{bgmActive ? "Música" : "Música"}</span>
-            </button>
-
-            {/* SFX Mute Audio Button */}
-            <button
-              type="button"
-              onClick={handleToggleMute}
-              className={`flex min-h-[44px] items-center gap-1.5 rounded-xl border border-b-2 px-3 py-1.5 text-xs font-bold transition-all ${
-                !muted
-                  ? "border-[#1B8A4F] bg-[#2DBE70] text-[#17164F]"
-                  : "border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
-              }`}
-              title={muted ? "Activar efectos de sonido" : "Silenciar efectos de sonido"}
-            >
-              {!muted ? (
-                <SpeakerHighIcon weight="bold" className="h-4 w-4" aria-hidden />
-              ) : (
-                <SpeakerSimpleSlashIcon weight="bold" className="h-4 w-4" aria-hidden />
-              )}
-              <span className="hidden sm:inline">{muted ? "SFX: Mudo" : "SFX: Activo"}</span>
-            </button>
-          </div>
+      <header className="relative z-40 px-3 py-2 sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center gap-2">
+          {effectiveStep === "play" || effectiveStep === "lobby" ? (
+            <BotonSalir
+              onClick={() => {
+                game.leave();
+                setStep(effectiveStep === "play" ? "curso" : "sala");
+              }}
+              etiqueta="Salir de la partida"
+              oscuro
+            />
+          ) : (
+            <BotonSalir href="/estudiante/jugar" etiqueta="Salir del juego" oscuro />
+          )}
+          {effectiveStep === "curso" || effectiveStep === "personaje" || effectiveStep === "sala" ? (
+            <PuntosAvance
+              actual={effectiveStep === "curso" ? 0 : effectiveStep === "personaje" ? 1 : 2}
+              total={3}
+              oscuro
+              etiqueta="Pasos"
+            />
+          ) : (
+            <div className="flex-1" />
+          )}
+          <button
+            type="button"
+            onClick={handleToggleBgm}
+            aria-pressed={bgmActive}
+            aria-label="Música"
+            title="Música"
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-colors ${
+              bgmActive ? "bg-[#FFC928] text-[#17164F]" : "bg-white/15 text-white"
+            }`}
+          >
+            <MusicNotesIcon weight="fill" className="h-6 w-6" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleMute}
+            aria-pressed={!muted}
+            aria-label="Sonidos"
+            title="Sonidos"
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-colors ${
+              !muted ? "bg-[#2DBE70] text-[#17164F]" : "bg-white/15 text-white"
+            }`}
+          >
+            {!muted ? (
+              <SpeakerHighIcon weight="fill" className="h-6 w-6" aria-hidden />
+            ) : (
+              <SpeakerSimpleSlashIcon weight="fill" className="h-6 w-6" aria-hidden />
+            )}
+          </button>
         </div>
       </header>
 
@@ -258,8 +225,8 @@ export function ExploradoresGame() {
               setCourseId(id);
               const c = COURSE_OPTIONS.find((x) => x.id === id)!;
               setTopic(c.topics[0]);
+              setStep("personaje");
             }}
-            onContinue={() => setStep("personaje")}
           />
         )}
 
@@ -308,10 +275,6 @@ export function ExploradoresGame() {
               game.action({ action: "removeGuest", targetId })
             }
             onStart={() => game.action({ action: "start" })}
-            onLeave={() => {
-              game.leave();
-              setStep("sala");
-            }}
           />
         )}
 
@@ -323,22 +286,10 @@ export function ExploradoresGame() {
             canControlTurn={game.canControlTurn}
             busy={game.busy}
             error={game.error}
-            onRoll={() => game.action({ action: "roll" }, { silentBusy: true })}
+            onRoll={(extraSteps) => game.action({ action: "roll", extraSteps }, { silentBusy: true })}
             onAnimatingChange={setBoardAnimating}
             onTileInfo={setTileInfo}
             onShowTerritories={() => setShowTerritories(true)}
-            onLeave={() => {
-              game.leave();
-              setStep("curso");
-            }}
-            onUseAbility={async () => {
-              // Habilidad activa del jugador en turno
-              soundManager.playAbility();
-              if (currentProfile.id === "gamer") {
-                // Avanza +2 casillas con Turbo Boost
-                await game.action({ action: "roll", extraSteps: 2 }, { silentBusy: true });
-              }
-            }}
           />
         )}
       </div>
@@ -401,9 +352,8 @@ export function ExploradoresGame() {
                 className="mx-auto h-18 w-18 drop-shadow-md"
               />
               <h3 className="mt-3 font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F]">
-                {pending.type === "recompensa" ? "¡Recompensa del Saber!" : "Zona de Descanso"}
+                {pending.type === "recompensa" ? "¡Premio!" : "Descanso"}
               </h3>
-              <p className="mt-2 text-sm text-[#5B5678]">{pending.message}</p>
               {"xp" in pending && (
                 <div className="mt-3 flex items-center justify-center gap-3">
                   <span className="rounded-xl bg-[#E3F8EC] px-3 py-1 text-xs font-black text-[#17164F]">
@@ -411,7 +361,7 @@ export function ExploradoresGame() {
                   </span>
                   {"coins" in pending && pending.coins && (
                     <span className="inline-flex items-center gap-1 rounded-xl bg-[#FFF6D6] px-3 py-1 text-xs font-black text-[#17164F]">
-                      +{pending.coins} NovaCoins
+                      +{pending.coins}
                       <DiamondIcon weight="fill" className="h-3.5 w-3.5 text-[#C98F00]" aria-hidden />
                     </span>
                   )}
@@ -420,9 +370,10 @@ export function ExploradoresGame() {
               <button
                 type="button"
                 onClick={() => game.action({ action: "resolve" })}
-                className="btn-tactil tactil-magia mt-5 w-full py-3 text-sm text-white"
+                aria-label="Continuar"
+                className="btn-tactil tactil-cooperar mt-5 w-full py-3 text-[#17164F]"
               >
-                Continuar
+                <ArrowRightIcon weight="bold" className="h-7 w-7" aria-hidden />
               </button>
             </div>
           </div>
@@ -435,33 +386,20 @@ export function ExploradoresGame() {
             <div className="mb-2 flex justify-center">
               <StarIcon weight="fill" className="h-12 w-12 text-[#FFC928]" aria-hidden />
             </div>
-            <h2 className="font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F]">
-              ¡NIVEL {levelUpAlert} SUPERADO!
+            <h2 className="font-[family-name:var(--font-fredoka)] text-3xl font-bold text-[#17164F]">
+              ¡Nivel {levelUpAlert}!
             </h2>
-            <p className="mt-2 text-sm font-semibold text-[#5636D9]">
-              {GAME_LEVELS[levelUpAlert - 1]?.name ?? "Mundo Conquistado"}
+            <p className="mt-3 inline-flex items-center gap-1.5 text-xl font-bold text-[#17164F]">
+              <DiamondIcon weight="fill" className="h-6 w-6 text-[#C98F00]" aria-hidden />+
+              {GAME_LEVELS[levelUpAlert - 1]?.rewardCoins}
             </p>
-            <p className="mt-1 text-xs text-[#5B5678]">
-              {GAME_LEVELS[levelUpAlert - 1]?.subtitle}
-            </p>
-
-            <div className="my-4 flex items-center justify-center gap-2 rounded-2xl bg-[#FFF6D6] border border-[#C98F00]/30 p-3 text-xs font-bold text-[#17164F]">
-              <span>Recompensa:</span>
-              <span>+{GAME_LEVELS[levelUpAlert - 1]?.rewardCoins} NovaCoins</span>
-              <span>|</span>
-              <span>+{GAME_LEVELS[levelUpAlert - 1]?.rewardXP} XP</span>
-            </div>
-
-            <p className="text-xs font-bold text-[#1B8A4F]">
-              Todas las vidas y habilidades del equipo han sido recargadas.
-            </p>
-
             <button
               type="button"
               onClick={() => setLevelUpAlert(null)}
-              className="btn-tactil tactil-juego mt-5 w-full py-3 text-sm font-black text-[#17164F]"
+              aria-label="Seguir jugando"
+              className="btn-tactil tactil-juego mt-5 w-full py-3 text-[#17164F]"
             >
-              Avanzar al siguiente mundo
+              <ArrowRightIcon weight="bold" className="h-7 w-7" aria-hidden />
             </button>
           </div>
         </div>
@@ -478,50 +416,22 @@ export function ExploradoresGame() {
       {/* Tile info modal */}
       {tileInfo != null && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl text-[#17164F]">
-            <div className="flex items-center gap-3">
-              <span
-                className="flex h-12 w-12 items-center justify-center rounded-2xl shadow"
-                style={{ backgroundColor: BOARD_TILES[tileInfo].color }}
-              >
-                <Image
-                  src={BOARD_TILES[tileInfo].icon}
-                  alt=""
-                  width={28}
-                  height={28}
-                />
-              </span>
-              <div>
-                <p className="text-[10px] font-bold text-[#5B5678]">
-                  Casilla {tileInfo + 1} de {BOARD_TILES.length}
-                </p>
-                <h3 className="font-[family-name:var(--font-fredoka)] text-lg font-bold text-[#17164F]">
-                  {BOARD_TILES[tileInfo].label}
-                </h3>
-              </div>
-            </div>
-            <p className="mt-3 text-xs text-[#5B5678] leading-relaxed">
-              {BOARD_TILES[tileInfo].kind === "pregunta" &&
-                "Al caer aquí responderás una pregunta formativa del tema para ganar XP y NovaCoins."}
-              {BOARD_TILES[tileInfo].kind === "desafio" &&
-                "Reto más exigente: ¡pregunta avanzada que pondrá a prueba tu lógica y maestría!"}
-              {BOARD_TILES[tileInfo].kind === "recompensa" &&
-                "Cofre sorpresa con NovaCoins y XP directos para el equipo."}
-              {BOARD_TILES[tileInfo].kind === "cooperacion" &&
-                "Resuelvan juntos en consenso. Otorga puntos para la Liga de Superación y Cooperación."}
-              {BOARD_TILES[tileInfo].kind === "evento" &&
-                "¡Evento sorpresa educativo con recompensas inesperadas!"}
-              {BOARD_TILES[tileInfo].kind === "descanso" &&
-                "Zona de calma: recupera 1 corazón de vida (❤️) y gana puntos de esfuerzo."}
-              {BOARD_TILES[tileInfo].kind === "salida" &&
-                "Punto de inicio. Pasar por aquí recarga +50 XP y +50 NovaCoins."}
-            </p>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-5 text-center text-[#17164F] shadow-2xl">
+            <span
+              className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl"
+              style={{ backgroundColor: BOARD_TILES[tileInfo].color }}
+            >
+              <Image src={BOARD_TILES[tileInfo].icon} alt="" width={40} height={40} />
+            </span>
+            <h3 className="mt-3 font-[family-name:var(--font-fredoka)] text-xl font-bold">{BOARD_TILES[tileInfo].label}</h3>
+            <p className="mt-1 text-base font-semibold">{QUE_HACE_CASILLA[BOARD_TILES[tileInfo].kind]}</p>
             <button
               type="button"
               onClick={() => setTileInfo(null)}
-              className="mt-4 w-full rounded-full bg-[#5636D9] py-2.5 text-xs font-bold text-white shadow"
+              aria-label="Cerrar"
+              className="btn-tactil tactil-magia mt-4 w-full py-3 text-white"
             >
-              Entendido
+              <CheckIcon weight="bold" className="h-6 w-6" aria-hidden />
             </button>
           </div>
         </div>
@@ -539,29 +449,18 @@ export function ExploradoresGame() {
               className="mx-auto drop-shadow-xl"
             />
             <h2 className="mt-3 font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F]">
-              ¡Misión Galáctica Cumplida!
+              ¡Ganaron!
             </h2>
-            <p className="mt-2 text-sm text-[#5B5678]">
-              El equipo conquistó los 6 territorios educativos y superó el Nivel 4: Castillo del Saber Supremo.
+            <p className="my-4 inline-flex items-center gap-1.5 text-xl font-bold text-[#17164F]">
+              <DiamondIcon weight="fill" className="h-6 w-6 text-[#C98F00]" aria-hidden />+{game.room.totalCoins ?? 400}
             </p>
-
-            <div className="my-4 grid grid-cols-2 gap-2 rounded-2xl bg-[#F2EEFF] p-3 text-xs font-bold">
-              <div className="text-center">
-                <span className="block text-lg text-[#5636D9]">+{game.room.totalCoins ?? 400}</span>
-                <span className="text-[10px] text-[#5B5678]">NovaCoins Ganadas</span>
-              </div>
-              <div className="text-center">
-                <span className="block text-lg text-[#127A43]">Nivel 4</span>
-                <span className="text-[10px] text-[#5B5678]">Maestría Total</span>
-              </div>
-            </div>
 
             <div className="flex flex-col gap-2.5">
               <Link
                 href="/estudiante/tienda"
                 className="btn-tactil tactil-juego w-full py-3 text-sm font-black text-[#17164F]"
               >
-                Equipar en la tienda
+                Tienda
               </Link>
               <button
                 type="button"
@@ -571,7 +470,7 @@ export function ExploradoresGame() {
                 }}
                 className="btn-tactil tactil-magia w-full py-3 text-sm font-bold text-white"
               >
-                Jugar otra partida
+                Otra vez
               </button>
             </div>
           </div>
@@ -582,135 +481,37 @@ export function ExploradoresGame() {
 }
 
 // -------------------------------------------------------------
-// STEP 1: Selección de Curso y Niveles
+// STEP 1: Curso. Tocar uno ya es elegirlo.
 // -------------------------------------------------------------
-function CourseSelect({
-  courseId,
-  onSelect,
-  onContinue,
-}: {
-  courseId: CursoId;
-  onSelect: (id: CursoId) => void;
-  onContinue: () => void;
-}) {
+function CourseSelect({ courseId, onSelect }: { courseId: CursoId; onSelect: (id: CursoId) => void }) {
   return (
     <div className="mx-auto max-w-xl">
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-[#FFC928]">
-            Paso 1 de 3 • Misión Educativa
-          </span>
-          <h1 className="mt-1 font-[family-name:var(--font-fredoka)] text-2xl font-bold text-white sm:text-3xl">
-            Elige tu Campo de Aventura
-          </h1>
-        </div>
-        <Image
-          src={JUEGO_ASSETS.robot}
-          alt="Cosmo Bot"
-          width={64}
-          height={72}
-          className="h-16 w-auto animate-bounce drop-shadow"
-        />
-      </header>
-
-      <div className="rounded-3xl bg-white/95 p-5 shadow-2xl text-[#17164F] sm:p-7">
-        <p className="text-xs font-semibold text-[#5B5678]">
-          Selecciona la materia que explorará tu equipo en el tablero interactivo:
-        </p>
-
-        <div className="mt-4 grid grid-cols-2 gap-3.5">
-          {COURSE_OPTIONS.map((c) => {
-            const on = c.id === courseId;
-            return (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => {
-                  soundManager.playCoin();
-                  onSelect(c.id);
-                }}
-                className={`relative flex flex-col items-center rounded-2xl p-4 text-center transition-all ${
-                  on
-                    ? "bg-[#F2EEFF] ring-3 ring-[#5636D9] shadow-md scale-[1.02]"
-                    : "bg-[#F7F4FF] hover:bg-[#EDE7FF] hover:scale-[1.01]"
-                }`}
-              >
-                {on && (
-                  <Image
-                    src={JUEGO_ASSETS.checkVerde}
-                    alt=""
-                    width={22}
-                    height={22}
-                    className="absolute right-2.5 top-2.5 h-5 w-5"
-                  />
-                )}
-                <Image
-                  src={c.icon}
-                  alt=""
-                  width={72}
-                  height={72}
-                  className="h-16 w-16 object-contain sm:h-20 sm:w-20 drop-shadow"
-                />
-                <span className="mt-2 text-sm font-bold text-[#17164F]">
-                  {c.nombre}
-                </span>
-                <span className="mt-1 text-[11px] leading-tight text-[#5B5678]">
-                  {c.desc}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Level Progression Preview */}
-        <div className="mt-6 rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] p-4">
-          <p className="text-[11px] font-bold text-[#5636D9] uppercase tracking-wide">
-            Estructura de Niveles del Tablero
-          </p>
-          <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {GAME_LEVELS.map((lvl) => (
-              <div
-                key={lvl.level}
-                className="rounded-xl bg-white p-2 text-center border border-[#C98F00]/20"
-              >
-                <div className="flex justify-center mb-1">
-                  <TrophyIcon weight="bold" className="h-4 w-4 text-[#C98F00]" aria-hidden />
-                </div>
-                <p className="text-[10px] font-bold text-[#17164F] truncate">
-                  Nivel {lvl.level}
-                </p>
-                <p className="text-[9px] text-[#C98F00] font-black">
-                  +{lvl.rewardCoins} pts
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            soundManager.playStep();
-            onContinue();
-          }}
-          className="mt-6 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white shadow-lg hover:bg-[#4323c4] active:scale-95"
-        >
-          Siguiente: Elegir Personaje →
-        </button>
-
-        <Link
-          href="/estudiante"
-          className="mt-3 block text-center text-xs font-semibold text-[#5B5678] hover:underline"
-        >
-          Volver al panel del estudiante
-        </Link>
+      <h1 className="mb-5 mt-2 text-center font-[family-name:var(--font-fredoka)] text-3xl font-bold text-white">
+        ¿Qué curso?
+      </h1>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        {COURSE_OPTIONS.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            aria-pressed={c.id === courseId}
+            onClick={() => {
+              soundManager.playCoin();
+              onSelect(c.id);
+            }}
+            className="card-tactil tactil-blanco min-h-[168px] flex-col items-center justify-center gap-2 p-4 text-center"
+          >
+            <Image src={c.icon} alt="" width={96} height={96} className="h-20 w-20 object-contain sm:h-24 sm:w-24" />
+            <span className="font-[family-name:var(--font-fredoka)] text-lg font-bold text-[#17164F]">{c.nombre}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
 // -------------------------------------------------------------
-// STEP 2: Selección de Personajes (Héroes con Vidas y Habilidades)
+// STEP 2: Personaje
 // -------------------------------------------------------------
 function CharacterSelectScreen({
   selectedClass,
@@ -725,53 +526,40 @@ function CharacterSelectScreen({
 }) {
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-4 flex items-center justify-between">
+      <h2 className="mb-5 mt-2 text-center font-[family-name:var(--font-fredoka)] text-3xl font-bold text-white">
+        ¿Quién eres?
+      </h2>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {(Object.keys(CHARACTER_PROFILES) as CharacterClass[]).map((cls) => (
+          <CharacterCard
+            key={cls}
+            profile={CHARACTER_PROFILES[cls]}
+            selected={selectedClass === cls}
+            onSelect={() => onSelectClass(cls)}
+          />
+        ))}
+      </div>
+
+      <div className="mx-auto mt-6 flex max-w-md gap-3">
         <button
           type="button"
           onClick={onBack}
-          className="text-xs sm:text-sm font-bold text-white/80 hover:text-white"
+          aria-label="Atrás"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white"
         >
-          ← Cambiar curso
+          <ArrowLeftIcon weight="bold" className="h-6 w-6" aria-hidden />
         </button>
-        <span className="rounded-full bg-[#FFC928]/20 border border-[#FFC928]/40 px-3 py-1 text-xs font-black text-[#FFC928]">
-          Paso 2 de 3 • Héroes de la Aventura
-        </span>
-      </div>
-
-      <div className="text-center mb-6">
-        <h2 className="font-[family-name:var(--font-fredoka)] text-2xl sm:text-3xl font-bold text-white">
-          Elige tu Personaje y Rol
-        </h2>
-        <p className="text-xs sm:text-sm text-white/70 mt-1">
-          Cada personaje tiene vidas, estadísticas y una habilidad única para el equipo:
-        </p>
-      </div>
-
-      {/* Grid of 4 Character Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {(Object.keys(CHARACTER_PROFILES) as CharacterClass[]).map((cls) => {
-          const profile = CHARACTER_PROFILES[cls];
-          return (
-            <CharacterCard
-              key={cls}
-              profile={profile}
-              selected={selectedClass === cls}
-              onSelect={() => onSelectClass(cls)}
-            />
-          );
-        })}
-      </div>
-
-      <div className="mt-8 flex justify-center">
         <button
           type="button"
+          aria-label="Siguiente"
           onClick={() => {
             soundManager.playStep();
             onContinue();
           }}
-          className="w-full max-w-md rounded-full bg-gradient-to-r from-[#FFC928] via-[#FF8A3D] to-[#E85D5D] py-3.5 text-sm sm:text-base font-black text-[#17164F] shadow-xl hover:brightness-110 active:scale-95"
+          className="btn-tactil tactil-juego flex-1 py-3 text-[#17164F]"
         >
-          Continuar con {CHARACTER_PROFILES[selectedClass].name} →
+          <ArrowRightIcon weight="bold" className="h-7 w-7" aria-hidden />
         </button>
       </div>
     </div>
@@ -779,7 +567,7 @@ function CharacterSelectScreen({
 }
 
 // -------------------------------------------------------------
-// STEP 3: Configuración de Sala
+// STEP 3: Sala. Dos caminos grandes; lo demás ya viene elegido.
 // -------------------------------------------------------------
 function RoomSetup({
   tab,
@@ -820,165 +608,126 @@ function RoomSetup({
 }) {
   return (
     <div className="mx-auto max-w-md">
-      <button
-        type="button"
-        onClick={onBack}
-        className="mb-3 text-xs sm:text-sm font-bold text-white/80 hover:text-white"
-      >
-        ← Cambiar personaje
-      </button>
-
-      <div className="rounded-3xl bg-white p-5 shadow-2xl text-[#17164F] sm:p-6">
-        {/* Tab switch */}
-        <div className="mb-4 grid grid-cols-2 gap-1 rounded-full bg-[#F2EEFF] p-1">
-          {(["crear", "unir"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTab(t)}
-              className={`rounded-full py-2 text-xs font-bold transition-all ${
-                tab === t ? "bg-[#5636D9] text-white shadow" : "text-[#5636D9]"
-              }`}
-            >
-              {t === "crear" ? "Crear Sala Cooperativa" : "Unirse con Código"}
-            </button>
-          ))}
+      <div className="mt-2 rounded-3xl bg-white p-5 text-[#17164F] sm:p-6">
+        <div className="mb-5 grid grid-cols-2 gap-2">
+          {(["crear", "unir"] as const).map((t) => {
+            const Icono = t === "crear" ? PlusIcon : SignInIcon;
+            const on = tab === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setTab(t)}
+                className={`flex flex-col items-center gap-1 rounded-2xl py-4 text-base font-bold transition-colors ${
+                  on ? "bg-[#5636D9] text-white" : "bg-[#F2EEFF] text-[#17164F]"
+                }`}
+              >
+                <Icono weight="bold" className="h-8 w-8" aria-hidden />
+                {t === "crear" ? "Crear" : "Entrar"}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Selected Hero Preview */}
-        <div className="mb-4 flex items-center gap-3 rounded-2xl bg-[#F7F4FF] p-3 border border-[#E8E0FF]">
-          <div
-            className="relative h-12 w-12 shrink-0 rounded-xl p-1"
-            style={{ backgroundColor: `${character.color}25` }}
-          >
-            <Image
-              src={character.avatarSrc}
-              alt={character.name}
-              fill
-              className="object-contain"
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-[#17164F]">{character.name}</p>
-            <p className="text-[10px] text-[#5636D9] font-semibold">{character.archetype}</p>
-          </div>
-          <div className="text-right">
-            <span className="text-xs">❤️x{character.stats.vida}</span>
-          </div>
-        </div>
-
-        <label className="text-[11px] font-bold text-[#5B5678]">
-          Tu Alias de Jugador
-        </label>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={character.name.split(" ")[0]}
-          className="mt-1 w-full rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] px-3 py-2.5 text-sm font-semibold text-[#17164F] outline-none focus:ring-2 focus:ring-[#5636D9]"
-        />
-
-        {tab === "crear" ? (
+        {tab === "unir" ? (
           <>
-            <label className="mt-3 block text-[11px] font-bold text-[#5B5678]">
-              Subtema Curricular
-            </label>
-            <select
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="mt-1 w-full rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] px-3 py-2.5 text-sm font-semibold text-[#17164F]"
-            >
-              {course.topics.map((t) => (
-                <option key={t} value={t}>
-                  {course.nombre}: {t}
-                </option>
-              ))}
-            </select>
-
-            <label className="mt-3 block text-[11px] font-bold text-[#5B5678]">
-              Número de Exploradores (2 a 6)
-            </label>
-            <div className="mt-1 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMaxPlayers(Math.max(2, maxPlayers - 1))}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F2EEFF] text-lg font-bold text-[#5636D9]"
-              >
-                −
-              </button>
-              <span className="text-xl font-bold text-[#17164F]">
-                {maxPlayers}
-              </span>
-              <button
-                type="button"
-                onClick={() => setMaxPlayers(Math.min(6, maxPlayers + 1))}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F2EEFF] text-lg font-bold text-[#5636D9]"
-              >
-                +
-              </button>
-            </div>
-
-            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#F2EEFF] p-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold text-[#5636D9]">
-                  Misión del Equipo
-                </p>
-                <p className="text-xs sm:text-sm font-bold text-[#17164F]">
-                  {course.mission}
-                </p>
-              </div>
-              <Image
-                src={JUEGO_ASSETS.castillo}
-                alt=""
-                width={56}
-                height={56}
-                className="h-14 w-14 object-contain"
-              />
-            </div>
-
-            <button
-              type="button"
-              disabled={busy}
-              onClick={onCreate}
-              className="mt-5 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white shadow-lg hover:bg-[#4323c4] disabled:opacity-60"
-            >
-              {busy ? "Creando sala..." : "Crear Sala Cooperativa"}
-            </button>
-          </>
-        ) : (
-          <>
-            <label className="mt-3 block text-[11px] font-bold text-[#5B5678]">
-              Código de Sala (ej. 8F3K7)
+            <label htmlFor="codigo-sala" className="sr-only">
+              Código de sala
             </label>
             <input
+              id="codigo-sala"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               placeholder="CÓDIGO"
               maxLength={6}
-              className="mt-1 w-full rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] px-3 py-3 text-center text-xl font-bold tracking-[0.3em] text-[#17164F] outline-none focus:ring-2 focus:ring-[#5636D9]"
+              autoComplete="off"
+              className="w-full rounded-2xl border-2 border-[#E8E0FF] bg-[#F7F4FF] px-3 py-4 text-center text-2xl font-bold tracking-[0.3em] text-[#17164F] outline-none focus:border-[#5636D9]"
             />
-            <button
-              type="button"
-              disabled={busy || joinCode.length < 4}
-              onClick={onJoin}
-              className="mt-5 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-bold text-white shadow-lg hover:bg-[#4323c4] disabled:opacity-60"
-            >
-              {busy ? "Entrando..." : "Unirse a la Expedición"}
-            </button>
           </>
-        )}
+        ) : null}
 
-        {error && (
-          <p className="mt-3 text-center text-xs font-semibold text-[#E85D5D]">
-            {error}
-          </p>
-        )}
+        <details className="mt-4 rounded-2xl bg-[#F7F4FF] p-3">
+          <summary className="cursor-pointer text-sm font-bold text-[#17164F]">Más opciones</summary>
+          <label htmlFor="alias-jugador" className="mt-3 block text-sm font-bold text-[#17164F]">
+            Tu alias
+          </label>
+          <input
+            id="alias-jugador"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={character.name.split(" ")[0]}
+            className="mt-1 w-full rounded-xl border border-[#E8E0FF] bg-white px-3 py-2.5 font-semibold text-[#17164F] outline-none focus:border-[#5636D9]"
+          />
+          {tab === "crear" ? (
+            <>
+              <label htmlFor="tema-sala" className="mt-3 block text-sm font-bold text-[#17164F]">
+                Tema
+              </label>
+              <select
+                id="tema-sala"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-[#E8E0FF] bg-white px-3 py-2.5 font-semibold text-[#17164F]"
+              >
+                {course.topics.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <div className="mt-3 flex items-center gap-3">
+                <UsersIcon weight="fill" className="h-6 w-6 text-[#5636D9]" aria-label="Jugadores" />
+                <button
+                  type="button"
+                  aria-label="Menos jugadores"
+                  onClick={() => setMaxPlayers(Math.max(2, maxPlayers - 1))}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-xl font-bold text-[#5636D9]"
+                >
+                  −
+                </button>
+                <span className="w-6 text-center text-xl font-bold text-[#17164F]">{maxPlayers}</span>
+                <button
+                  type="button"
+                  aria-label="Más jugadores"
+                  onClick={() => setMaxPlayers(Math.min(6, maxPlayers + 1))}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-xl font-bold text-[#5636D9]"
+                >
+                  +
+                </button>
+              </div>
+            </>
+          ) : null}
+        </details>
+
+        <div className="mt-5 flex gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Atrás"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#F2EEFF] text-[#17164F]"
+          >
+            <ArrowLeftIcon weight="bold" className="h-6 w-6" aria-hidden />
+          </button>
+          <button
+            type="button"
+            disabled={busy || (tab === "unir" && joinCode.length < 4)}
+            onClick={tab === "crear" ? onCreate : onJoin}
+            aria-label={tab === "crear" ? "Crear sala" : "Entrar a la sala"}
+            className="btn-tactil tactil-juego flex-1 py-3 text-[#17164F]"
+          >
+            {busy ? "..." : <ArrowRightIcon weight="bold" className="h-7 w-7" aria-hidden />}
+          </button>
+        </div>
+
+        {error ? <p className="mt-3 text-center text-sm font-bold text-[#D9583F]">{error}</p> : null}
       </div>
     </div>
   );
 }
 
 // -------------------------------------------------------------
-// STEP 4: Lobby de la Sala
+// STEP 4: Sala de espera. El código, quién está y un botón.
 // -------------------------------------------------------------
 function LobbyScreen({
   room,
@@ -989,7 +738,6 @@ function LobbyScreen({
   onAddGuest,
   onRemoveGuest,
   onStart,
-  onLeave,
 }: {
   room: NonNullable<ReturnType<typeof useGameRoom>["room"]>;
   meId: string;
@@ -999,66 +747,36 @@ function LobbyScreen({
   onAddGuest: () => void;
   onRemoveGuest: (targetId: string) => void;
   onStart: () => void;
-  onLeave: () => void;
 }) {
   const me = room.players.find((p) => p.id === meId)!;
-  const slots = Array.from(
-    { length: room.maxPlayers },
-    (_, i) => room.players[i] ?? null,
-  );
+  const slots = Array.from({ length: room.maxPlayers }, (_, i) => room.players[i] ?? null);
   const canAdd = me.isHost && room.players.length < room.maxPlayers;
+  const todosListos = room.players.every((p) => p.ready);
 
   return (
     <div className="mx-auto max-w-md">
-      <div className="rounded-3xl bg-white p-5 shadow-2xl text-[#17164F] sm:p-6">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h2 className="font-[family-name:var(--font-fredoka)] text-xl font-bold text-[#17164F]">
-              Sala de Espera
-            </h2>
-            <p className="text-xs text-[#5B5678]">{room.teamName}</p>
+      <div className="mt-2 rounded-3xl bg-white p-5 text-[#17164F] sm:p-6">
+        <div className="flex items-center justify-between gap-2 rounded-2xl bg-[#F2EEFF] px-4 py-3">
+          <p className="font-[family-name:var(--font-fredoka)] text-3xl font-black tracking-widest text-[#17164F]">
+            {room.code}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              aria-label="Copiar código"
+              title="Copiar código"
+              onClick={() => {
+                soundManager.playCoin();
+                navigator.clipboard?.writeText(room.code);
+              }}
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white"
+            >
+              <Image src={JUEGO_ASSETS.copiar} alt="" width={24} height={24} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onLeave}
-            className="text-xs font-bold text-[#E85D5D] hover:underline"
-          >
-            Salir
-          </button>
         </div>
 
-        {/* Room code card */}
-        <div className="mt-3 flex items-center justify-between rounded-2xl bg-[#F2EEFF] px-4 py-2.5">
-          <div>
-            <p className="text-[10px] font-bold text-[#5636D9] uppercase">
-              Código de Sala
-            </p>
-            <p className="font-[family-name:var(--font-fredoka)] text-2xl font-black tracking-widest text-[#17164F]">
-              {room.code}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              soundManager.playCoin();
-              navigator.clipboard?.writeText(room.code);
-            }}
-            className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#5636D9] shadow hover:bg-slate-50"
-          >
-            <Image src={JUEGO_ASSETS.copiar} alt="" width={16} height={16} />
-            Copiar
-          </button>
-        </div>
-
-        <p className="mt-3 text-xs text-[#5B5678]">
-          <strong>Misión: </strong>{room.topic}. {room.mission}
-        </p>
-        <p className="mt-1 text-[11px] font-bold text-[#5636D9]">
-          {room.players.length}/{room.maxPlayers} Exploradores Conectados
-        </p>
-
-        {/* Players slots with health badges */}
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
           {slots.map((p, i) => {
             if (!p) {
               return (
@@ -1067,94 +785,42 @@ function LobbyScreen({
                   type="button"
                   disabled={!canAdd || busy}
                   onClick={onAddGuest}
-                  className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#C4B5FD] bg-[#F7F4FF] p-3 min-h-[105px] transition hover:border-[#5636D9] hover:bg-[#EDE7FF] disabled:opacity-50"
+                  aria-label="Agregar jugador"
+                  className="flex min-h-[112px] items-center justify-center rounded-2xl border-2 border-dashed border-[#C4B5FD] bg-[#F7F4FF] text-[#5636D9] transition-colors hover:border-[#5636D9] disabled:opacity-50"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-base font-bold text-[#5636D9] shadow">
-                    +
-                  </div>
-                  <span className="mt-1 text-[10px] font-bold text-[#5636D9]">
-                    Agregar Bot
-                  </span>
+                  <PlusIcon weight="bold" className="h-8 w-8" aria-hidden />
                 </button>
               );
             }
-            const av =
-              JUEGO_ASSETS.avatars.find((a) => a.id === p.avatarId)?.src ??
-              JUEGO_ASSETS.avatars[0].src;
-            const profile = getCharacterProfileByAvatar(p.avatarId);
-
+            const av = JUEGO_ASSETS.avatars.find((a) => a.id === p.avatarId)?.src ?? JUEGO_ASSETS.avatars[0].src;
             return (
-              <div
-                key={p.id}
-                className="relative flex flex-col items-center rounded-2xl bg-[#F7F4FF] p-3 text-center border border-[#E8E0FF]"
-              >
-                {me.isHost && !p.isHost && (
+              <div key={p.id} className="relative flex min-h-[112px] flex-col items-center justify-center rounded-2xl bg-[#F7F4FF] p-2 text-center">
+                {me.isHost && !p.isHost ? (
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() => onRemoveGuest(p.id)}
-                    className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#FEE2E2] text-xs font-bold text-[#E85D5D]"
+                    className="absolute right-1 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#FFEDE8] text-[#D9583F]"
                     aria-label={`Quitar a ${p.name}`}
                   >
-                    ×
+                    <XIcon weight="bold" className="h-4 w-4" aria-hidden />
                   </button>
-                )}
-                <Image
-                  src={av}
-                  alt=""
-                  width={44}
-                  height={44}
-                  className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow"
-                />
-                <span className="mt-1 truncate text-xs font-bold text-[#17164F] max-w-[90px]">
-                  {p.name}
+                ) : null}
+                <span className="relative">
+                  <Image src={av} alt="" width={56} height={56} className="h-14 w-14 rounded-full object-cover" />
+                  {p.ready ? (
+                    <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#2DBE70] text-[#17164F]">
+                      <CheckIcon weight="bold" className="h-4 w-4" aria-label="Listo" />
+                    </span>
+                  ) : null}
                 </span>
-                <span className="text-[9px] text-[#5636D9] font-semibold">
-                  {profile.archetype}
-                </span>
-                <span className="text-[9px] text-[#E85D5D]">
-                  {"❤️".repeat(p.lives ?? 3)}
-                </span>
-                {p.ready ? (
-                  <span className="mt-1 flex items-center gap-0.5 text-[9px] font-bold text-[#127A43]">
-                    <Image src={JUEGO_ASSETS.checkVerde} alt="" width={12} height={12} />
-                    Listo
-                  </span>
-                ) : (
-                  <span className="mt-1 text-[9px] font-bold text-[#6A6586]">
-                    Preparando…
-                  </span>
-                )}
+                <span className="mt-1.5 max-w-[100px] truncate text-sm font-bold text-[#17164F]">{p.name}</span>
               </div>
             );
           })}
         </div>
 
-        {canAdd && (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={onAddGuest}
-            className="mt-3 w-full rounded-full border-2 border-dashed border-[#5636D9] bg-[#F2EEFF] py-2 text-xs font-bold text-[#5636D9] hover:bg-[#E8E0FF]"
-          >
-            + Invitar Compañero / Bot
-          </button>
-        )}
-
-        <button
-          type="button"
-          disabled={busy}
-          onClick={onReady}
-          className={`mt-3 w-full rounded-full py-3 text-sm font-bold shadow transition-all ${
-            me.ready
-              ? "bg-[#E8E0FF] text-[#5636D9]"
-              : "bg-[#25CFE0] text-[#17164F] hover:brightness-105"
-          }`}
-        >
-          {me.ready ? "Cambiar a 'No listo'" : "¡Estoy listo para Jugar!"}
-        </button>
-
-        {me.isHost && (
+        {me.isHost && todosListos ? (
           <button
             type="button"
             disabled={busy || room.players.length < 2}
@@ -1162,26 +828,39 @@ function LobbyScreen({
               soundManager.playCorrect();
               onStart();
             }}
-            className="mt-2 w-full rounded-full bg-[#5636D9] py-3.5 text-sm font-black text-white shadow-lg hover:bg-[#4323c4] disabled:bg-[#6A6586]"
+            className="btn-tactil tactil-juego mt-5 w-full gap-2 py-3.5 text-lg text-[#17164F]"
           >
-            {room.players.length < 2
-              ? "Agrega al menos 1 compañero"
-              : "¡Comenzar Partida!"}
+            {room.players.length < 2 ? (
+              <>
+                <PlusIcon weight="bold" className="h-6 w-6" aria-hidden />
+                Falta 1 jugador
+              </>
+            ) : (
+              "¡Jugar!"
+            )}
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onReady}
+            className={`btn-tactil mt-5 w-full gap-2 py-3.5 text-lg ${
+              me.ready ? "tactil-blanco text-[#17164F]" : "tactil-cooperar text-[#17164F]"
+            }`}
+          >
+            <CheckIcon weight="bold" className="h-6 w-6" aria-hidden />
+            {me.ready ? "Esperando" : "¡Listo!"}
           </button>
         )}
 
-        {error && (
-          <p className="mt-2 text-center text-xs font-semibold text-[#D9583F]">
-            {error}
-          </p>
-        )}
+        {error ? <p className="mt-2 text-center text-sm font-bold text-[#D9583F]">{error}</p> : null}
       </div>
     </div>
   );
 }
 
 // -------------------------------------------------------------
-// STEP 5: Pantalla de Juego Principal con Vidas, Niveles y Dado 3D
+// STEP 5: Tablero. Corazones, tablero y dado.
 // -------------------------------------------------------------
 function PlayScreen({
   room,
@@ -1194,8 +873,6 @@ function PlayScreen({
   onAnimatingChange,
   onTileInfo,
   onShowTerritories,
-  onLeave,
-  onUseAbility,
 }: {
   room: GameRoom;
   me: PlayerState;
@@ -1203,21 +880,15 @@ function PlayScreen({
   canControlTurn: boolean;
   busy: boolean;
   error: string | null;
-  onRoll: () => Promise<GameRoom | null>;
+  onRoll: (extraSteps: number) => Promise<GameRoom | null>;
   onAnimatingChange: (v: boolean) => void;
   onTileInfo: (i: number | null) => void;
   onShowTerritories: () => void;
-  onLeave: () => void;
-  onUseAbility: () => void;
 }) {
   const [rolling, setRolling] = useState(false);
   const [displayPositions, setDisplayPositions] = useState<Record<string, number>>({});
   const [landingTile, setLandingTile] = useState<number | null>(null);
   const [diceFace, setDiceFace] = useState<number | null>(null);
-  const [hint, setHint] = useState("Lanza el dado para avanzar por el tablero");
-  const [robotSpeech, setRobotSpeech] = useState<string>(
-    "¡Tu turno! Cada respuesta correcta suma NovaCoins para personalizar tu avatar."
-  );
 
   const current = room.players[room.turnIndex];
   const blocked = Boolean(room.pending) || rolling || busy;
@@ -1226,6 +897,8 @@ function PlayScreen({
   const ranked = room.players.slice().sort((a, b) => b.xp - a.xp);
   const leaderId = ranked[0]?.id;
   const currentProfile = getCharacterProfileByAvatar(current?.avatarId ?? me.avatarId);
+  const Habilidad = iconoHabilidad[currentProfile.id];
+  const puedeTurbo = currentProfile.id === "gamer" && !current?.usedAbility;
 
   // Sync positions when not animating
   useEffect(() => {
@@ -1235,32 +908,30 @@ function PlayScreen({
     setDisplayPositions(map);
   }, [room.players, rolling]);
 
-  async function handleRoll() {
+  async function handleRoll(extraSteps = 0) {
     if (!canRoll || !current) return;
     soundManager.init();
     soundManager.playDice();
+    if (extraSteps) soundManager.playAbility();
     const from = current.position % BOARD_TILES.length;
     setRolling(true);
     onAnimatingChange(true);
-    setHint("¡El dado 3D está rodando...!");
     setDiceFace(null);
 
-    const nextRoom = await onRoll();
+    const nextRoom = await onRoll(extraSteps);
     if (!nextRoom) {
       setRolling(false);
       onAnimatingChange(false);
-      setHint("No se pudo lanzar. Intenta de nuevo.");
       return;
     }
 
     const mover = nextRoom.players.find((p) => p.id === current.id)!;
     const to = mover.position % BOARD_TILES.length;
-    const dice = nextRoom.dice ?? 1;
-    setDiceFace(dice);
-    setHint(`${current.name} avanza ${dice} casillas`);
+    // Con Turbo se avanza más que la cara del dado, y el dado solo tiene seis caras.
+    const pasos = nextRoom.dice ?? 1;
+    setDiceFace(Math.min(6, Math.max(1, pasos - extraSteps)));
 
-    // Step by step audio and hopping animation
-    for (let step = 1; step <= dice; step++) {
+    for (let step = 1; step <= pasos; step++) {
       const pos = (from + step) % BOARD_TILES.length;
       setDisplayPositions((prev) => ({ ...prev, [current.id]: pos }));
       setLandingTile(pos);
@@ -1269,11 +940,6 @@ function PlayScreen({
     }
 
     setLandingTile(to);
-    setHint(
-      nextRoom.pending
-        ? `Aterrizaste en: ${BOARD_TILES[to].label}!`
-        : "Turno completado"
-    );
     await new Promise((r) => setTimeout(r, 250));
     setRolling(false);
     onAnimatingChange(false);
@@ -1281,165 +947,54 @@ function PlayScreen({
   }
 
   return (
-    <div className="relative mx-auto min-h-[calc(100dvh-1rem)] w-full max-w-6xl overflow-hidden rounded-3xl bg-[#17164F] border-2 border-white/10 shadow-2xl">
-      {/* Top HUD: Vidas, NovaCoins, Nivel, Combo */}
-      <header className="relative z-30 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/95 px-3 py-2 text-[#17164F] shadow-lg sm:px-5">
-        {/* Jugador en Turno */}
+    <div className="relative mx-auto w-full max-w-6xl">
+      <header className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white px-3 py-2 text-[#17164F]">
         <div className="flex items-center gap-2">
-          <div className="relative h-10 w-10 shrink-0">
-            <Image
-              src={currentProfile.avatarSrc}
-              alt=""
-              fill
-              className="rounded-full object-cover ring-2 ring-[#5636D9]"
-            />
-            {current?.id === leaderId && (
-              <CrownIcon weight="fill" className="absolute -top-1.5 -right-1.5 h-4 w-4 text-[#FFC928]" />
-            )}
+          <div className="relative h-11 w-11 shrink-0">
+            <Image src={currentProfile.avatarSrc} alt="" fill sizes="44px" className="rounded-full object-cover ring-2 ring-[#5636D9]" />
+            {current?.id === leaderId ? (
+              <CrownIcon weight="fill" className="absolute -right-1.5 -top-1.5 h-5 w-5 text-[#FFC928]" aria-label="Va ganando" />
+            ) : null}
           </div>
           <div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-black">{current?.name}</span>
-              <span className="text-[10px] text-[#5636D9] font-semibold">({currentProfile.archetype})</span>
-            </div>
-            {/* Lives */}
-            <div className="flex items-center gap-1 text-xs" title={`Vidas: ${current?.lives ?? 3}`}>
+            <p className="text-sm font-black">{current?.name}</p>
+            <div className="flex items-center gap-0.5" role="img" aria-label={`${current?.lives ?? 3} corazones`}>
               {Array.from({ length: current?.maxLives ?? 3 }).map((_, i) => (
                 <HeartIcon
                   key={i}
                   weight="fill"
-                  className={`h-3.5 w-3.5 ${
-                    i < (current?.lives ?? 3)
-                      ? "text-[#FF8A73]"
-                      : "text-slate-300"
-                  }`}
+                  className={`h-4 w-4 ${i < (current?.lives ?? 3) ? "text-[#FF8A73]" : "text-[#17164F]/15"}`}
                   aria-hidden
                 />
               ))}
-              {(current?.shields ?? 0) > 0 && (
-                <span title="Escudo activo" className="ml-1 inline-flex items-center">
-                  <LockIcon weight="bold" className="h-3.5 w-3.5 text-[#FFC928]" aria-hidden />
-                </span>
-              )}
+              {(current?.shields ?? 0) > 0 ? <ShieldCheckIcon weight="fill" className="ml-1 h-4 w-4 text-[#C98F00]" aria-label="Escudo" /> : null}
             </div>
           </div>
         </div>
 
-        {/* Global Level and Mission Pill */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onShowTerritories}
-            className="flex items-center gap-1.5 rounded-full border border-[#3B229D]/20 border-b-2 border-b-[#3B229D] bg-[#F2EEFF] px-3 py-1 text-xs font-extrabold text-[#5636D9]"
+            aria-label={`Nivel ${room.currentLevel ?? 1}, ${unlocked} de 6 territorios`}
+            className="flex h-11 items-center gap-1.5 rounded-xl bg-[#F2EEFF] px-3 text-base font-extrabold text-[#17164F]"
           >
-            <TrophyIcon weight="bold" className="h-3.5 w-3.5 text-[#5636D9]" aria-hidden />
-            <span>Nivel {room.currentLevel ?? 1}</span>
-            <span className="text-[10px] text-[#5B5678]">({unlocked}/6 Territorios)</span>
+            <TrophyIcon weight="fill" className="h-5 w-5 text-[#5636D9]" aria-hidden />
+            {unlocked}/6
           </button>
-        </div>
-
-        {/* Currency & Score Stats */}
-        <div className="flex items-center gap-2">
-          {/* NovaCoins */}
-          <div className="flex items-center gap-1.5 rounded-xl border border-[#C98F00]/30 border-b-2 border-b-[#C98F00] bg-[#FFF6D6] px-2.5 py-1 text-xs font-black text-[#17164F]">
-            <DiamondIcon weight="fill" className="h-3.5 w-3.5 text-[#C98F00]" aria-hidden />
-            <span>{me.novaCoins ?? 80}</span>
-          </div>
-
-          {/* XP */}
-          <div className="flex items-center gap-1.5 rounded-xl border border-[#1B8A4F]/30 border-b-2 border-b-[#1B8A4F] bg-[#E3F8EC] px-2.5 py-1 text-xs font-black text-[#17164F]">
-            <LightningIcon weight="fill" className="h-3.5 w-3.5 text-[#1B8A4F]" aria-hidden />
-            <span>{me.xp} XP</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={onLeave}
-            className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200"
-            title="Salir al Menú"
-          >
-            <Image src={JUEGO_ASSETS.salir} alt="Salir" width={16} height={16} />
-          </button>
+          <span className="flex h-11 items-center gap-1.5 rounded-xl bg-[#FFF6D6] px-3 text-base font-black text-[#17164F]" aria-label={`${me.novaCoins ?? 80} monedas`}>
+            <DiamondIcon weight="fill" className="h-5 w-5 text-[#C98F00]" aria-hidden />
+            {me.novaCoins ?? 80}
+          </span>
+          <span className="flex h-11 items-center gap-1.5 rounded-xl bg-[#E3F8EC] px-3 text-base font-black text-[#17164F]" aria-label={`${me.xp} puntos`}>
+            <LightningIcon weight="fill" className="h-5 w-5 text-[#1B8A4F]" aria-hidden />
+            {me.xp}
+          </span>
         </div>
       </header>
 
-      {/* Main Play Area */}
-      <div className="relative flex flex-col lg:flex-row items-center justify-between p-2 sm:p-4 gap-4">
-        {/* Left Column: Player Cards / Ranking */}
-        <aside className="w-full lg:w-56 shrink-0 space-y-2 hidden sm:block">
-          <div className="rounded-2xl bg-white/95 p-3 shadow-xl backdrop-blur text-[#17164F]">
-            <p className="text-[10px] font-bold text-[#5636D9] uppercase tracking-wider mb-2">
-              Exploradores en Sala
-            </p>
-            <div className="space-y-1.5">
-              {ranked.map((p) => {
-                const av =
-                  JUEGO_ASSETS.avatars.find((a) => a.id === p.avatarId)?.src ??
-                  JUEGO_ASSETS.avatars[0].src;
-                const onTurn = p.id === current?.id;
-                return (
-                  <div
-                    key={p.id}
-                    className={`flex items-center justify-between rounded-xl p-2 transition-all ${
-                      onTurn
-                        ? "bg-[#FFF6D6] ring-2 ring-[#FFC928] shadow-sm"
-                        : "bg-[#F7F4FF]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src={av}
-                        alt=""
-                        width={28}
-                        height={28}
-                        className="h-7 w-7 rounded-full object-cover"
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold leading-tight">
-                          {p.name}
-                        </p>
-                        <div className="flex items-center gap-0.5 mt-0.5">
-                          {Array.from({ length: p.lives ?? 3 }).map((_, li) => (
-                            <HeartIcon key={li} weight="fill" className="h-2.5 w-2.5 text-[#FF8A73]" aria-hidden />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs font-black text-[#5636D9]">
-                      {p.xp} XP
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active Character Ability Action Card */}
-          {current?.id === me.id && (
-            <div className="rounded-2xl border border-white/20 bg-white/95 p-3 shadow-xl text-[#17164F]">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#5636D9]">
-                <span>{currentProfile.activeIcon}</span>
-                <span>{currentProfile.activeName}</span>
-              </div>
-              <p className="text-[10px] text-[#5B5678] mt-1 leading-tight">
-                {currentProfile.activeDesc}
-              </p>
-              {currentProfile.id === "gamer" && (
-                <button
-                  type="button"
-                  disabled={!canRoll}
-                  onClick={onUseAbility}
-                  className="mt-2 w-full rounded-full bg-[#FF8A3D] py-1.5 text-xs font-black text-white shadow hover:brightness-110 active:scale-95 disabled:opacity-50"
-                >
-                  ⚡ Activar Turbo (+2 Casillas)
-                </button>
-              )}
-            </div>
-          )}
-        </aside>
-
-        {/* Central: 3D Board Component */}
-        <div className="flex-1 w-full max-w-[560px] sm:max-w-[620px] mx-auto py-2">
+      <div className="mt-3 flex flex-col items-center gap-3 lg:flex-row lg:items-start lg:justify-center">
+        <div className="mx-auto w-full max-w-[560px] flex-1 sm:max-w-[620px]">
           <GameBoard
             players={room.players}
             turnIndex={room.turnIndex}
@@ -1452,44 +1007,47 @@ function PlayScreen({
           />
         </div>
 
-        {/* Right Column: Interactive 3D Dice & Robot Coach */}
-        <aside className="w-full lg:w-56 shrink-0 flex flex-col items-center justify-between gap-3">
-          {/* 3D Dice Component */}
-          <div className="w-full rounded-2xl bg-white/95 p-4 shadow-xl text-center backdrop-blur">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#5636D9] mb-2">
-              Tirada de Avance
-            </p>
+        <aside className="flex w-full shrink-0 flex-col gap-3 lg:w-56">
+          <div className="rounded-2xl bg-white p-4 text-center">
             <Dice3D
-              value={diceFace ?? room.dice}
+              value={diceFace ?? (room.dice ? Math.min(6, room.dice) : null)}
               rolling={rolling}
               canRoll={canRoll}
-              onRoll={handleRoll}
+              onRoll={() => handleRoll()}
               accentColor={currentProfile.color}
             />
+            {canRoll && puedeTurbo ? (
+              <button
+                type="button"
+                onClick={() => handleRoll(2)}
+                aria-label={`${currentProfile.activeName}: ${currentProfile.activeDesc}`}
+                className="btn-tactil tactil-refuerzo mt-3 w-full gap-2 py-2.5 text-base text-[#17164F]"
+              >
+                <Habilidad weight="fill" className="h-5 w-5" aria-hidden />
+                {currentProfile.activeShort}
+              </button>
+            ) : null}
+            {!isMyTurn && canControlTurn ? (
+              <p className="mt-2 text-sm font-bold text-[#17164F]">Lanza por {current?.name}</p>
+            ) : null}
+            {error ? <p className="mt-2 text-sm font-bold text-[#D9583F]">{error}</p> : null}
           </div>
 
-          {/* Robot Mascot Coach Dialogue Box */}
-          <div className="w-full rounded-2xl border border-white/20 bg-gradient-to-b from-[#17164F] to-[#2E2870] p-3 text-white shadow-xl">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Image
-                src={JUEGO_ASSETS.robot}
-                alt="Cosmo Bot"
-                width={32}
-                height={32}
-                className="h-8 w-8 object-contain animate-bounce"
-              />
-              <span className="text-[10px] font-black uppercase text-[#FFC928]">
-                Cosmo-Bot Guía
-              </span>
-            </div>
-            <p className="text-xs leading-snug text-white/90">
-              {room.pending
-                ? "¡Actividad en curso! Resuelve la pregunta para seguir avanzando."
-                : canControlTurn && !isMyTurn
-                  ? `Lanzas por tu compañero ${current?.name}.`
-                  : hint}
-            </p>
-          </div>
+          <ul className="hidden gap-1.5 rounded-2xl bg-white p-2 text-[#17164F] lg:grid" aria-label="Jugadores">
+            {ranked.map((p) => {
+              const av = JUEGO_ASSETS.avatars.find((a) => a.id === p.avatarId)?.src ?? JUEGO_ASSETS.avatars[0].src;
+              return (
+                <li
+                  key={p.id}
+                  className={`flex items-center gap-2 rounded-xl p-1.5 ${p.id === current?.id ? "bg-[#FFF6D6]" : ""}`}
+                >
+                  <Image src={av} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
+                  <span className="min-w-0 flex-1 truncate text-sm font-bold">{p.name}</span>
+                  <span className="text-sm font-black">{p.xp}</span>
+                </li>
+              );
+            })}
+          </ul>
         </aside>
       </div>
     </div>
@@ -1510,20 +1068,16 @@ function TerritoriesModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
       <div className="w-full max-w-md rounded-3xl bg-white p-5 sm:p-6 shadow-2xl text-[#17164F]">
         <div className="flex items-center justify-between">
-          <h3 className="font-[family-name:var(--font-fredoka)] text-xl font-bold">
-            Mapa de Territorios
-          </h3>
+          <h3 className="font-[family-name:var(--font-fredoka)] text-xl font-bold">Territorios</h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-xs font-bold text-[#5B5678] hover:underline"
+            aria-label="Cerrar"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F2EEFF] text-[#17164F]"
           >
-            Cerrar
+            <XIcon weight="bold" className="h-5 w-5" aria-hidden />
           </button>
         </div>
-        <p className="text-xs text-[#5B5678] mt-1">
-          Cada territorio representa un mundo del saber conquistado por el equipo:
-        </p>
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           {TERRITORIES.map((t) => {
@@ -1547,31 +1101,15 @@ function TerritoriesModal({
                 <span className="mt-2 text-xs font-bold leading-tight">
                   {t.nombre}
                 </span>
-                <span className="mt-1 flex items-center justify-center gap-1 text-[10px] font-black">
-                  {isUnlocked ? (
-                    <>
-                      <CheckIcon weight="bold" className="h-3 w-3 text-[#1B8A4F]" aria-hidden />
-                      <span className="text-[#1B8A4F]">Conquistado</span>
-                    </>
-                  ) : (
-                    <>
-                      <LockIcon weight="bold" className="h-3 w-3 text-[#5B5678]" aria-hidden />
-                      <span className="text-[#5B5678]">Bloqueado</span>
-                    </>
-                  )}
-                </span>
+                {isUnlocked ? (
+                  <CheckIcon weight="bold" className="mt-1 h-5 w-5 text-[#1B8A4F]" aria-label="Conquistado" />
+                ) : (
+                  <LockIcon weight="bold" className="mt-1 h-5 w-5 text-[#5B5678]" aria-label="Bloqueado" />
+                )}
               </div>
             );
           })}
         </div>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-5 w-full rounded-full bg-[#5636D9] py-3 text-xs font-bold text-white shadow"
-        >
-          Volver al Tablero
-        </button>
       </div>
     </div>
   );

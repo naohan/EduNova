@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
+import { TituloPantalla } from "@/components/estudiante/shared/kit";
+import { DiamondIcon } from "@/components/ui/icons";
 import { buyItem, getShopItems, getStudentProfile, toggleItem, type ApiResult } from "@/lib/api/client";
 import type { AvatarSlot, Inventory, ShopItem } from "@/lib/api/edunova-contract";
 import { useApi } from "@/lib/api/use-api";
@@ -73,15 +75,7 @@ export default function Page() {
   return (
     <EstudianteLayout>
       <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
-        <header className="mb-5">
-          <Link href="/estudiante/ligas" className="text-sm text-[#5B5678]">
-            ‹ Ligas
-          </Link>
-          <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
-            Tienda de tu mascota
-          </h1>
-          <p className="mt-1 text-sm text-[#5B5678]">Usa tus NovaCoins para darle estilo a tu robot.</p>
-        </header>
+        <TituloPantalla voz="Usa tus monedas para darle estilo a tu robot.">Tienda</TituloPantalla>
 
         {error ? (
           <p role="alert" className="mb-4 rounded-xl bg-[#FEE2E2] px-4 py-3 text-sm text-[#991B1B]">
@@ -90,7 +84,7 @@ export default function Page() {
         ) : null}
         {catalogo.status === "error" ? (
           <p role="status" className="mb-4 rounded-xl bg-[#FEF3C7] px-4 py-3 text-sm text-[#92400E]">
-            No se pudo conectar con el servidor: por ahora no se puede comprar.
+            Sin conexión: por ahora no se puede comprar.
           </p>
         ) : null}
 
@@ -98,10 +92,9 @@ export default function Page() {
           <section className="rounded-2xl border border-[#E8E0FF] bg-white p-5 text-center">
             <Mascota puestos={puestos} />
             {inventario ? (
-              <p className="mt-3 text-sm text-[#5B5678]">
-                Tienes{" "}
-                <strong className="text-lg text-[#92400E]">{inventario.novaCoins.toLocaleString("es-PE")}</strong>{" "}
-                NovaCoins
+              <p className="mt-3 inline-flex items-center gap-1.5 text-2xl font-black text-[#17164F]" aria-label={`Tienes ${inventario.novaCoins} monedas`}>
+                <DiamondIcon weight="fill" className="h-6 w-6 text-[#C98F00]" aria-hidden />
+                {inventario.novaCoins.toLocaleString("es-PE")}
               </p>
             ) : null}
             {usuario !== undefined && !studentId ? (
@@ -109,38 +102,31 @@ export default function Page() {
                 href="/login"
                 className="mt-3 inline-block rounded-xl bg-[#5636D9] px-4 py-2.5 text-sm font-bold text-white"
               >
-                Inicia sesión para comprar
+                Entrar
               </Link>
             ) : null}
           </section>
 
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-2 gap-3">
             {items.map((item) => {
               const tengo = inventario?.ownedItems.includes(item.id) ?? false;
               const puesto = inventario?.equippedItems.includes(item.id) ?? false;
               const alcanza = (inventario?.novaCoins ?? 0) >= item.price;
               const bloqueado = !inventario || catalogo.status !== "ok" || ocupado !== null;
               return (
-                <li key={item.id} className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <span aria-hidden className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F2EEFF] text-2xl">
-                      {item.emoji}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-bold text-[#17164F]">{item.name}</span>
-                      <span className="text-xs text-[#5B5678]">
-                        {tengo ? "Ya es tuyo" : `${item.price} NovaCoins`}
-                      </span>
-                    </span>
-                  </div>
+                <li key={item.id} className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 text-center">
+                  <span aria-hidden className="text-5xl">
+                    {item.emoji}
+                  </span>
+                  <span className="font-bold text-[#17164F]">{item.name}</span>
                   {tengo ? (
                     <button
                       type="button"
                       aria-label={`${puesto ? "Quitar" : "Poner"} ${item.name}`}
                       disabled={bloqueado}
                       onClick={() => accion(item, toggleItem)}
-                      className={`mt-3 w-full rounded-xl py-2.5 text-sm font-bold disabled:opacity-50 ${
-                        puesto ? "bg-[#F2EEFF] text-[#5636D9]" : "bg-[#5636D9] text-white"
+                      className={`btn-tactil mt-auto w-full py-2.5 text-base ${
+                        puesto ? "tactil-blanco text-[#17164F]" : "tactil-cooperar text-[#17164F]"
                       }`}
                     >
                       {puesto ? "Quitar" : "Poner"}
@@ -151,9 +137,10 @@ export default function Page() {
                       aria-label={`Comprar ${item.name}`}
                       disabled={bloqueado || !alcanza}
                       onClick={() => accion(item, buyItem)}
-                      className="mt-3 w-full rounded-xl bg-[#5636D9] py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                      className="btn-tactil tactil-juego mt-auto w-full gap-1.5 py-2.5 text-base text-[#17164F]"
                     >
-                      {ocupado === item.id ? "Comprando…" : inventario && !alcanza ? "Te faltan NovaCoins" : "Comprar"}
+                      <DiamondIcon weight="fill" className="h-5 w-5 text-[#C98F00]" aria-hidden />
+                      {ocupado === item.id ? "..." : item.price}
                     </button>
                   )}
                 </li>

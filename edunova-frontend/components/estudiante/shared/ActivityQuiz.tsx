@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
+import { ArrowRightIcon, LightbulbIcon, StarIcon } from "@/components/ui/icons";
+import { BotonSalir, BotonVoz, Opcion, PuntosAvance } from "./kit";
 import type { QuizQuestion } from "./quizTypes";
 
 type Props = {
@@ -11,18 +14,13 @@ type Props = {
   onClose: () => void;
 };
 
-export function ActivityQuiz({
-  questions,
-  title,
-  intro,
-  onPass,
-  onClose,
-}: Props) {
+export function ActivityQuiz({ questions, title, intro, onPass, onClose }: Props) {
   const [idx, setIdx] = useState(0);
   const [feedback, setFeedback] = useState<"ok" | "bad" | null>(null);
   const [hint, setHint] = useState(false);
   const [xpTotal, setXpTotal] = useState(0);
   const [orderDraft, setOrderDraft] = useState<string[]>([]);
+  const [elegida, setElegida] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
 
   const q = questions[idx];
@@ -35,6 +33,7 @@ export function ActivityQuiz({
 
   function check(answer: string) {
     if (!q || feedback === "ok") return;
+    setElegida(answer);
     const correct =
       q.type === "order"
         ? answer === (q.orden ?? []).join("|")
@@ -45,182 +44,148 @@ export function ActivityQuiz({
       setXpTotal((x) => x + q.xp);
     } else {
       setFeedback("bad");
+      if (q.type === "order") setOrderDraft([]);
     }
   }
 
   function continueAfterCorrect() {
     if (feedback !== "ok" || !q) return;
-    const nextXp = xpTotal;
     setFeedback(null);
     setHint(false);
     setOrderDraft([]);
-    if (idx + 1 >= questions.length) {
-      setFinished(true);
-    } else {
-      setIdx((i) => i + 1);
-    }
-    void nextXp;
+    setElegida(null);
+    if (idx + 1 >= questions.length) setFinished(true);
+    else setIdx((i) => i + 1);
   }
 
   function toggleOrderItem(item: string) {
     if (feedback === "ok") return;
-    setOrderDraft((prev) =>
-      prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item],
-    );
+    setFeedback(null);
+    setOrderDraft((prev) => (prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item]));
   }
 
   if (finished) {
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#17164F]/50 p-4 backdrop-blur-sm">
-        <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
-          <h2 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F]">
-            ¡Actividad completada!
-          </h2>
-          <p className="mt-1 text-sm text-[#5B5678]">+{xpTotal} XP</p>
-          <div className="mx-auto mt-3 h-2 w-full overflow-hidden rounded-full bg-[#E8E0FF]">
-            <div className="h-full w-full rounded-full bg-[#2DBE70]" />
-          </div>
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#F7F4FF] p-4">
+        <div className="w-full max-w-sm text-center">
+          <Image src="/assets/woebling.png" alt="" width={140} height={128} className="mx-auto h-auto w-32" />
+          <h2 className="mt-4 font-[family-name:var(--font-fredoka)] text-3xl font-bold text-[#17164F]">¡Lo lograste!</h2>
+          <p className="mt-2 inline-flex items-center gap-1.5 text-xl font-bold text-[#17164F]">
+            <StarIcon weight="fill" className="h-6 w-6 text-[#FFC928]" aria-hidden />+{xpTotal} XP
+          </p>
           <button
             type="button"
             onClick={() => onPass(xpTotal)}
-            className="mt-4 w-full rounded-full bg-[#5636D9] py-3 text-sm font-bold text-white"
+            aria-label="Continuar"
+            className="btn-tactil tactil-cooperar mt-6 w-full py-4 text-lg text-[#17164F]"
           >
-            Continuar →
+            <ArrowRightIcon weight="bold" className="h-7 w-7" aria-hidden />
           </button>
         </div>
       </div>
     );
   }
 
+  const estadoDe = (opt: string) => {
+    if (feedback === "ok" && opt === elegida) return "bien" as const;
+    if (feedback === "bad" && opt === elegida) return "mal" as const;
+    return "normal" as const;
+  };
+  const textoVoz = [idx === 0 ? intro : undefined, q.enunciado, ...(q.opciones ?? [])].filter(Boolean).join(". ");
+
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col bg-[#17164F]/55 backdrop-blur-sm">
-      <div className="mx-auto flex h-full w-full max-w-2xl flex-col p-3 sm:p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-white/70">
-              Pregunta {idx + 1}/{questions.length}
-            </p>
-            <h2 className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-white">
-              {title}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white"
-          >
-            Cerrar
-          </button>
+    <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-[60] flex flex-col bg-[#F7F4FF]">
+      <div className="mx-auto flex h-full w-full max-w-2xl flex-col p-4 sm:p-6">
+        <div className="flex items-center gap-3">
+          <PuntosAvance actual={idx + (feedback === "ok" ? 1 : 0)} total={questions.length} etiqueta="Preguntas" />
+          <BotonSalir onClick={onClose} etiqueta="Cerrar" />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white p-4 shadow-xl sm:p-5">
-          {intro && idx === 0 && feedback === null && (
-            <p className="mb-3 rounded-2xl bg-[#F2EEFF] p-3 text-xs text-[#17164F]">
-              {intro}
-            </p>
-          )}
-
-          <p className="font-[family-name:var(--font-fredoka)] text-lg font-semibold text-[#17164F]">
+        <div className="mt-6 flex items-start gap-3">
+          <p className="min-w-0 flex-1 font-[family-name:var(--font-fredoka)] text-2xl font-bold leading-snug text-[#17164F] sm:text-3xl">
             {q.enunciado}
           </p>
+          <BotonVoz texto={textoVoz} />
+        </div>
 
-          <div className="mt-4 flex flex-1 flex-col gap-2 overflow-y-auto">
-            {(q.type === "multiple" ||
-              q.type === "truefalse" ||
-              q.type === "complete" ||
-              q.type === "associate") &&
-              (q.opciones ?? []).map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  disabled={feedback === "ok"}
-                  onClick={() => check(opt)}
-                  className="rounded-2xl bg-[#F2EEFF] px-4 py-3 text-left text-sm font-bold text-[#17164F] hover:bg-[#5636D9] hover:text-white disabled:opacity-60"
-                >
-                  {opt}
-                </button>
-              ))}
+        <div className="mt-6 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-1">
+          {q.type !== "order" &&
+            (q.opciones ?? []).map((opt) => (
+              <Opcion key={opt} estado={estadoDe(opt)} disabled={feedback === "ok"} onClick={() => check(opt)}>
+                {opt}
+              </Opcion>
+            ))}
 
-            {q.type === "order" && (
-              <>
-                <p className="text-xs text-[#5B5678]">Toca en el orden correcto:</p>
-                <div className="flex flex-wrap gap-2">
-                  {shuffledOrder.map((item) => (
+          {q.type === "order" && (
+            <>
+              <ol className="flex min-h-[64px] flex-wrap items-center gap-2 rounded-2xl border-2 border-dashed border-[#CFC4F5] p-2" aria-label="Tu orden">
+                {orderDraft.map((item, i) => (
+                  <li key={item} className="rounded-xl bg-[#5636D9] px-3 py-2 font-bold text-white">
+                    {i + 1}. {item}
+                  </li>
+                ))}
+              </ol>
+              <div className="flex flex-wrap gap-2">
+                {shuffledOrder
+                  .filter((item) => !orderDraft.includes(item))
+                  .map((item) => (
                     <button
                       key={item}
                       type="button"
-                      disabled={feedback === "ok"}
                       onClick={() => toggleOrderItem(item)}
-                      className={`rounded-full px-3 py-2 text-xs font-bold ${
-                        orderDraft.includes(item)
-                          ? "bg-[#5636D9] text-white"
-                          : "bg-[#F2EEFF] text-[#17164F]"
-                      }`}
+                      className="btn-tactil tactil-blanco border-2 border-b-4 border-[#E8E0FF] px-4 py-3 text-base text-[#17164F]"
                     >
                       {item}
                     </button>
                   ))}
-                </div>
-                <p className="text-xs text-[#5B5678]">
-                  Orden: {orderDraft.join(", ") || "sin elegir"}
-                </p>
+              </div>
+              {feedback !== "ok" && orderDraft.length === (q.orden ?? []).length ? (
                 <button
                   type="button"
-                  disabled={feedback === "ok"}
                   onClick={() => check(orderDraft.join("|"))}
-                  className="mt-2 rounded-full bg-[#5636D9] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                  aria-label="Comprobar"
+                  className="btn-tactil tactil-magia w-full py-3.5 text-white"
                 >
-                  Comprobar orden
+                  <ArrowRightIcon weight="bold" className="h-7 w-7" aria-hidden />
                 </button>
-              </>
-            )}
-          </div>
-
-          {q.pista && feedback !== "ok" && (
-            <button
-              type="button"
-              onClick={() => setHint(true)}
-              className="mt-2 self-start text-xs font-semibold text-[#5636D9]"
-            >
-              {hint ? q.pista : "Ver pista"}
-            </button>
+              ) : null}
+            </>
           )}
+        </div>
 
-          {feedback === "ok" && (
-            <div className="mt-3 rounded-2xl bg-[#D1FAE5] p-3 text-sm font-semibold text-[#065F46]">
-              ¡Correcto! +{q.xp} XP
-              <p className="mt-1 text-xs font-normal">{q.explicacion}</p>
+        <div className="mt-3 flex min-h-[64px] items-center gap-3">
+          {feedback === "ok" ? (
+            <>
+              <p role="status" className="min-w-0 flex-1 text-lg font-bold text-[#1B8A4F]">
+                ¡Bien! +{q.xp} XP
+              </p>
               <button
                 type="button"
                 onClick={continueAfterCorrect}
-                className="mt-3 w-full rounded-full bg-[#2DBE70] py-2.5 text-sm font-bold text-white"
+                aria-label="Siguiente"
+                className="btn-tactil tactil-cooperar px-8 py-3 text-[#17164F]"
               >
-                Continuar →
+                <ArrowRightIcon weight="bold" className="h-7 w-7" aria-hidden />
               </button>
-            </div>
+            </>
+          ) : (
+            <>
+              <p role="status" className="min-w-0 flex-1 text-base font-bold text-[#17164F]">
+                {hint ? q.pista : feedback === "bad" ? "Casi. Prueba otra." : null}
+              </p>
+              {q.pista && !hint ? (
+                <button
+                  type="button"
+                  onClick={() => setHint(true)}
+                  aria-label="Ver pista"
+                  title="Ver pista"
+                  className="btn-tactil tactil-juego h-12 w-12 text-[#17164F]"
+                >
+                  <LightbulbIcon weight="fill" className="h-6 w-6" aria-hidden />
+                </button>
+              ) : null}
+            </>
           )}
-          {feedback === "bad" && (
-            <div className="mt-3 rounded-2xl bg-[#FEF3C7] p-3 text-sm font-semibold text-[#92400E]">
-              Casi… inténtalo de nuevo.
-              <p className="mt-1 text-xs font-normal">{q.explicacion}</p>
-              <button
-                type="button"
-                onClick={() => setFeedback(null)}
-                className="mt-2 text-xs font-bold underline"
-              >
-                Reintentar
-              </button>
-            </div>
-          )}
-
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E8E0FF]">
-            <div
-              className="h-full rounded-full bg-[#5636D9] transition-all"
-              style={{
-                width: `${((idx + (feedback === "ok" ? 1 : 0)) / questions.length) * 100}%`,
-              }}
-            />
-          </div>
         </div>
       </div>
     </div>
