@@ -450,7 +450,9 @@ export function SaberesDeCasa() {
 
         {rutasApi.status === "loading" ? (
           <p className="mt-4 text-xs text-[#5B5678]">Cargando rutas de docentes…</p>
-        ) : rutasApi.status !== "ok" || rutasApi.data.length === 0 ? (
+        ) : rutasApi.status !== "ok" ? (
+          <p className="mt-4 text-xs text-[#5B5678]">No pudimos cargar las rutas. Revisa tu conexión e intenta de nuevo.</p>
+        ) : rutasApi.data.length === 0 ? (
           <p className="mt-4 text-xs text-[#5B5678]">Por el momento no hay rutas docentes compartidas.</p>
         ) : (
           <div className="mt-4 space-y-3">

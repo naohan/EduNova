@@ -73,6 +73,7 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | Studio (subir PDF) | **Conectada** | Pide sesión de docente. `ingestDocument` manda el archivo real a Gemini y `approveRubric` publica |
 | `/estudiante/unidades` | **Conectada** | `listUnits`: historia por nivel, lectura fácil con pictogramas y quiz. Cada respuesta va a `sendEvents` |
 | `/estudiante/diagnostico` | **Conectada** | `getDiagnosticQuestions` y `submitDiagnostic`: el nivel de lectura va separado de la edad |
+| `/familia/saberes` | **Conectada** | `createFamilyDraft`, `publishFamilyUnit`, `listFamilyRoutes` y `assignFamilyRoute`. Las lecciones de familia solo las ven ese estudiante y su familia |
 | `/etica` | Estática | Cómo se usa la IA. Si cambia qué se envía a terceros, hay que actualizarla |
 | `/familia` | **Conectada** | `getStudentProfile`, `getBenchmark`, `getFamilyExplanation`, `getPassport`. El pacto es de solo lectura, con una meta fija |
 | `/familia/saberes` | **Conectada** | `createFamilyDraft`, `listFamilyUnits`, `publishFamilyUnit`: lecciones familiares aprobadas por el tutor |

@@ -119,10 +119,6 @@ export function StudioWizard() {
 
   async function cambiarCompartir(nuevoValor: boolean) {
     if (!borrador) return;
-    if (borrador.sinConexion) {
-      setCompartidoFamilias(nuevoValor);
-      return;
-    }
     setGuardandoCompartir(true);
     setErrorCompartir(null);
     const r = await shareUnitWithFamilies(borrador.id, nuevoValor);
@@ -386,6 +382,8 @@ export function StudioWizard() {
               : `«${borrador.titulo}» ya está disponible para el aula ${borrador.aula}.`}
           </p>
 
+          {/* Un ejemplo sin conexión no se guardó: no hay nada que compartir. */}
+          {borrador && !borrador.sinConexion ? (
           <div className="mx-auto mt-5 max-w-md rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] p-4 text-left">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -415,6 +413,7 @@ export function StudioWizard() {
               </p>
             ) : null}
           </div>
+          ) : null}
 
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/estudiante/unidades" className={botonCls}>

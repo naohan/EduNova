@@ -106,7 +106,6 @@ export interface SharedFamilyRoute {
   id: string;
   title: string;
   familyCategory?: FamilyCategory;
-  topicsCount: number;
   subtopicsCount: number;
 }
 
