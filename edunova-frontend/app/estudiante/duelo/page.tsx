@@ -20,7 +20,6 @@ interface QuestionDraft {
   question: string;
   correctAnswer: string;
   wrongAnswers: string[];
-  autocompleteWrong: boolean;
   status?: "APPROVED" | "MODIFIED" | "REJECTED";
   feedback?: string;
   recommendation?: string;
@@ -145,7 +144,6 @@ export default function DueloPage() {
       question: "",
       correctAnswer: "",
       wrongAnswers: Array.from({ length: wrongCount }).map(() => ""),
-      autocompleteWrong: true,
       isVerified: false,
     }));
     setQuestions(drafts);
@@ -198,7 +196,6 @@ export default function DueloPage() {
     question: "",
     correctAnswer: "",
     wrongAnswers: Array.from({ length: alternativesCount - 1 }).map(() => ""),
-    autocompleteWrong: true,
     isVerified: false,
   };
 
@@ -222,7 +219,7 @@ export default function DueloPage() {
   };
 
   // Verify question with simulated local verification (no third-party data sending)
-  const handleVerifyWithGemini = async () => {
+  const handleVerify = async () => {
     if (!currentQ.question.trim() || !currentQ.correctAnswer.trim()) {
       setVerificationError("Por favor escribe la pregunta y la respuesta correcta antes de verificar.");
       return;
@@ -230,9 +227,9 @@ export default function DueloPage() {
 
     const targetWrongCount = alternativesCount - 1;
     const filledWrong = (currentQ.wrongAnswers || []).filter((w) => w.trim().length > 0);
-    if (currentQ.autocompleteWrong || filledWrong.length < targetWrongCount) {
+    if (filledWrong.length < targetWrongCount) {
       setVerificationError(
-        "Por favor escribe todas las alternativas incorrectas. Ya no usamos IA para autocompletar preguntas; ¡inventa tú mismo las opciones para desafiar a tu rival!"
+        "Escribe todas las alternativas incorrectas para poder verificar tu pregunta."
       );
       return;
     }
@@ -267,7 +264,7 @@ export default function DueloPage() {
         });
         setVerificationError(reason);
       } else {
-        const finalWrong = currentQ.wrongAnswers.map(formatAnswerText);
+        const finalWrong = filledWrong.slice(0, targetWrongCount).map(formatAnswerText);
         const finalCorrect = formatAnswerText(currentQ.correctAnswer);
 
         setQuestions((prev) => {
@@ -327,6 +324,7 @@ export default function DueloPage() {
 
   // Submit duel and fetch opponent's questions from secure backend API
   const submitDuelAndPrepareBattle = async () => {
+    setBattleQuestions([]);
     setPhase("sync_waiting");
 
     try {
@@ -644,6 +642,9 @@ export default function DueloPage() {
                         className="w-full rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] px-4 py-3.5 text-sm font-semibold text-[#17164F] outline-none transition-all placeholder:font-normal placeholder:text-gray-400 focus:border-[#5636D9] focus:bg-white"
                       />
 
+                      <p className="text-xs text-[#5B5678]">
+                        Escribe solo el tema, sin nombres ni datos personales.
+                      </p>
                       {/* Quick topic suggestion pills for kids */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
                         <span className="text-[11px] font-semibold text-[#6B7280]">Ideas rápidas:</span>
@@ -1111,22 +1112,9 @@ export default function DueloPage() {
 
                 {/* Alternativas incorrectas (min 2, max 5 according to alternativesCount) */}
                 <div className="space-y-2.5">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-[#991B1B]">
-                      Alternativas incorrectas (Distractores):
-                    </label>
-                    <label className="flex cursor-pointer items-center gap-1.5 text-xs font-bold text-[#5636D9]">
-                      <input
-                        type="checkbox"
-                        checked={currentQ.autocompleteWrong}
-                        onChange={(e) =>
-                          updateCurrentQuestion({ autocompleteWrong: e.target.checked })
-                        }
-                        className="h-4 w-4 rounded accent-[#5636D9]"
-                      />
-                      <span>Autocompletar Alternativas</span>
-                    </label>
-                  </div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#991B1B]">
+                    Alternativas incorrectas (Distractores):
+                  </label>
 
                   {Array.from({ length: alternativesCount - 1 }).map((_, idx) => (
                     <div key={idx} className="relative">
@@ -1137,11 +1125,7 @@ export default function DueloPage() {
                         type="text"
                         value={currentQ.wrongAnswers[idx] || ""}
                         onChange={(e) => updateWrongAnswer(idx, e.target.value)}
-                        placeholder={
-                          currentQ.autocompleteWrong
-                            ? "Escribe una opción o déjala vacía para autocompletar..."
-                            : `Escribe una opción incorrecta #${idx + 1}...`
-                        }
+                        placeholder={`Escribe una opción incorrecta #${idx + 1}...`}
                         className="w-full rounded-2xl border border-[#E8E0FF] bg-[#F7F4FF] py-3 pl-24 pr-4 text-sm font-semibold text-[#17164F] outline-none transition-all placeholder:font-normal placeholder:text-gray-400 focus:border-[#5636D9] focus:bg-white"
                       />
                     </div>
@@ -1232,7 +1216,7 @@ export default function DueloPage() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleVerifyWithGemini}
+                    onClick={handleVerify}
                     disabled={isVerifying}
                     className="rounded-2xl border-2 border-[#5636D9] bg-[#F2EEFF] px-4 py-3 text-xs font-bold text-[#5636D9] transition-all hover:bg-[#5636D9] hover:text-white disabled:opacity-50"
                   >
@@ -1299,10 +1283,12 @@ export default function DueloPage() {
                 <button
                   type="button"
                   onClick={startBattle}
-                  disabled={syncCountdown > 0}
+                  disabled={syncCountdown > 0 || battleQuestions.length === 0}
                   className="rounded-2xl bg-[#5636D9] px-8 py-4 text-base font-bold text-white shadow-lg transition-transform hover:scale-105 hover:bg-[#4829be] disabled:opacity-50"
                 >
-                  ¡Comenzar Duelo Ahora! ⚔️
+                  {syncCountdown === 0 && battleQuestions.length === 0
+                    ? "Preparando preguntas…"
+                    : "¡Comenzar Duelo Ahora! ⚔️"}
                 </button>
                 <div>
                   <button

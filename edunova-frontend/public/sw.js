@@ -1,6 +1,6 @@
 // Service Worker de EduNova (HU-08, RNF-01): una lección y las flashcards funcionan sin internet.
 // Al cambiar la lógica o el paquete, sube VERSION para descartar las cachés anteriores.
-const VERSION = "edunova-v3";
+const VERSION = "edunova-v4";
 const CACHE_PAGINAS = `${VERSION}-paginas`;
 const CACHE_ESTATICOS = `${VERSION}-estaticos`;
 const CACHE_API = `${VERSION}-api`;
@@ -116,6 +116,9 @@ self.addEventListener("fetch", (event) => {
   } else if (url.pathname.startsWith("/_next/image") || /^\/assets\/.+\.(png|jpe?g|webp|svg)$/i.test(url.pathname)) {
     // Los modelos 3D quedan fuera: son pesados y se cargan bajo demanda (RNF-01).
     event.respondWith(cacheYActualiza(request, CACHE_ESTATICOS));
+  } else if (url.pathname.startsWith("/backend/api/pictograms/")) {
+    // Un pictograma no cambia: una vez visto, la lectura fácil también se ve sin conexión.
+    event.respondWith(primeroCache(request, CACHE_ESTATICOS));
   } else if (/^\/backend\/api\/units(\/|$)/.test(url.pathname)) {
     // El API llega por el proxy de Next (mismo origen): se guarda igual que antes para el modo offline.
     event.respondWith(primeroRed(request, CACHE_API));

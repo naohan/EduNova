@@ -17,7 +17,7 @@ export const ageTierRange: Record<AgeTier, string> = {
 };
 
 const KEY = "edunova-age-tier";
-const EVENT = "edunova-age-tier-change";
+export const AGE_TIER_EVENT = "edunova-age-tier-change";
 
 // Si localStorage no está disponible (modo privado), la elección vive en memoria.
 let memoryTier: AgeTier | undefined;
@@ -37,10 +37,10 @@ function getSnapshot(): AgeTier {
 
 function subscribe(onChange: () => void) {
   window.addEventListener("storage", onChange); // otra pestaña
-  window.addEventListener(EVENT, onChange); // esta pestaña
+  window.addEventListener(AGE_TIER_EVENT, onChange); // esta pestaña
   return () => {
     window.removeEventListener("storage", onChange);
-    window.removeEventListener(EVENT, onChange);
+    window.removeEventListener(AGE_TIER_EVENT, onChange);
   };
 }
 
@@ -51,7 +51,7 @@ export function setAgeTier(tier: AgeTier) {
   } catch {
     // ya quedó en memoria
   }
-  window.dispatchEvent(new Event(EVENT));
+  window.dispatchEvent(new Event(AGE_TIER_EVENT));
 }
 
 export function useAgeTier(): [AgeTier, (tier: AgeTier) => void] {

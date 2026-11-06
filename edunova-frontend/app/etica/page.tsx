@@ -75,7 +75,7 @@ export default function EticaPage() {
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircleIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
-                <span><strong>Preguntas del rival en el duelo:</strong> en el Duelo de Saberes, genera preguntas para el adversario simulado basándose exclusivamente en el curso y tema elegidos.</span>
+                <span><strong>Preguntas del rival en el duelo:</strong> en el duelo, genera preguntas para el adversario simulado basándose en el curso y el tema elegidos.</span>
               </li>
             </ul>
           </section>
@@ -87,12 +87,12 @@ export default function EticaPage() {
               <h2 className={tituloSeccion}>2. Qué decide una persona</h2>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-[#5B5678]">
-              La inteligencia artificial no publica contenido ni califica de forma definitiva sin intervención humana:
+              La inteligencia artificial no publica unidades ni pone notas definitivas por su cuenta:
             </p>
             <ul className="mt-3 space-y-2 text-sm text-[#17164F]">
               <li className="flex items-start gap-2">
                 <CheckCircleIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
-                <span><strong>Aprobación docente obligatoria:</strong> ninguna unidad llega a los estudiantes sin que el docente la revise, la edite y pulse conscientemente &ldquo;Aprobar y Publicar&rdquo;. Todo borrador permanece privado hasta entonces.</span>
+                <span><strong>Aprobación docente obligatoria:</strong> ninguna unidad llega a los estudiantes sin que el docente la revise y pulse &ldquo;Aprobar y Publicar&rdquo;. Todo borrador permanece privado hasta entonces.</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircleIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
@@ -113,15 +113,15 @@ export default function EticaPage() {
                 <ul className="mt-2 space-y-1.5 text-xs text-[#17164F]">
                   <li>• El material pedagógico que sube el docente para preparar su clase.</li>
                   <li>• El tema general consultado en &ldquo;Explicar en casa&rdquo;.</li>
-                  <li>• El curso y tema del Duelo de Saberes para generar preguntas del rival.</li>
+                  <li>• El curso y el tema del duelo para generar preguntas del rival. El tema lo escribe el estudiante, hasta 80 caracteres, y le pedimos no poner nombres ni datos personales.</li>
                 </ul>
               </div>
               <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#C2410C]">Qué NUNCA recibe</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#C2410C]">Qué no recibe</h3>
                 <ul className="mt-2 space-y-1.5 text-xs text-[#17164F]">
                   <li>• Alias, identificadores ni datos personales de estudiantes.</li>
                   <li>• Respuestas individuales de niños y niñas a las actividades.</li>
-                  <li>• Preguntas o textos escritos por los estudiantes.</li>
+                  <li>• Las preguntas que los estudiantes crean en el duelo ni las explicaciones que escriben.</li>
                 </ul>
               </div>
             </div>
@@ -138,6 +138,7 @@ export default function EticaPage() {
               calificaciones de terceros ni datos personales privados.
             </p>
             <p className="mt-2 text-sm leading-relaxed text-[#5B5678]">
+              Para los pictogramas de lectura fácil, nuestro servidor consulta en ARASAAC palabras clave del material del docente, sin datos de estudiantes.
               El servicio externo de procesamiento (Google Gemini) trata los documentos y textos que recibe de acuerdo con
               sus propias condiciones de servicio y políticas de uso de datos.
             </p>
@@ -176,8 +177,8 @@ export default function EticaPage() {
               <h2 className={tituloSeccion}>7. Sugerencias pedagógicas, nunca etiquetas fijas</h2>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-[#5B5678]">
-              Tanto el Radar de Habilidades (lógica, perseverancia y autonomía) como las alertas pedagógicas del aula
-              se calculan como señales orientadoras basadas en la evidencia reciente de actividades.
+              Tanto el Radar de Talentos (lógica, perseverancia y autonomía) como las alertas pedagógicas del aula
+              se calculan como señales orientadoras basadas en la evidencia de sus actividades.
             </p>
             <p className="mt-2 text-sm leading-relaxed text-[#5B5678]">
               Son sugerencias para que el docente observe dinámicas y decida si conviene reforzar un tema o dialogar con el estudiante.
@@ -192,12 +193,12 @@ export default function EticaPage() {
               <h2 className={tituloSeccion}>8. Principio de datos mínimos</h2>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-[#5B5678]">
-              EduNova sigue una política estricta de datos mínimos para proteger la privacidad de la infancia:
+              EduNova pide solo los datos que necesita para funcionar:
             </p>
             <ul className="mt-2 space-y-1.5 text-sm text-[#17164F]">
               <li>• No se solicitan apellidos completos, direcciones de correo electrónico ni teléfonos.</li>
               <li>• No se recopila ubicación geográfica ni datos biométricos.</li>
-              <li>• Solo se utilizan: alias de libre elección, avatar ilustrado, rango de edad y código de aula o institución.</li>
+              <li>• Solo se utilizan: alias, avatar ilustrado, rango de edad y código de aula o institución.</li>
             </ul>
           </section>
 
@@ -213,11 +214,11 @@ export default function EticaPage() {
             <ul className="mt-2 space-y-2 text-sm text-[#17164F]">
               <li className="flex items-start gap-2">
                 <span className="font-bold text-[#5636D9]">•</span>
-                <span><strong>La IA puede equivocarse:</strong> las sugerencias de borradores o explicaciones pueden contener inexactitudes. Por eso se requiere siempre la revisión de una persona.</span>
+                <span><strong>La IA puede equivocarse:</strong> las sugerencias de borradores o explicaciones pueden contener inexactitudes. Por eso las unidades siempre pasan por la revisión del docente. Las preguntas del rival y las explicaciones para familias se generan al momento y ninguna persona las revisa antes.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-bold text-[#5636D9]">•</span>
-                <span><strong>Disponibilidad y respaldo:</strong> si la conexión con el servicio de IA no está disponible o falla, la aplicación lo advierte explícitamente y ofrece contenido pedagógico de respaldo preparado previamente.</span>
+                <span><strong>Disponibilidad y respaldo:</strong> si la conexión con el servicio de IA no está disponible o falla, la aplicación usa contenido de respaldo preparado previamente, y en el Studio se lo avisa al docente.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-bold text-[#5636D9]">•</span>
@@ -239,3 +240,4 @@ export default function EticaPage() {
     </div>
   );
 }
+

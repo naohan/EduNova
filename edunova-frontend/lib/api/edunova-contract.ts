@@ -266,8 +266,8 @@ export interface DiagnosticResult {
 export interface TalentSignal {
   studentId: string;
   alias: string;
-  logic: number;
-  perseverance: number;
+  logic?: number; // sin misiones 3D no hay evidencia
+  perseverance?: number; // sin fallos no hay de qué sobreponerse
   autonomy: number;
   evidenceCount: number;
 }

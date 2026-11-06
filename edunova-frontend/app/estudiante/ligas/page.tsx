@@ -58,9 +58,9 @@ function TablaLiga({
         const filaSuperior = data.rows[myIndex - 1];
         const miFila = data.rows[myIndex];
         const diff = Math.max(1, filaSuperior[puntos] - miFila[puntos]);
-        mensajePosicion = `A ${diff} puntos de avanzar`;
+        mensajePosicion = `A ${diff} ${diff === 1 ? "punto" : "puntos"} de avanzar`;
       } else {
-        mensajePosicion = `A 1 puntos de avanzar`;
+        mensajePosicion = "Sigue sumando para avanzar";
       }
     }
   }

@@ -91,7 +91,7 @@ export function AlertasExplicables({ alertas }: { alertas: ExplainableAlert[] })
                 </div>
               )}
 
-              {!estaAtendida && (
+              {!estaAtendida && !a.id.startsWith("ejemplo") && (
                 <div className="mt-3 flex items-center gap-3">
                   <button
                     type="button"
@@ -147,8 +147,14 @@ export function RadarTalentos({ talentos, aviso }: { talentos: TalentSignal[]; a
               {senales.map((s) => (
                 <div key={s.clave} className="grid grid-cols-[96px_1fr_28px] items-center gap-2 text-xs text-[#5B5678]">
                   <span>{s.nombre}</span>
-                  <ProgressBar value={t[s.clave]} ariaLabel={`${s.nombre} de ${t.alias}`} />
-                  <span className="text-right tabular-nums">{t[s.clave]}</span>
+                  {t[s.clave] === undefined ? (
+                    <span className="col-span-2 text-right italic">Sin datos aún</span>
+                  ) : (
+                    <>
+                      <ProgressBar value={t[s.clave] ?? 0} ariaLabel={`${s.nombre} de ${t.alias}`} />
+                      <span className="text-right tabular-nums">{t[s.clave]}</span>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

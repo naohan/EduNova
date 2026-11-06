@@ -197,6 +197,8 @@ export const getClassAssessments = (classCode: string) =>
   request<AssessmentRecord[]>("GET", `/classes/${encodeURIComponent(classCode)}/assessments`);
 export const overrideAssessment = (assessmentId: string, score: number | null) =>
   request<AssessmentRecord>("PUT", `/teacher/assessments/${encodeURIComponent(assessmentId)}/override`, { score }, WRITE_TIMEOUT_MS);
+// Pasa por nuestro backend: el navegador del niño no llama a terceros.
+export const pictogramUrl = (id: number) => `/backend/api/pictograms/${id}`;
 export const markAlertAttended = (alertId: string) =>
   request<{ ok: boolean; alertId: string; attendedAt: string }>(
     "PUT",

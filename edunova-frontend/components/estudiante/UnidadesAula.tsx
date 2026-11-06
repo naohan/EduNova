@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CaretLeftIcon, CheckCircleIcon, LightbulbIcon } from "@/components/ui/icons";
-import { useAgeTier } from "@/lib/age-tier";
-import { listUnits } from "@/lib/api/client";
+import { AGE_TIER_EVENT, useAgeTier } from "@/lib/age-tier";
+import { listUnits, pictogramUrl } from "@/lib/api/client";
+import { ageTierLabel } from "@/lib/api/helpers";
 import type { AgeTier, LearningUnit, SubtopicNode, UnitQuestion } from "@/lib/api/edunova-contract";
 import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
 import { useApi } from "@/lib/api/use-api";
@@ -34,10 +35,13 @@ function Pregunta({
     inicio.current = marcaDeTiempo();
   }, []);
 
-  async function responder(indice: number) {
+  function responder(indice: number) {
     if (acerto || descartadas.includes(indice)) return;
     const correcta = indice === pregunta.answerIndex;
-    const res = await registrarEvento({
+    // Se marca al instante: esperar a la red dejaría al estudiante sin reacción y podría tocar dos veces.
+    if (correcta) setAcerto(true);
+    else setDescartadas([...descartadas, indice]);
+    void registrarEvento({
       activity: "QUIZ",
       correct: correcta,
       subtopicId,
@@ -45,12 +49,9 @@ function Pregunta({
       attempt: descartadas.length + 1,
       hintsUsed: pistas,
       timeMs: msDesde(inicio.current),
+    }).then((res) => {
+      if (res?.effortBonus) setAvisoBono("Tres seguidas. +5 de esfuerzo");
     });
-    if (res?.effortBonus && res.effortBonus > 0) {
-      setAvisoBono("Tres seguidas. +5 de esfuerzo");
-    }
-    if (correcta) setAcerto(true);
-    else setDescartadas([...descartadas, indice]);
   }
 
   return (
@@ -135,7 +136,7 @@ function PictogramaItem({ word, id }: { word: string; id: number }) {
     <div className="flex w-20 flex-col items-center rounded-xl border border-[#E8E0FF] bg-white p-2 text-center">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/backend/pictograms/${id}`}
+        src={pictogramUrl(id)}
         alt={word}
         onError={() => setFallo(true)}
         className="h-14 w-14 object-contain"
@@ -167,12 +168,7 @@ function Subtema({
   const preguntas = subtema.stages.demonstrate.questions ?? [];
   const pregunta = preguntas[numero];
 
-  const frasesFaciles = easyReadText
-    ? easyReadText
-        .split(/(?<=[.!?])\s+/)
-        .map((f) => f.trim())
-        .filter(Boolean)
-    : [];
+  const frasesFaciles = easyReadText?.match(/[^.!?]+[.!?]*/g)?.map((f) => f.trim()).filter(Boolean) ?? [];
 
   return (
     <div className="space-y-4">
@@ -299,19 +295,18 @@ function Unidad({
 export function UnidadesAula() {
   const usuario = useSessionUser();
   const perfil = usePerfilAlumno();
-  const [manualTier] = useAgeTier();
-  const [manualOverride, setManualOverride] = useState<AgeTier | null>(null);
-  const prevManualRef = useRef(manualTier);
+  const [tierElegido] = useAgeTier();
+  const [usoSelector, setUsoSelector] = useState(false);
 
+  // El selector manda en cuanto el estudiante lo toca, incluso si toca el nivel que ya estaba marcado.
   useEffect(() => {
-    if (prevManualRef.current !== manualTier) {
-      setManualOverride(manualTier);
-      prevManualRef.current = manualTier;
-    }
-  }, [manualTier]);
+    const marcar = () => setUsoSelector(true);
+    window.addEventListener(AGE_TIER_EVENT, marcar);
+    return () => window.removeEventListener(AGE_TIER_EVENT, marcar);
+  }, []);
 
-  const effectiveTier: AgeTier =
-    manualOverride ?? perfil?.diagnosticTier ?? usuario?.ageTier ?? manualTier;
+  const nivelDiagnostico = usoSelector ? undefined : perfil?.diagnosticTier;
+  const effectiveTier: AgeTier = nivelDiagnostico ?? tierElegido;
 
   const unidades = useApi(listUnits, []);
   const [abierta, setAbierta] = useState<string | null>(null);
@@ -352,6 +347,11 @@ export function UnidadesAula() {
           </Link>
         </div>
       )}
+      {nivelDiagnostico ? (
+        <p className="mb-3 text-xs text-[#5B5678]">
+          Tus lecturas empiezan en nivel {ageTierLabel[nivelDiagnostico]}. Puedes cambiarlo con el selector.
+        </p>
+      ) : null}
       {!lista.length ? (
         <p className="text-sm text-[#5B5678]">Tu docente todavía no publicó unidades.</p>
       ) : (

@@ -71,7 +71,9 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/docente`, `/docente/resultados`, `/docente/competencias`, `/docente/reportes`, `/docente/estudiante/[id]` | **Conectadas** | `useAula.ts`: `getClassAnalytics` y `getClassStudents`, con sesión de docente. Sin sesión muestran los datos fijos |
 | `/docente/evaluacion` | **Conectada** | `getClassAssessments` y `overrideAssessment` (`RevisionNotasIA.tsx`) |
 | Studio (subir PDF) | **Conectada** | Pide sesión de docente. `ingestDocument` manda el archivo real a Gemini y `approveRubric` publica |
-| `/estudiante/unidades` | **Conectada** | `listUnits`: historia por edad y quiz de cada unidad publicada. Cada respuesta va a `sendEvents` |
+| `/estudiante/unidades` | **Conectada** | `listUnits`: historia por nivel, lectura fácil con pictogramas y quiz. Cada respuesta va a `sendEvents` |
+| `/estudiante/diagnostico` | **Conectada** | `getDiagnosticQuestions` y `submitDiagnostic`: el nivel de lectura va separado de la edad |
+| `/etica` | Estática | Cómo se usa la IA. Si cambia qué se envía a terceros, hay que actualizarla |
 | `/familia` | **Conectada** | `getStudentProfile`, `getBenchmark`, `getFamilyExplanation`, `getPassport`. El pacto es de solo lectura, con una meta fija |
 
 ## Modo sin internet

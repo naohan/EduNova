@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { AgeTier, RubricCriterion } from "@/lib/api/edunova-contract";
-import { approveRubric, ingestDocument } from "@/lib/api/client";
+import { approveRubric, ingestDocument, pictogramUrl } from "@/lib/api/client";
 import { useSessionUser } from "@/lib/api/use-session";
 import {
   aBorrador,
@@ -268,6 +268,22 @@ export function StudioWizard() {
                             <dd className="rounded-lg border border-[#E8E0FF] bg-[#FAF9FF] p-2 text-xs leading-relaxed text-[#17164F]">
                               {s.lecturaFacil}
                             </dd>
+                            {s.pictogramas?.length ? (
+                              <dd className="mt-2">
+                                <div className="flex flex-wrap gap-2">
+                                  {s.pictogramas.map((p) => (
+                                    <span key={p.id} className="flex w-16 flex-col items-center text-center text-[11px] text-[#17164F]">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={pictogramUrl(p.id)} alt={p.word} className="h-10 w-10 object-contain" />
+                                      {p.word}
+                                    </span>
+                                  ))}
+                                </div>
+                                <p className="mt-1 text-[11px] text-[#5B5678]">
+                                  Pictogramas: Sergio Palao. Origen: ARASAAC (arasaac.org). Licencia: CC BY-NC-SA. Propiedad: Gobierno de Aragón.
+                                </p>
+                              </dd>
+                            ) : null}
                           </div>
                         ) : null}
                       </dl>
