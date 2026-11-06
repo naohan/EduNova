@@ -138,6 +138,22 @@ Los modelos 3D tardan unos segundos. Prueba con buena conexión.
 | [ ] | J-08 | Abre `/estudiante/duelo` y completa un duelo | Muestra el resultado y, al abrir Inicio, los puntos subieron |
 | [ ] | J-09 | Crea una pregunta en el duelo | La valida y permite continuar |
 | [ ] | J-10 | Abre `/estudiante/flashcards` y voltea varias tarjetas | Se voltean y avanzan |
+| [ ] | J-11 | Con una unidad publicada en tu aula, juega el tablero | Las preguntas son las de esa unidad |
+
+### Valle de los Saberes
+
+| OK | Código | Pasos | Resultado esperado |
+|---|---|---|---|
+| [ ] | VA-01 | Abre `/estudiante/jugar` y toca Valle | Carga el mundo 3D. En celular empieza en calidad Ligera |
+| [ ] | VA-02 | Toca el suelo | Aparece un anillo y el explorador camina hasta ahí |
+| [ ] | VA-03 | Desde el centro, toca el cartel de Tu casa | Cruza solo por el puente y llega a la puerta |
+| [ ] | VA-04 | Acércate a cada lugar y toca Entrar | Abre su pantalla. Al volver, apareces junto a ese lugar |
+| [ ] | VA-05 | Cambia entre día, atardecer y noche | La luz cambia suave y de noche se encienden ventanas y faroles |
+| [ ] | VA-06 | Toca Mapa simple y prueba cada lugar | Muestra los 6 lugares y cada uno abre su pantalla |
+| [ ] | VA-07 | Entra como estudiante y mira la Escuela | Muestra una baliza con el número de unidades, en 3D y en el Mapa simple |
+| [ ] | VA-08 | Habla con Maestra Elena, falla y luego acierta | Marca el error, y Siguiente trae otra pregunta |
+| [ ] | VA-09 | En el diálogo toca Ir a esta unidad | Abre esa unidad directamente |
+| [ ] | VA-10 | Abre un diálogo y ciérralo con la X o con Escape | Se cierra y puedes seguir caminando |
 
 ### Tablero entre 2 aparatos
 
@@ -237,6 +253,7 @@ Es el recorrido del demo. Háganlo juntas al final.
 - **Analítica educativa y Reportes** abren la misma página.
 - **Datos de respaldo:** si Render está dormido, la pantalla puede mostrar datos de ejemplo. Abre la dirección de `/api/health`, espera y recarga antes de reportar.
 - **Unidades de prueba:** lo que publiquen queda guardado en la base compartida.
+- **Evidencia de juegos:** con Render en `main`, las respuestas de juegos y laboratorios no se guardan, porque `/api/events` solo existe en `feat/final-internacional`.
 - **La voz** depende del navegador y puede sonar distinta en cada aparato.
 - **El sonido** no se escucha hasta el primer clic en la página.
 
@@ -248,6 +265,7 @@ Es el recorrido del demo. Háganlo juntas al final.
 | Estudiante | | | | |
 | Labs 3D y aventuras | | | | |
 | Juegos | | | | |
+| Valle de los Saberes | | | | |
 | Tablero entre 2 aparatos | | | | |
 | Evaluación, ligas y tienda | | | | |
 | Docente | | | | |

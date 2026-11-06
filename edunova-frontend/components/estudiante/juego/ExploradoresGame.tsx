@@ -103,7 +103,9 @@ export function ExploradoresGame() {
   const roomLevel = game.room?.currentLevel ?? 1;
   const lastAlertedLevel = useRef(1);
   useEffect(() => {
-    if (roomLevel > 1 && effectiveStep === "play" && roomLevel !== lastAlertedLevel.current) {
+    if (roomLevel <= 1) {
+      lastAlertedLevel.current = 1;
+    } else if (effectiveStep === "play" && roomLevel !== lastAlertedLevel.current) {
       lastAlertedLevel.current = roomLevel;
       soundManager.playLevelUp();
       const timer = setTimeout(() => {

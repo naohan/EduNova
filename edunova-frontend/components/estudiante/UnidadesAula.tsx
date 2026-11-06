@@ -21,6 +21,12 @@ import { useSessionUser } from "@/lib/api/use-session";
 import { StoryPlayer } from "./StoryPlayer";
 import { usePerfilAlumno } from "./usePerfilAlumno";
 
+const suscribirUrl = (avisar: () => void) => {
+  window.addEventListener("popstate", avisar);
+  return () => window.removeEventListener("popstate", avisar);
+};
+const unidadDeLaUrl = () => new URLSearchParams(window.location.search).get("unidad");
+
 const tarjetaCls = "rounded-2xl border border-[#E8E0FF] bg-white p-5";
 const botonCls = "rounded-xl bg-[#5636D9] px-5 py-3 text-sm font-bold text-white disabled:opacity-50";
 
@@ -370,24 +376,11 @@ export function UnidadesAula() {
   const effectiveTier: AgeTier = nivelDiagnostico ?? tierElegido;
 
   const unidades = useApi(listUnits, []);
-  const [abierta, setAbierta] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return new URLSearchParams(window.location.search).get("unidad");
-  });
-
-  // Si la URL incluye ?unidad=<id> o navega por historial, sincroniza la unidad abierta (RNF/P15)
-  useEffect(() => {
-    const alCambiarHistorial = () => {
-      const idUnidad = new URLSearchParams(window.location.search).get("unidad");
-      if (idUnidad) {
-        setAbierta(idUnidad);
-      }
-    };
-    window.addEventListener("popstate", alCambiarHistorial);
-    return () => {
-      window.removeEventListener("popstate", alCambiarHistorial);
-    };
-  }, []);
+  // Al llegar con ?unidad=<id> esa unidad abre sola. En una navegación interna la URL cambia después
+  // del primer render, por eso se lee como dato externo y no al crear el estado.
+  const unidadUrl = useSyncExternalStore(suscribirUrl, unidadDeLaUrl, () => null);
+  const [elegida, setAbierta] = useState<string | null | undefined>(undefined);
+  const abierta = elegida === undefined ? unidadUrl : elegida;
 
   if (unidades.status === "loading") return <p className="text-sm text-[#5B5678]">Cargando tus unidades…</p>;
   if (unidades.status === "error") {

@@ -9,12 +9,20 @@ import type {
 } from "@/components/estudiante/juego/gameTypes";
 import { codeGenerator } from "@/components/estudiante/juego/boardData";
 
-type GlobalRooms = { __edunovaRooms?: Map<string, GameRoom> };
+type BancoPreguntas = { preguntas: QuizQuestion[]; indice: number };
+type GlobalRooms = { __edunovaRooms?: Map<string, GameRoom>; __edunovaBancos?: Map<string, BancoPreguntas> };
 
 function store() {
   const g = globalThis as unknown as GlobalRooms;
   if (!g.__edunovaRooms) g.__edunovaRooms = new Map();
   return g.__edunovaRooms;
+}
+
+/** Preguntas de las unidades de cada sala. Van aparte para no mandarlas en cada sondeo de la sala. */
+function bancos() {
+  const g = globalThis as unknown as GlobalRooms;
+  if (!g.__edunovaBancos) g.__edunovaBancos = new Map();
+  return g.__edunovaBancos;
 }
 
 function touch(room: GameRoom) {
@@ -67,21 +75,19 @@ export function createRoom(body: CreateRoomBody): GameRoom {
     currentLevel: 1,
     comboMultiplier: 1,
     totalCoins: 80,
-    unitQuestions: body.unitQuestions,
-    unitQuestionIndex: 0,
     updatedAt: Date.now(),
   };
   rooms.set(code, room);
+  if (body.unitQuestions?.length) bancos().set(code, { preguntas: body.unitQuestions, indice: 0 });
   return room;
 }
 
 function pickNextQuestion(room: GameRoom): QuizQuestion {
-  if (room.unitQuestions && room.unitQuestions.length > 0) {
-    const idx = (room.unitQuestionIndex ?? 0) % room.unitQuestions.length;
-    room.unitQuestionIndex = idx + 1;
-    return room.unitQuestions[idx];
-  }
-  return pickQuestion(room.courseId);
+  const banco = bancos().get(room.code);
+  if (!banco) return pickQuestion(room.courseId);
+  const pregunta = banco.preguntas[banco.indice % banco.preguntas.length];
+  banco.indice += 1;
+  return pregunta;
 }
 
 export function getRoom(code: string): GameRoom | null {

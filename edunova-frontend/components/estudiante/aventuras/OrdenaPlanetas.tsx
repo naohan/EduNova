@@ -31,7 +31,7 @@ export function OrdenaPlanetas() {
   const [mensaje, setMensaje] = useState("Arrastra un planeta hasta su órbita.");
   const [aviso, setAviso] = useState<string | null>(null);
   const attemptPorPlaneta = useRef<Record<string, number>>({});
-  const inicioPorPlaneta = useRef<Record<string, number>>({});
+  const inicioRef = useRef(0);
   const bloqueadoRef = useRef(false);
 
   const xp = orden.length * XP_POR_PLANETA;
@@ -40,7 +40,7 @@ export function OrdenaPlanetas() {
   function empezar() {
     soundManager.init();
     attemptPorPlaneta.current = {};
-    inicioPorPlaneta.current = {};
+    inicioRef.current = marcaDeTiempo();
     bloqueadoRef.current = false;
     setBandeja(mezclar(orden));
     setColocados([]);
@@ -67,11 +67,8 @@ export function OrdenaPlanetas() {
       bloqueadoRef.current = false;
     }, 400);
 
-    if (!inicioPorPlaneta.current[id]) {
-      inicioPorPlaneta.current[id] = marcaDeTiempo();
-    }
     const currentAttempt = attemptPorPlaneta.current[id] ?? 1;
-    const timeMs = msDesde(inicioPorPlaneta.current[id]);
+    const timeMs = msDesde(inicioRef.current);
     const esCorrecto = orbita === id;
     const questionId = `lab-ordena-${id}`;
 
@@ -92,6 +89,7 @@ export function OrdenaPlanetas() {
       setMensaje(`Casi. ${nombreDe(id)} está más ${masCerca ? "cerca del" : "lejos del"} Sol. ¡Prueba otra vez!`);
       return;
     }
+    inicioRef.current = marcaDeTiempo();
     soundManager.playCorrect();
     setMensaje(`¡Muy bien! ${PLANETAS.find((p) => p.id === id)?.dato ?? ""}`);
     const nuevos = [...colocados, id];

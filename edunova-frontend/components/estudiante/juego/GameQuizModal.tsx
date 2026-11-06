@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { QuizQuestion } from "@/components/estudiante/shared/quizTypes";
 import { BotonSalir, BotonVoz, Opcion } from "@/components/estudiante/shared/kit";
 import type { CharacterProfile, PlayerState } from "./gameTypes";
@@ -53,7 +53,11 @@ export function GameQuizModal({
   const [aviso, setAviso] = useState<string | null>(null);
   const [attempt, setAttempt] = useState<number>(1);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
-  const inicioRef = useRef<number>(marcaDeTiempo());
+  const inicioRef = useRef(0);
+
+  useEffect(() => {
+    inicioRef.current = marcaDeTiempo();
+  }, []);
 
   const [shuffledOrder] = useState<string[]>(() => {
     if (question.type !== "order" || !question.orden) return [];
@@ -125,7 +129,6 @@ export function GameQuizModal({
     }
 
     setAttempt((prev) => prev + 1);
-    setHintsUsed((prev) => prev + 1);
 
     setShake(true);
     setTimeout(() => setShake(false), 500);
@@ -151,6 +154,7 @@ export function GameQuizModal({
       setAviso("Te regalamos un corazón");
     } else {
       setCurrentLives(nextLives);
+      if (question.pista) setHintsUsed((prev) => prev + 1);
       setAviso(question.pista ?? "Casi. Prueba otra.");
     }
   }

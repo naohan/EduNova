@@ -33,7 +33,7 @@ export function DoctorDetective() {
   const [fin, setFin] = useState<Fin | null>(null);
   const resuelto = useRef(false);
   const attemptRef = useRef(1);
-  const inicioRef = useRef(marcaDeTiempo());
+  const inicioRef = useRef(0);
   const bloqueadoRef = useRef(false);
 
   const caso = casos?.[ronda] ?? null;

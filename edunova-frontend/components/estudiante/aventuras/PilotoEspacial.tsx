@@ -68,7 +68,7 @@ export function PilotoEspacial() {
   const totalEstrellas = useRef(0);
   const marcador = useRef<SVGCircleElement>(null);
   const attemptRef = useRef(1);
-  const inicioRef = useRef(marcaDeTiempo());
+  const inicioRef = useRef(0);
   const bloqueadoRef = useRef(false);
 
   const actual = PLANETAS.find((p) => p.id === objetivos?.[ronda]) ?? null;

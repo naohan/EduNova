@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
+  destinoAlcanzable,
   type CalidadGrafica,
   type ClimaHora,
   type LugarValleId,
@@ -15,14 +16,14 @@ interface Props {
   clima: ClimaHora;
   calidad: CalidadGrafica;
   prefersReducedMotion: boolean;
+  pausado: boolean;
   lugarCercano: LugarValleId | null;
   onLugarCercanoChange: (id: LugarValleId | null) => void;
   personajeCercano: PersonajeGuiaId | null;
   onPersonajeCercanoChange: (id: PersonajeGuiaId | null) => void;
   novedades: { escuela: number; casa: number };
   preguntasDisponibles: { elena: boolean; mateo: boolean; vega: boolean };
-  posicionJugador: [number, number, number];
-  setPosicionJugador: (pos: [number, number, number]) => void;
+  posicionRef: RefObject<[number, number, number]>;
   objetivoMovimiento: [number, number] | null;
   setObjetivoMovimiento: (obj: [number, number] | null) => void;
   onWebGLPerdido: () => void;
@@ -32,29 +33,25 @@ export default function ValleEscena({
   clima,
   calidad,
   prefersReducedMotion,
+  pausado,
   lugarCercano,
   onLugarCercanoChange,
   personajeCercano,
   onPersonajeCercanoChange,
   novedades,
   preguntasDisponibles,
-  posicionJugador,
-  setPosicionJugador,
+  posicionRef,
   objetivoMovimiento,
   setObjetivoMovimiento,
   onWebGLPerdido,
 }: Props) {
-  // Pausar el bucle de render cuando la pestaña pasa a segundo plano (document.hidden === true)
+  // Pausar el bucle de render cuando la pestaña pasa a segundo plano
   const [estaOculto, setEstaOculto] = useState(false);
 
   useEffect(() => {
-    const alCambiarVisibilidad = () => {
-      setEstaOculto(document.hidden);
-    };
+    const alCambiarVisibilidad = () => setEstaOculto(document.hidden);
     document.addEventListener("visibilitychange", alCambiarVisibilidad);
-    return () => {
-      document.removeEventListener("visibilitychange", alCambiarVisibilidad);
-    };
+    return () => document.removeEventListener("visibilitychange", alCambiarVisibilidad);
   }, []);
 
   return (
@@ -62,60 +59,47 @@ export default function ValleEscena({
       dpr={[1, 1.5]}
       shadows={calidad === "alta"}
       frameloop={estaOculto ? "never" : "always"}
-      camera={{ position: [0, 16, 17], fov: 42, near: 0.5, far: 220 }}
-      gl={{
-        antialias: calidad === "alta",
-        powerPreference: "high-performance",
-      }}
+      camera={{ position: [0, 8, 19], fov: 50, near: 0.5, far: 280 }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => {
-        const domElement = gl.domElement;
-        const alPerderContexto = (e: Event) => {
+        gl.domElement.addEventListener("webglcontextlost", (e) => {
           e.preventDefault();
           onWebGLPerdido();
-        };
-        domElement.addEventListener("webglcontextlost", alPerderContexto);
+        });
       }}
-      className="h-full w-full touch-none select-none"
+      // isolate: los carteles de drei tienen su propio z-index y sin esto taparían el HUD y los diálogos.
+      className="isolate h-full w-full touch-none select-none"
     >
-      {/* Plano receptor de clics y toques para caminar */}
+      {/* Plano invisible que recibe los toques para caminar */}
       <mesh
-        position={[0, 0, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         visible={false}
         onPointerDown={(e) => {
           e.stopPropagation();
-          setObjetivoMovimiento([e.point.x, e.point.z]);
+          setObjetivoMovimiento(destinoAlcanzable(e.point.x, e.point.z));
         }}
       >
-        <planeGeometry args={[75, 75]} />
+        <planeGeometry args={[150, 150]} />
         <meshBasicMaterial />
       </mesh>
 
-      {/* Atmósfera, cielo físico, sol, nubes, terreno, agua y vegetación */}
-      <ValleEntorno
-        clima={clima}
-        calidad={calidad}
-        prefersReducedMotion={prefersReducedMotion}
-        posicionJugador={posicionJugador}
-      />
+      <ValleEntorno clima={clima} calidad={calidad} prefersReducedMotion={prefersReducedMotion} />
 
-      {/* Edificios arquitectónicos detallados, avatar y cámara con amortiguación */}
       <ValleEdificios
         clima={clima}
         calidad={calidad}
         prefersReducedMotion={prefersReducedMotion}
+        pausado={pausado}
         lugarCercano={lugarCercano}
         onLugarCercanoChange={onLugarCercanoChange}
         personajeCercano={personajeCercano}
         onPersonajeCercanoChange={onPersonajeCercanoChange}
         novedades={novedades}
         preguntasDisponibles={preguntasDisponibles}
-        posicionJugador={posicionJugador}
-        setPosicionJugador={setPosicionJugador}
+        posicionRef={posicionRef}
         objetivoMovimiento={objetivoMovimiento}
         setObjetivoMovimiento={setObjetivoMovimiento}
       />
     </Canvas>
   );
 }
-
