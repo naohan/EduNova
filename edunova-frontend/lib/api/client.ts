@@ -82,7 +82,7 @@ async function request<T>(
 
 // ---- Tipos de respuesta que el contrato compartido no define ----
 export type IngestedUnit = LearningUnit & { usedFallback: boolean; aiModel?: string; aiNotice?: string };
-export type IngestInput = { title?: string; text: string; fileBase64?: string; mimeType?: string };
+export type IngestInput = { title?: string; text: string; fileBase64?: string; mimeType?: string; localContext?: string };
 export interface GhostOpponent {
   alias: string;
   institutionName: string;

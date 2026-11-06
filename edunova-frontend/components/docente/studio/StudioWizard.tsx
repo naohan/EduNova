@@ -50,6 +50,7 @@ export function StudioWizard() {
   const [archivo, setArchivo] = useState<File | null>(null);
   const [titulo, setTitulo] = useState("");
   const [texto, setTexto] = useState("");
+  const [dondeViven, setDondeViven] = useState("");
   const [borrador, setBorrador] = useState<Borrador | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +80,7 @@ export function StudioWizard() {
     const r = await ingestDocument({
       title: titulo.trim() || undefined,
       text: textoFinal,
+      localContext: dondeViven.trim().slice(0, 80) || undefined,
       ...(archivo && !esTexto ? { fileBase64: await leerBase64(archivo), mimeType: archivo.type } : {}),
     });
     if (!r.ok && (r.status === 401 || r.status === 403 || r.status === 413 || r.status === 415)) {
@@ -135,6 +137,7 @@ export function StudioWizard() {
     setArchivo(null);
     setTitulo("");
     setTexto("");
+    setDondeViven("");
     setBorrador(null);
     setError(null);
     setCompartidoFamilias(false);
@@ -213,6 +216,19 @@ export function StudioWizard() {
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Ej: Sistema Solar"
             />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-[#5B5678]">¿Dónde viven tus estudiantes? (opcional)</span>
+            <input
+              className={`${inputCls} mt-1`}
+              value={dondeViven}
+              maxLength={80}
+              onChange={(e) => setDondeViven(e.target.value)}
+              placeholder="zona rural de Puno"
+            />
+            <span className="mt-1 block text-xs text-[#5B5678]">
+              No escribas el nombre de la escuela ni de personas.
+            </span>
           </label>
           <label className="block">
             <span className="text-xs font-medium text-[#5B5678]">O pega el texto de tu clase</span>
