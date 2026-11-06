@@ -251,3 +251,57 @@ body {
     margin-bottom: 0px !important;
   }
 }
+
+/* P12: Ajustes de lectura accesibles */
+html[data-reading-size="normal"] {
+  font-size: 100%;
+}
+html[data-reading-size="grande"] {
+  font-size: 115%;
+}
+html[data-reading-size="muy-grande"] {
+  font-size: 130%;
+}
+
+html[data-reading-spacing="amplio"] {
+  line-height: 1.75;
+  letter-spacing: 0.03em;
+}
+html[data-reading-spacing="amplio"] p,
+html[data-reading-spacing="amplio"] span,
+html[data-reading-spacing="amplio"] button,
+html[data-reading-spacing="amplio"] input {
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+html[data-reading-contrast="alto"] {
+  --background: #ffffff;
+  --foreground: #000000;
+  --tinta-suave: #111827;
+  --tinta-tenue: #1f2937;
+  --linea: #000000;
+}
+html[data-reading-contrast="alto"] body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+html[data-reading-contrast="alto"] .border,
+html[data-reading-contrast="alto"] [class*="border-[#"] {
+  border-color: #000000 !important;
+}
+html[data-reading-contrast="alto"] .text-\[\#5B5678\],
+html[data-reading-contrast="alto"] .text-\[\#17164F\]\/70,
+html[data-reading-contrast="alto"] .text-\[\#17164F\]\/80,
+html[data-reading-contrast="alto"] .text-\[\#17164F\]\/85 {
+  color: #111827 !important;
+}
+
+html[data-reading-font="clara"],
+html[data-reading-font="clara"] body,
+html[data-reading-font="clara"] button,
+html[data-reading-font="clara"] input,
+html[data-reading-font="clara"] textarea,
+html[data-reading-font="clara"] select {
+  font-family: var(--font-atkinson), Atkinson Hyperlegible, sans-serif !important;
+}

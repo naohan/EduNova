@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/icons";
 import { ConexionBadge } from "@/components/ui/ConexionBadge";
 import { AgeTierSwitcher } from "./AgeTierSwitcher";
+import { AjustesLectura } from "./AjustesLectura";
 import { NombreAlumno } from "./NombreAlumno";
 
 type SeccionMarca = "explorar" | "juego" | "cooperar" | "magia" | "refuerzo";
@@ -303,6 +304,7 @@ export function EstudianteLayout({
         <div className="flex flex-wrap items-center justify-end gap-2 px-4 pt-3 sm:px-6 lg:px-8">
           <ConexionBadge />
           <AgeTierSwitcher />
+          <AjustesLectura />
         </div>
         {children}
       </main>
