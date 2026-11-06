@@ -176,6 +176,17 @@ export function StudioWizard() {
               onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
             />
           </label>
+          <div className="flex items-center justify-between text-xs text-[#5B5678]">
+            <span>Recomendación: no subas material con datos personales.</span>
+            <Link
+              href="/etica"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#5636D9] underline hover:text-[#4324bd]"
+            >
+              Uso ético de la IA
+            </Link>
+          </div>
           <label className="block">
             <span className="text-xs font-medium text-[#5B5678]">Título de la unidad (opcional)</span>
             <input

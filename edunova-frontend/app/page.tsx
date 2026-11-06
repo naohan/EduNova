@@ -252,6 +252,7 @@ export default function Home() {
                 <li><a href="/login" className="hover:text-[#5636D9]">Iniciar sesión</a></li>
                 <li><a href="/docente" className="hover:text-[#5636D9]">Panel del docente</a></li>
                 <li><a href="/familia" className="hover:text-[#5636D9]">Portal de familias</a></li>
+                <li><a href="/etica" className="hover:text-[#5636D9]">Uso ético de la IA</a></li>
               </ul>
             </div>
           </div>
