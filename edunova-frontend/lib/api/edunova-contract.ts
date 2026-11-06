@@ -245,9 +245,10 @@ export interface DiagnosticResult {
 export interface TalentSignal {
   studentId: string;
   alias: string;
-  creativity: number; // calidad de preguntas creadas en Duelo
-  collaboration: number; // ayudas en Tablero
-  logic: number; // Labs 3D
+  logic: number;
+  perseverance: number;
+  autonomy: number;
+  evidenceCount: number;
 }
 
 export interface ClassAnalytics {

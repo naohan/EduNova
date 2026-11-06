@@ -114,25 +114,38 @@ export function AlertasExplicables({ alertas }: { alertas: ExplainableAlert[] })
   );
 }
 
-const senales: Array<{ clave: "creativity" | "collaboration" | "logic"; nombre: string }> = [
-  { clave: "creativity", nombre: "Creatividad" },
-  { clave: "collaboration", nombre: "Colaboración" },
+const senales: Array<{ clave: "logic" | "perseverance" | "autonomy"; nombre: string }> = [
   { clave: "logic", nombre: "Lógica" },
+  { clave: "perseverance", nombre: "Perseverancia" },
+  { clave: "autonomy", nombre: "Autonomía" },
 ];
 
 /** RF-05, Reto 20: sugerencias para observar en clase, nunca etiquetas. */
 export function RadarTalentos({ talentos, aviso }: { talentos: TalentSignal[]; aviso: string }) {
-  if (!talentos.length) return null;
+  if (!talentos.length) {
+    return (
+      <section className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
+        <h3 className="text-sm font-semibold text-[#17164F]">Radar de Talentos</h3>
+        <p className="mt-2 text-xs text-[#5B5678]">Aún no hay evidencia suficiente</p>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
       <h3 className="text-sm font-semibold text-[#17164F]">Radar de Talentos</h3>
       <ul className="mt-3 space-y-3">
         {talentos.map((t) => (
           <li key={t.studentId}>
-            <div className="mb-1 text-sm font-semibold text-[#17164F]">{t.alias}</div>
+            <div className="mb-1 flex items-center justify-between text-sm">
+              <span className="font-semibold text-[#17164F]">{t.alias}</span>
+              <span className="text-xs text-[#5B5678]">
+                Basado en {t.evidenceCount} {t.evidenceCount === 1 ? "actividad" : "actividades"}
+              </span>
+            </div>
             <div className="space-y-1">
               {senales.map((s) => (
-                <div key={s.clave} className="grid grid-cols-[88px_1fr_28px] items-center gap-2 text-xs text-[#5B5678]">
+                <div key={s.clave} className="grid grid-cols-[96px_1fr_28px] items-center gap-2 text-xs text-[#5B5678]">
                   <span>{s.nombre}</span>
                   <ProgressBar value={t[s.clave]} ariaLabel={`${s.nombre} de ${t.alias}`} />
                   <span className="text-right tabular-nums">{t[s.clave]}</span>
@@ -142,7 +155,7 @@ export function RadarTalentos({ talentos, aviso }: { talentos: TalentSignal[]; a
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs italic text-[#5B5678]">{aviso}</p>
+      {aviso && <p className="mt-3 text-xs italic text-[#5B5678]">{aviso}</p>}
     </section>
   );
 }
