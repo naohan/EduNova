@@ -7,6 +7,7 @@ import { soundManager } from "@/components/estudiante/juego/soundEffects";
 import { StarIcon } from "@/components/ui/icons";
 import { Burbuja, MarcoJuego, PantallaFin, PantallaInicio, SinWebGL, decir, hayWebGL, mezclar, usePremio } from "./comun";
 import { CONFIG_PILOTO, LIMITE_MUNDO, PLANETAS, RADIO_SOL, posicionDe, type IdPlaneta } from "./espacioData";
+import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
 
 const PilotoEscena = dynamic(() => import("./PilotoEscena"), {
   ssr: false,
@@ -66,6 +67,9 @@ export function PilotoEspacial() {
   const celebrando = useRef(false);
   const totalEstrellas = useRef(0);
   const marcador = useRef<SVGCircleElement>(null);
+  const attemptRef = useRef(1);
+  const inicioRef = useRef(marcaDeTiempo());
+  const bloqueadoRef = useRef(false);
 
   const actual = PLANETAS.find((p) => p.id === objetivos?.[ronda]) ?? null;
   const pista = actual?.pistas[tier] ?? "";
@@ -77,6 +81,9 @@ export function PilotoEspacial() {
   function empezar() {
     soundManager.init();
     celebrando.current = false;
+    attemptRef.current = 1;
+    inicioRef.current = marcaDeTiempo();
+    bloqueadoRef.current = false;
     setObjetivos(mezclar(PLANETAS.map((p) => p.id)).slice(0, config.rondas));
     setRonda(0);
     setMensaje(null);
@@ -94,11 +101,31 @@ export function PilotoEspacial() {
   }
 
   function tocarPlaneta(id: IdPlaneta) {
-    if (!actual || fin || celebrando.current) return;
+    if (!actual || fin || celebrando.current || bloqueadoRef.current) return;
     const tocado = PLANETAS.find((p) => p.id === id);
     if (!tocado) return;
 
-    if (id !== actual.id) {
+    bloqueadoRef.current = true;
+    setTimeout(() => {
+      bloqueadoRef.current = false;
+    }, 400);
+
+    const esCorrecto = id === actual.id;
+    const questionId = `lab-piloto-${actual.id}`;
+    const timeMs = msDesde(inicioRef.current);
+    const intentoActual = attemptRef.current;
+
+    void registrarEvento({
+      activity: "LAB_3D",
+      correct: esCorrecto,
+      questionId,
+      attempt: intentoActual,
+      hintsUsed: 0,
+      timeMs,
+    });
+
+    if (!esCorrecto) {
+      attemptRef.current += 1;
       soundManager.playWrong();
       setMensaje(`Ese es ${tocado.nombre}. ${pista}`);
       return;
@@ -111,6 +138,9 @@ export function PilotoEspacial() {
     if (config.vozAutomatica) decir(texto);
     setTimeout(() => {
       celebrando.current = false;
+      attemptRef.current = 1;
+      inicioRef.current = marcaDeTiempo();
+      bloqueadoRef.current = false;
       setMensaje(null);
       if (ronda + 1 >= config.rondas) void terminar();
       else setRonda(ronda + 1);

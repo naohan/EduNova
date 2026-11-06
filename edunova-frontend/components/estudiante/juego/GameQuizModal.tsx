@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import type { QuizQuestion } from "@/components/estudiante/shared/quizTypes";
 import { BotonSalir, BotonVoz, Opcion } from "@/components/estudiante/shared/kit";
 import type { CharacterProfile, PlayerState } from "./gameTypes";
 import { iconoHabilidad } from "./CharacterCard";
 import { soundManager } from "./soundEffects";
 import { ArrowRightIcon, FireIcon, HeartIcon, ShieldCheckIcon, UsersIcon } from "@/components/ui/icons";
+import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
 
 type Props = {
   question: QuizQuestion;
@@ -15,6 +16,7 @@ type Props = {
   player: PlayerState;
   character: CharacterProfile;
   combo: number;
+  esTurnoPropio?: boolean;
   onResolve: (result: {
     correct: boolean;
     xp: number;
@@ -28,7 +30,17 @@ type Props = {
 
 const mismaRespuesta = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
-export function GameQuizModal({ question, tileTitle, tileKind, player, character, combo, onResolve, onClose }: Props) {
+export function GameQuizModal({
+  question,
+  tileTitle,
+  tileKind,
+  player,
+  character,
+  combo,
+  esTurnoPropio,
+  onResolve,
+  onClose,
+}: Props) {
   const [currentLives, setCurrentLives] = useState<number>(player.lives ?? 3);
   const [hasShield, setHasShield] = useState<boolean>((player.shields ?? 0) > 0);
   const [abilityUsed, setAbilityUsed] = useState<boolean>(player.usedAbility ?? false);
@@ -39,12 +51,14 @@ export function GameQuizModal({ question, tileTitle, tileKind, player, character
   const [orderDraft, setOrderDraft] = useState<string[]>([]);
   const [shake, setShake] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState<number>(1);
+  const [hintsUsed, setHintsUsed] = useState<number>(0);
+  const inicioRef = useRef<number>(marcaDeTiempo());
 
-  const shuffledOrder = useMemo(() => {
+  const [shuffledOrder] = useState<string[]>(() => {
     if (question.type !== "order" || !question.orden) return [];
     return [...question.orden].sort(() => Math.random() - 0.5);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [question.id]);
+  });
 
   // Se calcula una sola vez para que lo que se anuncia sea lo que se paga.
   const comboMultiplier = combo >= 2 ? (character.id === "gamer" ? 3 : 2) : 1;
@@ -60,6 +74,7 @@ export function GameQuizModal({ question, tileTitle, tileKind, player, character
     setAbilityUsed(true);
 
     if (character.id === "cientifico") {
+      setHintsUsed((prev) => prev + 1);
       const incorrectas = (question.opciones ?? []).filter(
         (o) => !mismaRespuesta(o, question.respuesta) && !fuera.includes(o),
       );
@@ -72,6 +87,7 @@ export function GameQuizModal({ question, tileTitle, tileKind, player, character
       setHasShield(true);
       setAviso("Escudo listo");
     } else if (character.id === "explorador") {
+      setHintsUsed((prev) => prev + 1);
       setAviso(question.pista ?? "Confía en lo que sabes");
     }
   }
@@ -83,6 +99,22 @@ export function GameQuizModal({ question, tileTitle, tileKind, player, character
     const isCorrect =
       question.type === "order" ? choice === (question.orden ?? []).join("|") : mismaRespuesta(choice, question.respuesta);
 
+    if (esTurnoPropio) {
+      const optIndex = question.opciones?.findIndex((o) => mismaRespuesta(o, choice)) ?? -1;
+      const selectedOption =
+        question.subtopicId && question.type !== "order" && optIndex >= 0 ? optIndex : undefined;
+      void registrarEvento({
+        activity: "GAME",
+        correct: isCorrect,
+        questionId: question.id,
+        subtopicId: question.subtopicId,
+        attempt,
+        hintsUsed,
+        timeMs: msDesde(inicioRef.current),
+        selectedOption,
+      });
+    }
+
     if (isCorrect) {
       soundManager.playCorrect();
       soundManager.playCoin();
@@ -91,6 +123,9 @@ export function GameQuizModal({ question, tileTitle, tileKind, player, character
       setAviso(null);
       return;
     }
+
+    setAttempt((prev) => prev + 1);
+    setHintsUsed((prev) => prev + 1);
 
     setShake(true);
     setTimeout(() => setShake(false), 500);

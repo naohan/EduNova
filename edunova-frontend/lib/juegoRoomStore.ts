@@ -1,4 +1,5 @@
-import { BOARD_TILES, GAME_LEVELS, TERRITORIES, getCharacterProfileByAvatar, pickQuestion } from "@/components/estudiante/juego/boardData";
+import { BOARD_TILES, TERRITORIES, getCharacterProfileByAvatar, pickQuestion } from "@/components/estudiante/juego/boardData";
+import type { QuizQuestion } from "@/components/estudiante/shared/quizTypes";
 import type {
   CharacterClass,
   CreateRoomBody,
@@ -66,10 +67,21 @@ export function createRoom(body: CreateRoomBody): GameRoom {
     currentLevel: 1,
     comboMultiplier: 1,
     totalCoins: 80,
+    unitQuestions: body.unitQuestions,
+    unitQuestionIndex: 0,
     updatedAt: Date.now(),
   };
   rooms.set(code, room);
   return room;
+}
+
+function pickNextQuestion(room: GameRoom): QuizQuestion {
+  if (room.unitQuestions && room.unitQuestions.length > 0) {
+    const idx = (room.unitQuestionIndex ?? 0) % room.unitQuestions.length;
+    room.unitQuestionIndex = idx + 1;
+    return room.unitQuestions[idx];
+  }
+  return pickQuestion(room.courseId);
 }
 
 export function getRoom(code: string): GameRoom | null {
@@ -267,10 +279,10 @@ export function rollDice(code: string, playerId: string, extraSteps = 0) {
       heal: true,
     };
   } else if (tile.kind === "cooperacion") {
-    const q = pickQuestion(room.courseId);
+    const q = pickNextQuestion(room);
     room.pending = { type: "cooperacion", question: q };
   } else if (tile.kind === "evento" || tile.kind === "desafio" || tile.kind === "pregunta") {
-    const q = pickQuestion(room.courseId);
+    const q = pickNextQuestion(room);
     room.pending = { type: tile.kind === "desafio" ? "desafio" : tile.kind === "evento" ? "evento" : "pregunta", question: q };
   }
 

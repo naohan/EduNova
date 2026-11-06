@@ -60,13 +60,14 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/progreso` | **Conectada** (porcentaje general) | `getStudentProfile` |
 | `/estudiante/ruta` | **Conectada** | `listUnits`: lo que el docente publica en Studio aparece en "De tu docente" |
 | `/estudiante/leccion` | `teoria` | **Conectada:** la frase de apertura de cada edad sale de `getUnit("unit-solar-system")` (`LeccionPorEdad.tsx`); el cuerpo sigue local en `ageContent.ts`. Si el servidor falla, se usa el respaldo local, que copia la semilla del backend |
-| `/estudiante/aventuras` (Piloto, Ordena, Doctor) | **Conectada** | `completeMission` al terminar, con `guardarMision` para funcionar sin red |
+| `/estudiante/aventuras` (Piloto, Ordena, Doctor) | **Conectada** | Cada intento en los 3 laboratorios registra `LAB_3D` con questionId estable vía `registrarEvento`, y `completeMission` al terminar |
 | `/estudiante/flashcards` | **Conectada** | `getUnit` → `stages.practice.flashcards`, unidas a un mazo local |
 | `/estudiante/explorar` (Sistema Solar) | **Conectada** | `getUnit` para las misiones y `completeMission` al completarlas (`useSolarMissions.ts`) |
 | `/estudiante/cuerpo` | **Conectada** | `completeMission` al aprobar un quiz o completar una misión |
 | `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `submitReasoning`, que guarda la nota para el docente y suma el bono. La imagen no se envía: el análisis simulado no la usa |
 | `/estudiante/duelo` | **Conectada** | `getDuelOpponentQuestions` (IA segura en backend), `validateDuelQuestion` y `reportDuelResult`, que guarda los premios al terminar |
-| `/estudiante/jugar` | Estática | Puerta a tablero, duelo, aventuras, ligas y tienda |
+| `/estudiante/valle` | **Conectada** | Diorama 3D exterior / mapa vivo. Consulta `listUnits` para balizas 3D de novedades (Escuela y Tu Casa) y personajes guía (Elena, Mateo, Vega) que presentan preguntas reales con `Pregunta` |
+| `/estudiante/jugar` | **Conectada** | Puerta al Valle, tablero, duelo, aventuras, ligas y tienda. En el tablero (`ExploradoresGame`), `createRoom` consume `unitQuestions` del aula y cada intento del propio estudiante registra eventos `GAME` vía `registrarEvento` hacia `/api/events` |
 | `/estudiante/ligas` | **Conectada** | `getLeaderboard` y `getLeaderboardAroundMe` |
 | `/estudiante/tienda` | **Conectada** | `getShopItems`, `buyItem`, `toggleItem` (piden sesión de estudiante) |
 | `/docente`, `/docente/resultados`, `/docente/competencias`, `/docente/reportes`, `/docente/estudiante/[id]` | **Conectadas** | `useAula.ts`: `getClassAnalytics` y `getClassStudents`, con sesión de docente. Sin sesión muestran los datos fijos |

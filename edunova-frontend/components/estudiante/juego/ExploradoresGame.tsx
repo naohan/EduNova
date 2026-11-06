@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { CursoId } from "@/components/estudiante/data";
@@ -41,6 +41,12 @@ import { Dice3D } from "./Dice3D";
 import { CharacterCard, iconoHabilidad } from "./CharacterCard";
 import { GameQuizModal } from "./GameQuizModal";
 import { soundManager } from "./soundEffects";
+import { listUnits } from "@/lib/api/client";
+import { useApi } from "@/lib/api/use-api";
+import { useSessionUser } from "@/lib/api/use-session";
+import type { QuizQuestion } from "@/components/estudiante/shared/quizTypes";
+
+const AULA_DEMO = "EDU-402";
 
 type Step = "curso" | "personaje" | "sala" | "lobby" | "play";
 
@@ -56,6 +62,8 @@ const QUE_HACE_CASILLA: Record<string, string> = {
 
 export function ExploradoresGame() {
   const game = useGameRoom();
+  const usuario = useSessionUser();
+  const unidadesRes = useApi(listUnits, []);
   const [step, setStep] = useState<Step>("curso");
   const [courseId, setCourseId] = useState<CursoId>("matematica");
   const [characterClass, setCharacterClass] = useState<CharacterClass>("explorador");
@@ -87,24 +95,62 @@ export function ExploradoresGame() {
     if (effectiveStep === "lobby" || effectiveStep === "play") {
       if (!soundManager.isBgmMuted()) {
         soundManager.startBGM();
-        setBgmActive(true);
       }
     }
   }, [effectiveStep]);
 
-  // Sync avatarId when characterClass changes
-  useEffect(() => {
-    setAvatarId(CHARACTER_PROFILES[characterClass].avatarId);
-  }, [characterClass]);
-
   // Chequear si subió de nivel para disparar fanfarria
   const roomLevel = game.room?.currentLevel ?? 1;
+  const lastAlertedLevel = useRef(1);
   useEffect(() => {
-    if (roomLevel > 1 && effectiveStep === "play") {
-      setLevelUpAlert(roomLevel);
+    if (roomLevel > 1 && effectiveStep === "play" && roomLevel !== lastAlertedLevel.current) {
+      lastAlertedLevel.current = roomLevel;
       soundManager.playLevelUp();
+      const timer = setTimeout(() => {
+        setLevelUpAlert(roomLevel);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [roomLevel, effectiveStep]);
+
+  // Preguntas reales de unidades publicadas por el docente (aula)
+  const unitQuestions: QuizQuestion[] = useMemo(() => {
+    if (unidadesRes.status !== "ok") return [];
+    const aula = usuario?.classroomCode ?? AULA_DEMO;
+    const publicadas = unidadesRes.data.filter(
+      (u) => u.status === "PUBLISHED" && u.classroomCode === aula && !u.familyStudentId,
+    );
+    const result: QuizQuestion[] = [];
+    for (const u of publicadas) {
+      for (const sub of u.subtopics) {
+        for (const q of sub.stages.demonstrate.questions) {
+          if (
+            q.id &&
+            q.prompt &&
+            Array.isArray(q.options) &&
+            q.options.length >= 2 &&
+            new Set(q.options).size === q.options.length &&
+            typeof q.answerIndex === "number" &&
+            q.answerIndex >= 0 &&
+            q.answerIndex < q.options.length
+          ) {
+            result.push({
+              id: q.id,
+              type: "multiple",
+              enunciado: q.prompt,
+              opciones: q.options,
+              respuesta: q.options[q.answerIndex],
+              pista: q.hint || undefined,
+              explicacion: "¡Respuesta correcta!",
+              xp: 20,
+              subtopicId: sub.id,
+            });
+          }
+        }
+      }
+    }
+    return result;
+  }, [unidadesRes, usuario]);
 
   async function handleCreate() {
     const room = await game.createRoom({
@@ -115,6 +161,7 @@ export function ExploradoresGame() {
       hostName: name || currentProfile.name.split(" ")[0],
       avatarId,
       characterClass,
+      unitQuestions: unitQuestions.length > 0 ? unitQuestions.slice(0, 50) : undefined,
     });
     if (room) setStep("lobby");
   }
@@ -233,7 +280,10 @@ export function ExploradoresGame() {
         {effectiveStep === "personaje" && (
           <CharacterSelectScreen
             selectedClass={characterClass}
-            onSelectClass={(cls) => setCharacterClass(cls)}
+            onSelectClass={(cls) => {
+              setCharacterClass(cls);
+              setAvatarId(CHARACTER_PROFILES[cls].avatarId);
+            }}
             onContinue={() => setStep("sala")}
             onBack={() => setStep("curso")}
           />
@@ -302,7 +352,9 @@ export function ExploradoresGame() {
         "question" in pending &&
         game.me && (
         <GameQuizModal
+          key={pending.question.id}
           question={pending.question}
+          esTurnoPropio={Boolean(game.isMyTurn)}
           tileTitle={
             pending.type === "cooperacion"
               ? "Casilla de Cooperación"
@@ -905,7 +957,10 @@ function PlayScreen({
     if (rolling) return;
     const map: Record<string, number> = {};
     for (const p of room.players) map[p.id] = p.position % BOARD_TILES.length;
-    setDisplayPositions(map);
+    const timer = setTimeout(() => {
+      setDisplayPositions(map);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [room.players, rolling]);
 
   async function handleRoll(extraSteps = 0) {

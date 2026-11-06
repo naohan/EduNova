@@ -6,6 +6,7 @@ import { useAgeTier } from "@/lib/age-tier";
 import { soundManager } from "@/components/estudiante/juego/soundEffects";
 import { Burbuja, MarcoJuego, PantallaFin, PantallaInicio, SinWebGL, decir, hayWebGL, mezclar, usePremio } from "./comun";
 import { CASOS, CONFIG_DOCTOR, ORGANOS, type Caso, type IdOrgano } from "./cuerpoData";
+import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
 
 const CuerpoEscena = dynamic(() => import("./CuerpoEscena"), {
   ssr: false,
@@ -31,6 +32,9 @@ export function DoctorDetective() {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [fin, setFin] = useState<Fin | null>(null);
   const resuelto = useRef(false);
+  const attemptRef = useRef(1);
+  const inicioRef = useRef(marcaDeTiempo());
+  const bloqueadoRef = useRef(false);
 
   const caso = casos?.[ronda] ?? null;
   const texto = mensaje ?? caso?.texto ?? "";
@@ -44,6 +48,9 @@ export function DoctorDetective() {
   function empezar() {
     soundManager.init();
     resuelto.current = false;
+    attemptRef.current = 1;
+    inicioRef.current = marcaDeTiempo();
+    bloqueadoRef.current = false;
     const disponibles = CASOS.filter((c) => !config.soloFaciles || !c.dificil);
     setCasos(mezclar(disponibles).slice(0, config.rondas));
     setRonda(0);
@@ -60,9 +67,28 @@ export function DoctorDetective() {
   }
 
   function tocar(id: IdOrgano) {
-    if (!caso || !casos || fin || resuelto.current || encontrados.includes(id)) return;
+    if (!caso || !casos || fin || resuelto.current || encontrados.includes(id) || bloqueadoRef.current) return;
+    bloqueadoRef.current = true;
+    setTimeout(() => {
+      bloqueadoRef.current = false;
+    }, 400);
 
-    if (!caso.organos.includes(id)) {
+    const esCorrecto = caso.organos.includes(id);
+    const questionId = `lab-doctor-${caso.id}`;
+    const timeMs = msDesde(inicioRef.current);
+    const intentoActual = attemptRef.current;
+
+    void registrarEvento({
+      activity: "LAB_3D",
+      correct: esCorrecto,
+      questionId,
+      attempt: intentoActual,
+      hintsUsed: 0,
+      timeMs,
+    });
+
+    if (!esCorrecto) {
+      attemptRef.current += 1;
       soundManager.playWrong();
       setMensaje(`Ese órgano ${ORGANOS[id].funcion}. Sigue investigando: ${caso.texto}`);
       return;
@@ -80,6 +106,9 @@ export function DoctorDetective() {
     if (config.vozAutomatica) decir(caso.explicacion);
     setTimeout(() => {
       resuelto.current = false;
+      attemptRef.current = 1;
+      inicioRef.current = marcaDeTiempo();
+      bloqueadoRef.current = false;
       setEncontrados([]);
       setMensaje(null);
       if (ronda + 1 >= casos.length) void terminar(casos.length);

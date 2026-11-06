@@ -17,6 +17,7 @@ export type QuizQuestion = {
   explicacion: string;
   pista?: string;
   xp: number;
+  subtopicId?: string;
 };
 
 export type CourseProgress = {

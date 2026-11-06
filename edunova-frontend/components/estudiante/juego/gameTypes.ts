@@ -117,6 +117,10 @@ export type GameRoom = {
   comboMultiplier: number;
   /** Total de NovaCoins recolectados por el equipo */
   totalCoins: number;
+  /** Preguntas provenientes de unidades publicadas */
+  unitQuestions?: QuizQuestion[];
+  /** Índice circular de preguntas de unidades */
+  unitQuestionIndex?: number;
   updatedAt: number;
 };
 
@@ -128,6 +132,7 @@ export type CreateRoomBody = {
   hostName: string;
   avatarId: string;
   characterClass?: CharacterClass;
+  unitQuestions?: QuizQuestion[];
 };
 
 export type JoinRoomBody = {

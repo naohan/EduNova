@@ -234,7 +234,7 @@ export interface ExplainableAlert {
 }
 
 // ---- Datos de proceso: de aquí salen el dominio (BKT), las alertas y los talentos ----
-export type EventActivity = 'FLASHCARD' | 'QUIZ' | 'LAB_3D';
+export type EventActivity = 'FLASHCARD' | 'QUIZ' | 'LAB_3D' | 'GAME';
 
 export interface LearningEvent {
   id: string; // lo genera el cliente: reenviar sin conexión no duplica la evidencia

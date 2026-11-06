@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useAgeTier } from "@/lib/age-tier";
 import { soundManager } from "@/components/estudiante/juego/soundEffects";
 import { Burbuja, MarcoJuego, PantallaFin, PantallaInicio, SinWebGL, decir, hayWebGL, mezclar, usePremio } from "./comun";
 import { PLANETAS, PLANETAS_ORDENA, type IdPlaneta } from "./espacioData";
+import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
 
 const OrdenaEscena = dynamic(() => import("./OrdenaEscena"), {
   ssr: false,
@@ -29,12 +30,18 @@ export function OrdenaPlanetas() {
   const [intentos, setIntentos] = useState(0);
   const [mensaje, setMensaje] = useState("Arrastra un planeta hasta su órbita.");
   const [aviso, setAviso] = useState<string | null>(null);
+  const attemptPorPlaneta = useRef<Record<string, number>>({});
+  const inicioPorPlaneta = useRef<Record<string, number>>({});
+  const bloqueadoRef = useRef(false);
 
   const xp = orden.length * XP_POR_PLANETA;
   const coins = orden.length * COINS_POR_PLANETA;
 
   function empezar() {
     soundManager.init();
+    attemptPorPlaneta.current = {};
+    inicioPorPlaneta.current = {};
+    bloqueadoRef.current = false;
     setBandeja(mezclar(orden));
     setColocados([]);
     setIntentos(0);
@@ -54,7 +61,31 @@ export function OrdenaPlanetas() {
       setMensaje(`Suelta ${nombreDe(id)} sobre una órbita.`);
       return;
     }
-    if (orbita !== id) {
+    if (bloqueadoRef.current) return;
+    bloqueadoRef.current = true;
+    setTimeout(() => {
+      bloqueadoRef.current = false;
+    }, 400);
+
+    if (!inicioPorPlaneta.current[id]) {
+      inicioPorPlaneta.current[id] = marcaDeTiempo();
+    }
+    const currentAttempt = attemptPorPlaneta.current[id] ?? 1;
+    const timeMs = msDesde(inicioPorPlaneta.current[id]);
+    const esCorrecto = orbita === id;
+    const questionId = `lab-ordena-${id}`;
+
+    void registrarEvento({
+      activity: "LAB_3D",
+      correct: esCorrecto,
+      questionId,
+      attempt: currentAttempt,
+      hintsUsed: 0,
+      timeMs,
+    });
+
+    if (!esCorrecto) {
+      attemptPorPlaneta.current[id] = currentAttempt + 1;
       setIntentos((n) => n + 1);
       soundManager.playWrong();
       const masCerca = orden.indexOf(id) < orden.indexOf(orbita);
