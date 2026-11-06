@@ -107,6 +107,9 @@ export interface GamificationAndBenchmarkProfile {
   ownedItems?: string[]; // ids de accesorios comprados
   diagnosticTier?: AgeTier;
   diagnosedAt?: string;
+  dailyBonusDate?: string;
+  dailyBonusPoints?: number;
+  effortStreak?: number;
 }
 
 // Fila pública de una liga. Safe-Play: nada de saldo, racha ni vínculos familiares de otros niños.
@@ -117,6 +120,19 @@ export interface LeaderboardEntry {
   masteryPoints: number;
   effortPoints: number;
   division: GamificationAndBenchmarkProfile['leagues']['division'];
+}
+
+export interface LeaderboardAroundMeResponse {
+  rows: LeaderboardEntry[];
+  myPosition: number;
+  total: number;
+}
+
+export interface EventsBatchResponse {
+  accepted: number;
+  duplicates: number;
+  rejected: number;
+  effortBonus: number;
 }
 
 // ---- Tienda del avatar (HU-06) ----
@@ -290,12 +306,12 @@ export interface LabMissionComplete {
 // POST /api/progress/sync                -> { synced: number }
 // POST /api/labs/complete-mission        body: LabMissionComplete
 // POST /api/ai/ingest-document           -> LearningUnit (status DRAFT), solo docente
-// POST /api/events  body: { events }     -> { accepted, duplicates, rejected }, solo estudiante
+// POST /api/events  body: { events }     -> EventsBatchResponse ({ accepted, duplicates, rejected, effortBonus }), solo estudiante
 // PUT  /api/teacher/approve-rubric       -> LearningUnit (status PUBLISHED)
 // POST /api/ai/analyze-handwritten-photo -> HandwrittenAnalysis
 // POST /api/ai/validate-duel-question    -> { valid: boolean; reason: string }
 // POST /api/ai/family-home-explainer     -> { explanation: string }
-// GET  /api/leagues/leaderboard          -> LeaderboardEntry[]
+// GET  /api/leagues/leaderboard          -> LeaderboardEntry[] o LeaderboardAroundMeResponse (con around=me)
 // GET  /api/shop/items                   -> ShopItem[]
 // POST /api/shop/buy    body: { itemId } -> Inventory  (estudiante con sesión)
 // POST /api/shop/equip  body: { itemId } -> Inventory  (estudiante con sesión; alterna puesto/quitado)

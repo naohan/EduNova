@@ -1,5 +1,5 @@
 import { completeMission, sendEvents, syncProgress } from "./client";
-import type { LearningEvent } from "./edunova-contract";
+import type { EventsBatchResponse, LearningEvent } from "./edunova-contract";
 
 // Cola de progreso sin conexión (HU-08). Lo que el estudiante gana sin red se guarda en este
 // dispositivo y se envía al volver internet. Solo se encola si el navegador está sin red: tras un
@@ -67,13 +67,14 @@ export const guardarProgreso = (studentId: string, eventos: Eventos) =>
   guardar({ tipo: "progreso", studentId, eventos }, () => syncProgress(studentId, eventos));
 
 /** Los eventos tienen id propio: reenviarlos no duplica nada, así que también se encolan si se agota el tiempo. */
-export async function guardarEventos(eventos: LearningEvent[]) {
+export async function guardarEventos(eventos: LearningEvent[]): Promise<EventsBatchResponse | undefined> {
   if (sinRed()) {
     encolar({ tipo: "eventos", eventos });
-    return;
+    return undefined;
   }
   const r = await sendEvents(eventos);
   if (!r.ok && r.status === 0) encolar({ tipo: "eventos", eventos });
+  return r.ok ? r.data : undefined;
 }
 
 const enviar = (item: Pendiente) => {

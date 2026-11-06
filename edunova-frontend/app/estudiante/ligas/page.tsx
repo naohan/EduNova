@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
-import { getLeaderboard, getStudentProfile } from "@/lib/api/client";
-import type { LeaderboardEntry } from "@/lib/api/edunova-contract";
+import { getLeaderboard, getLeaderboardAroundMe, getStudentProfile } from "@/lib/api/client";
+import type { LeaderboardAroundMeResponse, LeaderboardEntry } from "@/lib/api/edunova-contract";
 import { useApi } from "@/lib/api/use-api";
 import { useSessionUser } from "@/lib/api/use-session";
 
@@ -25,27 +25,66 @@ const ligaEjemplo: LeaderboardEntry[] = [
   { studentId: "u-student-seed-5", alias: "Valentina", institutionName: "Colegio San Martín", masteryPoints: 700, effortPoints: 812, division: "ORO" },
 ];
 
+interface LigaData {
+  rows: LeaderboardEntry[];
+  myPosition?: number;
+  total?: number;
+}
+
 function TablaLiga({
   titulo,
   descripcion,
-  filas,
+  data,
   puntos,
   miId,
 }: {
   titulo: string;
   descripcion: string;
-  filas: LeaderboardEntry[];
+  data: LigaData;
   puntos: "masteryPoints" | "effortPoints";
   miId?: string;
 }) {
+  const myIndex = miId ? data.rows.findIndex((f) => f.studentId === miId) : -1;
+  const myPosition = data.myPosition ?? (myIndex >= 0 ? myIndex + 1 : undefined);
+  const total = data.total ?? data.rows.length;
+
+  let mensajePosicion: string | null = null;
+  if (miId && myPosition !== undefined && total > 0) {
+    const mitadSuperior = Math.ceil(total / 2);
+    if (myPosition <= mitadSuperior) {
+      mensajePosicion = `Vas en el puesto ${myPosition} de ${total}`;
+    } else {
+      if (myIndex > 0) {
+        const filaSuperior = data.rows[myIndex - 1];
+        const miFila = data.rows[myIndex];
+        const diff = Math.max(1, filaSuperior[puntos] - miFila[puntos]);
+        mensajePosicion = `A ${diff} puntos de avanzar`;
+      } else {
+        mensajePosicion = `A 1 puntos de avanzar`;
+      }
+    }
+  }
+
   return (
     <section className="rounded-2xl border border-[#E8E0FF] bg-white p-4 sm:p-5">
-      <h2 className="font-bold text-[#17164F]">{titulo}</h2>
-      <p className="mt-0.5 text-xs text-[#5B5678]">{descripcion}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="font-bold text-[#17164F]">{titulo}</h2>
+          <p className="mt-0.5 text-xs text-[#5B5678]">{descripcion}</p>
+        </div>
+        {mensajePosicion ? (
+          <span className="rounded-full bg-[#EAE5FF] px-3 py-1 text-xs font-bold text-[#5636D9]">
+            {mensajePosicion}
+          </span>
+        ) : null}
+      </div>
+
       <ol className="mt-3 space-y-2">
-        {filas.map((f, i) => {
+        {data.rows.map((f, i) => {
           const soyYo = f.studentId === miId;
           const division = divisiones[f.division];
+          const puesto = myPosition !== undefined && myIndex >= 0 ? myPosition - myIndex + i : i + 1;
+          const displayRank = medallas[puesto - 1] ?? puesto;
           return (
             <li
               key={f.studentId}
@@ -55,7 +94,7 @@ function TablaLiga({
               }`}
             >
               <span className="w-7 shrink-0 text-center text-sm font-bold text-[#17164F]">
-                {medallas[i] ?? i + 1}
+                {displayRank}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-bold text-[#17164F]">
@@ -99,15 +138,53 @@ function MiResumen({ studentId }: { studentId: string }) {
   );
 }
 
+function fallbackData(puntos: "masteryPoints" | "effortPoints", studentId?: string): LigaData {
+  const sorted = [...ligaEjemplo].sort((a, b) => b[puntos] - a[puntos]);
+  const total = sorted.length;
+  if (!studentId) {
+    return { rows: sorted.slice(0, 5), total };
+  }
+  const idx = sorted.findIndex((f) => f.studentId === studentId);
+  const myPosition = idx >= 0 ? idx + 1 : 1;
+  const start = Math.max(0, (idx >= 0 ? idx : 0) - 2);
+  const end = Math.min(total, (idx >= 0 ? idx : 0) + 3);
+  return {
+    rows: sorted.slice(start, end),
+    myPosition,
+    total,
+  };
+}
+
 export default function Page() {
   const usuario = useSessionUser();
   const miId = usuario?.role === "STUDENT" ? usuario.id : undefined;
-  const maestria = useApi(() => getLeaderboard("mastery"), []);
-  const superacion = useApi(() => getLeaderboard("effort"), []);
-  const sinServidor = maestria.status === "error" || superacion.status === "error";
 
-  const ordenada = (clave: "masteryPoints" | "effortPoints") =>
-    [...ligaEjemplo].sort((a, b) => b[clave] - a[clave]);
+  const maestriaApi = useApi<LeaderboardEntry[] | LeaderboardAroundMeResponse>(
+    () => (miId ? getLeaderboardAroundMe("mastery") : getLeaderboard("mastery")),
+    [miId],
+  );
+  const superacionApi = useApi<LeaderboardEntry[] | LeaderboardAroundMeResponse>(
+    () => (miId ? getLeaderboardAroundMe("effort") : getLeaderboard("effort")),
+    [miId],
+  );
+
+  const sinServidor = maestriaApi.status === "error" || superacionApi.status === "error";
+
+  const normalizarData = (
+    apiData: LeaderboardEntry[] | LeaderboardAroundMeResponse | undefined,
+    puntos: "masteryPoints" | "effortPoints",
+  ): LigaData => {
+    if (!apiData) return fallbackData(puntos, miId);
+    if (Array.isArray(apiData)) {
+      return { rows: apiData, total: apiData.length };
+    }
+    return apiData;
+  };
+
+  const datosMaestria =
+    maestriaApi.status === "ok" ? normalizarData(maestriaApi.data, "masteryPoints") : fallbackData("masteryPoints", miId);
+  const datosSuperacion =
+    superacionApi.status === "ok" ? normalizarData(superacionApi.data, "effortPoints") : fallbackData("effortPoints", miId);
 
   return (
     <EstudianteLayout>
@@ -140,14 +217,14 @@ export default function Page() {
           <TablaLiga
             titulo="Liga de Maestría"
             descripcion="Precisión, retos 3D y preguntas que creas."
-            filas={maestria.status === "ok" ? maestria.data : ordenada("masteryPoints")}
+            data={datosMaestria}
             puntos="masteryPoints"
             miId={miId}
           />
           <TablaLiga
             titulo="Liga de Superación"
             descripcion="Constancia, reintentos y ayuda a compañeros."
-            filas={superacion.status === "ok" ? superacion.data : ordenada("effortPoints")}
+            data={datosSuperacion}
             puntos="effortPoints"
             miId={miId}
           />

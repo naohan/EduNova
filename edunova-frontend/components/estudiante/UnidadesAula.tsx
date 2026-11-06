@@ -27,16 +27,17 @@ function Pregunta({
   const [descartadas, setDescartadas] = useState<number[]>([]);
   const [acerto, setAcerto] = useState(false);
   const [pistas, setPistas] = useState(0);
+  const [avisoBono, setAvisoBono] = useState<string | null>(null);
   const inicio = useRef(0);
 
   useEffect(() => {
     inicio.current = marcaDeTiempo();
   }, []);
 
-  function responder(indice: number) {
+  async function responder(indice: number) {
     if (acerto || descartadas.includes(indice)) return;
     const correcta = indice === pregunta.answerIndex;
-    registrarEvento({
+    const res = await registrarEvento({
       activity: "QUIZ",
       correct: correcta,
       subtopicId,
@@ -45,6 +46,9 @@ function Pregunta({
       hintsUsed: pistas,
       timeMs: msDesde(inicio.current),
     });
+    if (res?.effortBonus && res.effortBonus > 0) {
+      setAvisoBono("Tres seguidas. +5 de esfuerzo");
+    }
     if (correcta) setAcerto(true);
     else setDescartadas([...descartadas, indice]);
   }
@@ -75,6 +79,13 @@ function Pregunta({
           );
         })}
       </div>
+
+      {avisoBono ? (
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#2DBE70] bg-[#E9F9F0] px-3 py-2 text-xs font-bold text-[#127A43]">
+          <CheckCircleIcon weight="fill" className="h-4 w-4 shrink-0 text-[#2DBE70]" aria-hidden />
+          <span>{avisoBono}</span>
+        </div>
+      ) : null}
 
       {acerto ? (
         <div className="mt-3 flex items-center justify-between gap-3">

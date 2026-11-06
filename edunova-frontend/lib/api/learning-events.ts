@@ -1,4 +1,4 @@
-import type { LearningEvent } from "./edunova-contract";
+import type { EventsBatchResponse, LearningEvent } from "./edunova-contract";
 import { guardarEventos } from "./offline-queue";
 import { getSessionUserRaw, type SessionUser } from "./session";
 
@@ -22,7 +22,9 @@ const nuevoId = () =>
 export const msDesde = (inicio: number) => (inicio ? Date.now() - inicio : 0);
 export const marcaDeTiempo = () => Date.now();
 
-export function registrarEvento(datos: Omit<LearningEvent, "id" | "occurredAt">) {
-  if (!sesionDeEstudiante()) return;
-  void guardarEventos([{ ...datos, id: nuevoId(), occurredAt: new Date().toISOString() }]);
+export async function registrarEvento(
+  datos: Omit<LearningEvent, "id" | "occurredAt">
+): Promise<EventsBatchResponse | undefined> {
+  if (!sesionDeEstudiante()) return undefined;
+  return guardarEventos([{ ...datos, id: nuevoId(), occurredAt: new Date().toISOString() }]);
 }

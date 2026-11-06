@@ -5,12 +5,14 @@ import type {
   ClassStudent,
   DiagnosticQuestion,
   DiagnosticResult,
+  EventsBatchResponse,
   ExplainableAlert,
   GamificationAndBenchmarkProfile,
   HandwrittenAnalysis,
   HypothesisReview,
   Inventory,
   LabMissionComplete,
+  LeaderboardAroundMeResponse,
   LeaderboardEntry,
   LearningEvent,
   LearningUnit,
@@ -128,7 +130,7 @@ export const getStudentProfile = (studentId: string) =>
 export const completeMission = (input: Omit<LabMissionComplete, "type"> & { studentId: string; firstTry?: boolean }) =>
   request<GamificationAndBenchmarkProfile>("POST", "/labs/complete-mission", { type: "LAB_MISSION_COMPLETE", ...input }, WRITE_TIMEOUT_MS);
 export const sendEvents = (events: LearningEvent[]) =>
-  request<{ accepted: number; duplicates: number; rejected: number }>("POST", "/events", { events }, WRITE_TIMEOUT_MS);
+  request<EventsBatchResponse>("POST", "/events", { events }, WRITE_TIMEOUT_MS);
 export const syncProgress = (studentId: string, events: Array<{ xp?: number; coins?: number }>) =>
   request<{ synced: number }>("POST", "/progress/sync", { studentId, events }, WRITE_TIMEOUT_MS);
 export const analyzeHandwrittenPhoto = (input: { imageBase64?: string; explanation?: string }) =>
@@ -146,6 +148,8 @@ export const submitDiagnostic = (answers: Array<{ questionId: string; optionInde
 // ---- Juegos y ligas ----
 export const getLeaderboard = (league: "mastery" | "effort" = "mastery") =>
   request<LeaderboardEntry[]>("GET", `/leagues/leaderboard?league=${league}`);
+export const getLeaderboardAroundMe = (league: "mastery" | "effort" = "mastery") =>
+  request<LeaderboardAroundMeResponse>("GET", `/leagues/leaderboard?league=${league}&around=me`);
 export const getShopItems = () => request<ShopItem[]>("GET", "/shop/items");
 export const buyItem = (itemId: string) => request<Inventory>("POST", "/shop/buy", { itemId }, WRITE_TIMEOUT_MS);
 export const toggleItem = (itemId: string) => request<Inventory>("POST", "/shop/equip", { itemId }, WRITE_TIMEOUT_MS);
