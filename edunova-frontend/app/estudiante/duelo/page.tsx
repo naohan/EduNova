@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, type ComponentType } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
@@ -9,6 +10,12 @@ import { BotonSalir, BotonVoz, Opcion, PuntosAvance } from "@/components/estudia
 import { JUEGO_ASSETS } from "@/components/estudiante/juego/assets";
 import { validateDuelQuestion, getDuelOpponentQuestions, reportDuelResult } from "@/lib/api/client";
 import { useSessionUser } from "@/lib/api/use-session";
+import { hayWebGL } from "@/components/estudiante/aventuras/comun";
+
+const ArenaEscena = dynamic(() => import("@/components/estudiante/duelo/ArenaEscena"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-[#100E26] animate-pulse" />,
+});
 import {
   ArrowCounterClockwiseIcon,
   ArrowLeftIcon,
@@ -180,6 +187,8 @@ export default function DueloPage() {
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [timeLeft, setTimeLeft] = useState(45);
   const [opponentBattleScore, setOpponentBattleScore] = useState(0);
+  const [soportadoWebGL] = useState(() => (typeof document === "undefined" ? true : hayWebGL()));
+  const [lastAnswer, setLastAnswer] = useState<{ correct: boolean; id: number } | null>(null);
 
   const usuario = useSessionUser();
   const [premio, setPremio] = useState<Premio | null>(null);
@@ -398,6 +407,9 @@ export default function DueloPage() {
   // Tocar una opción ya es responder. Con -1 se agotó el tiempo.
   const handleAnswerConfirm = (answeredIdx: number) => {
     if (timerRef.current) clearInterval(timerRef.current);
+
+    const isCorrect = answeredIdx === battleQuestions[currentBattleIndex]?.correctIndex;
+    setLastAnswer({ correct: isCorrect, id: currentBattleIndex });
 
     const updatedAnswers = [...userAnswers, answeredIdx];
     setUserAnswers(updatedAnswers);
@@ -858,17 +870,26 @@ export default function DueloPage() {
             <div className="flex justify-end">
               <BotonSalir onClick={() => setPhase("setup")} etiqueta="Cancelar duelo" />
             </div>
+
+            {/* Escenario 3D del Coliseo (máx 28dvh) o respaldo 2D */}
+            <div className="mx-auto my-3 h-[24dvh] max-h-[190px] w-full max-w-lg shrink-0 overflow-hidden rounded-3xl border border-white/10 shadow-lg sm:h-[28dvh] sm:max-h-[220px]">
+              {soportadoWebGL ? (
+                <ArenaEscena phase="sync_waiting" />
+              ) : (
+                <div className="flex h-full items-center justify-center gap-4 bg-[#100E26]">
+                  <Avatar src={AVATAR_YO} grande />
+                  <SwordIcon weight="fill" className="h-10 w-10 text-[#C98F00]" aria-label="contra" />
+                  <Avatar src={opponentAvatar} grande />
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-1 flex-col items-center justify-center text-center">
-              <div className="flex items-center gap-4">
-                <Avatar src={AVATAR_YO} grande />
-                <SwordIcon weight="fill" className="h-10 w-10 text-[#C98F00]" aria-label="contra" />
-                <Avatar src={opponentAvatar} grande />
-              </div>
               <button
                 type="button"
                 onClick={startBattle}
                 disabled={syncCountdown > 0 || battleQuestions.length === 0}
-                className="btn-tactil tactil-juego mt-8 w-full max-w-xs py-4 text-xl text-[#17164F]"
+                className="btn-tactil tactil-juego mt-4 w-full max-w-xs py-4 text-xl text-[#17164F]"
               >
                 {syncCountdown > 0 ? syncCountdown : battleQuestions.length === 0 ? "..." : "¡Jugar!"}
               </button>
@@ -895,8 +916,21 @@ export default function DueloPage() {
               <BotonSalir onClick={volverAlInicio} etiqueta="Salir del duelo" />
             </div>
 
-            <div className="mt-6 flex items-start gap-3">
-              <h2 className="min-w-0 flex-1 font-[family-name:var(--font-fredoka)] text-2xl font-bold leading-snug text-[#17164F] sm:text-3xl">
+            {/* Escenario 3D compacto del Coliseo (máx 28dvh) */}
+            <div className="mt-2.5 h-[22dvh] max-h-[180px] w-full shrink-0 overflow-hidden rounded-3xl border border-white/10 shadow-md sm:h-[26dvh] sm:max-h-[210px]">
+              {soportadoWebGL ? (
+                <ArenaEscena phase="duel_battle" lastAnswer={lastAnswer} />
+              ) : (
+                <div className="flex h-full items-center justify-center gap-6 bg-[#100E26]">
+                  <Avatar src={AVATAR_YO} />
+                  <SwordIcon weight="fill" className="h-7 w-7 text-[#C98F00]" aria-label="contra" />
+                  <Avatar src={opponentAvatar} />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-3 flex items-start gap-3">
+              <h2 className="min-w-0 flex-1 font-[family-name:var(--font-fredoka)] text-xl font-bold leading-snug text-[#17164F] sm:text-2xl">
                 {battleQuestions[currentBattleIndex].question}
               </h2>
               <BotonVoz
@@ -908,7 +942,7 @@ export default function DueloPage() {
               />
             </div>
 
-            <div className="mt-6 grid gap-3">
+            <div className="mt-2.5 grid gap-2.5">
               {battleQuestions[currentBattleIndex].options.map((opt, optIdx) => (
                 <Opcion key={`${currentBattleIndex}-${optIdx}`} onClick={() => handleAnswerConfirm(optIdx)}>
                   {opt}
@@ -931,20 +965,27 @@ export default function DueloPage() {
                   <BotonSalir href="/estudiante/jugar" etiqueta="Volver a juegos" />
                 </div>
 
+                {/* 3D Coliseo con celebración y confeti */}
+                {soportadoWebGL ? (
+                  <div className="my-2 h-[22dvh] max-h-[180px] w-full shrink-0 overflow-hidden rounded-3xl border border-white/10 shadow-md sm:h-[26dvh] sm:max-h-[210px]">
+                    <ArenaEscena phase="duel_results" userWon={isWin} />
+                  </div>
+                ) : null}
+
                 <div className="text-center">
-                  <h2 className="font-[family-name:var(--font-fredoka)] text-3xl font-bold text-[#17164F]">
+                  <h2 className="font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F] sm:text-3xl">
                     {isWin ? "¡Ganaste!" : isTie ? "¡Empate!" : "¡Buen duelo!"}
                   </h2>
 
-                  <div className="mt-6 flex items-center justify-center gap-8">
+                  <div className="mt-4 flex items-center justify-center gap-8">
                     <div>
                       <Avatar src={AVATAR_YO} grande />
-                      <p className="mt-2 text-4xl font-black text-[#17164F]">{myScore}</p>
+                      <p className="mt-2 text-3xl font-black text-[#17164F] sm:text-4xl">{myScore}</p>
                     </div>
-                    <SwordIcon weight="fill" className="h-10 w-10 text-[#C98F00]" aria-label="contra" />
+                    <SwordIcon weight="fill" className="h-9 w-9 text-[#C98F00] sm:h-10 sm:w-10" aria-label="contra" />
                     <div>
                       <Avatar src={opponentAvatar} grande />
-                      <p className="mt-2 text-4xl font-black text-[#17164F]">{rivalScore}</p>
+                      <p className="mt-2 text-3xl font-black text-[#17164F] sm:text-4xl">{rivalScore}</p>
                     </div>
                   </div>
 

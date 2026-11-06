@@ -1,0 +1,6 @@
+# Créditos y Licencias — Arena de Duelo y Coliseo 3D
+
+## Props y Escenario del Coliseo
+- **Diseño de Referencia:** Inspirado en kits modulares de arena y coliseo de Kenney (Kenney.nl / CC0 Dominio Público) y Quaternius.
+- **Implementación en Cliente:** Construido 100% procedimentalmente con `Obra` (arquitectura de arcos de piedra, gradas concéntricas, estandartes dorados/azules y pebeteros de fuego) y un único `InstancedMesh` para el público animado, optimizado para celulares a menos de 15 llamadas de dibujo por cuadro bajo licencia MIT (EduNova / Hack4Edu 2026).
+
