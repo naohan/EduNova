@@ -7,7 +7,9 @@ import * as THREE from "three";
 import {
   type ClimaHora,
   type LugarValleId,
+  type PersonajeGuiaId,
   LUGARES_VALLE,
+  PERSONAJES_GUIA,
   validarMovimiento,
 } from "./valleData";
 import { calcularAlturaTerreno } from "./ValleEntorno";
@@ -18,10 +20,69 @@ interface Props {
   prefersReducedMotion: boolean;
   lugarCercano: LugarValleId | null;
   onLugarCercanoChange: (id: LugarValleId | null) => void;
+  personajeCercano: PersonajeGuiaId | null;
+  onPersonajeCercanoChange: (id: PersonajeGuiaId | null) => void;
+  novedades: { escuela: number; casa: number };
+  preguntasDisponibles: { elena: boolean; mateo: boolean; vega: boolean };
   posicionJugador: [number, number, number];
   setPosicionJugador: (pos: [number, number, number]) => void;
   objetivoMovimiento: [number, number] | null;
   setObjetivoMovimiento: (obj: [number, number] | null) => void;
+}
+
+/** Baliza 3D flotante sobre edificios con novedades publicadas (forma, texto y color) */
+function Baliza3D({
+  posicion,
+  cantidad,
+  color,
+}: {
+  posicion: [number, number, number];
+  cantidad: number;
+  color: string;
+}) {
+  const grupoRef = useRef<THREE.Group>(null);
+  useFrame((state, dt) => {
+    if (grupoRef.current) {
+      const t = state.clock.elapsedTime;
+      grupoRef.current.position.y = posicion[1] + Math.sin(t * 2.5) * 0.16;
+      grupoRef.current.rotation.y += dt * 0.7;
+    }
+  });
+
+  return (
+    <group ref={grupoRef} position={posicion}>
+      <mesh>
+        <octahedronGeometry args={[0.5, 0]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.8}
+          roughness={0.2}
+          metalness={0.3}
+        />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.6, 0.75, 20]} />
+        <meshBasicMaterial color={color} transparent opacity={0.7} side={THREE.DoubleSide} />
+      </mesh>
+      <Html position={[0, 0.85, 0]} distanceFactor={14} center>
+        <div
+          className="flex items-center gap-1.5 rounded-full border-2 bg-white px-3 py-0.5 font-bold shadow-md"
+          style={{ borderColor: color, color: "#17164F" }}
+        >
+          <span
+            className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-black text-white"
+            style={{ backgroundColor: color }}
+          >
+            {cantidad}
+          </span>
+          <span className="text-xs font-bold">
+            {cantidad === 1 ? "unidad" : "unidades"}
+          </span>
+        </div>
+      </Html>
+    </group>
+  );
 }
 
 export function ValleEdificios({
@@ -30,6 +91,10 @@ export function ValleEdificios({
   prefersReducedMotion,
   lugarCercano,
   onLugarCercanoChange,
+  personajeCercano,
+  onPersonajeCercanoChange,
+  novedades,
+  preguntasDisponibles,
   posicionJugador,
   setPosicionJugador,
   objetivoMovimiento,
@@ -50,6 +115,11 @@ export function ValleEdificios({
   const anillosObsRef = useRef<THREE.Group>(null);
   const cruzDoctorRef = useRef<THREE.Mesh>(null);
   const estandartesArenaRef = useRef<THREE.Group>(null);
+
+  // Refs de personajes guía (P15)
+  const elenaRef = useRef<THREE.Group>(null);
+  const mateoRef = useRef<THREE.Group>(null);
+  const vegaRef = useRef<THREE.Group>(null);
 
   // Refs del avatar explorador
   const personajeRef = useRef<THREE.Group>(null);
@@ -224,6 +294,35 @@ export function ValleEdificios({
     if (lugarDetectado !== lugarCercano) {
       onLugarCercanoChange(lugarDetectado);
     }
+
+    // Comprobar cercanía a los 3 personajes guía (P15)
+    let charDetectado: PersonajeGuiaId | null = null;
+    for (const pg of PERSONAJES_GUIA) {
+      const distChar = Math.hypot(em.x - pg.posicion[0], em.z - pg.posicion[2]);
+      if (distChar < 3.2) {
+        charDetectado = pg.id;
+        break;
+      }
+    }
+    if (charDetectado !== personajeCercano) {
+      onPersonajeCercanoChange(charDetectado);
+    }
+
+    // Giro suave de cabeza/cuerpo de los personajes hacia el jugador cuando se acerca (P15)
+    const mirarJugador = (ref: React.RefObject<THREE.Group | null>, posChar: [number, number, number]) => {
+      if (!ref.current) return;
+      const distChar = Math.hypot(em.x - posChar[0], em.z - posChar[2]);
+      if (distChar < 6.5) {
+        const anguloDeseado = Math.atan2(em.x - posChar[0], em.z - posChar[2]);
+        let dif = anguloDeseado - ref.current.rotation.y;
+        while (dif < -Math.PI) dif += Math.PI * 2;
+        while (dif > Math.PI) dif -= Math.PI * 2;
+        ref.current.rotation.y += dif * Math.min(1, dt * 6.0);
+      }
+    };
+    mirarJugador(elenaRef, PERSONAJES_GUIA[0].posicion);
+    mirarJugador(mateoRef, PERSONAJES_GUIA[1].posicion);
+    mirarJugador(vegaRef, PERSONAJES_GUIA[2].posicion);
 
     // Notificar posición al padre periódicamente para HUD o marcadores
     setPosicionJugador([em.x, alturaY, em.z]);
@@ -421,6 +520,15 @@ export function ValleEdificios({
           </mesh>
         </group>
 
+        {/* Baliza 3D flotante si hay unidades publicadas (P15) */}
+        {novedades.escuela > 0 && (
+          <Baliza3D
+            posicion={[0, 9.8, 0]}
+            cantidad={novedades.escuela}
+            color="#4C9EFF"
+          />
+        )}
+
         {/* Cartel flotante legible */}
         <Html position={[0, 8.8, 0]} distanceFactor={15} center>
           <div className="flex items-center gap-2 rounded-full border-2 border-[#2472CC] bg-white px-3 py-1 shadow-md">
@@ -523,6 +631,15 @@ export function ValleEdificios({
             <meshStandardMaterial color="#C8B89E" roughness={0.8} />
           </mesh>
         </group>
+
+        {/* Baliza 3D flotante si hay unidades familiares (P15) */}
+        {novedades.casa > 0 && (
+          <Baliza3D
+            posicion={[0, 7.4, 0]}
+            cantidad={novedades.casa}
+            color="#2DBE70"
+          />
+        )}
 
         {/* Cartel flotante */}
         <Html position={[0, 6.4, 0]} distanceFactor={15} center>
@@ -945,6 +1062,175 @@ export function ValleEdificios({
             <meshStandardMaterial color="#4A2E1B" roughness={0.85} />
           </mesh>
         </group>
+      </group>
+
+      {/* ============================================================== */}
+      {/* 8. PERSONAJES GUÍA VIVOS (P15)                                 */}
+      {/* ============================================================== */}
+      {/* Maestra Elena (junto a Escuela) */}
+      <group ref={elenaRef} position={PERSONAJES_GUIA[0].posicion}>
+        {preguntasDisponibles.elena && (
+          <Float speed={3} rotationIntensity={1} floatIntensity={0.5}>
+            <mesh position={[0, 2.05, 0]}>
+              <octahedronGeometry args={[0.22, 0]} />
+              <meshStandardMaterial color="#FFC928" emissive="#FFAA00" emissiveIntensity={0.85} />
+            </mesh>
+          </Float>
+        )}
+        {/* Cuerpo / Vestimenta académica cálida */}
+        <mesh position={[0, 0.45, 0]} castShadow={calidad === "alta"}>
+          <cylinderGeometry args={[0.22, 0.32, 0.9, 10]} />
+          <meshStandardMaterial color="#8E2845" roughness={0.7} />
+        </mesh>
+        {/* Cuello / Bufanda beige */}
+        <mesh position={[0, 0.92, 0]}>
+          <torusGeometry args={[0.18, 0.06, 6, 12]} />
+          <meshStandardMaterial color="#F7F3E6" roughness={0.8} />
+        </mesh>
+        {/* Cabeza con moño y gafas */}
+        <group position={[0, 1.15, 0]}>
+          <mesh castShadow={calidad === "alta"}>
+            <sphereGeometry args={[0.22, 14, 12]} />
+            <meshStandardMaterial color="#F7D3BA" roughness={0.8} />
+          </mesh>
+          {/* Cabello castaño oscuro con moño */}
+          <mesh position={[0, 0.08, -0.06]}>
+            <sphereGeometry args={[0.23, 12, 10]} />
+            <meshStandardMaterial color="#3D2314" roughness={0.8} />
+          </mesh>
+          <mesh position={[0, 0.22, -0.16]}>
+            <sphereGeometry args={[0.1, 8, 8]} />
+            <meshStandardMaterial color="#3D2314" roughness={0.8} />
+          </mesh>
+          {/* Lentes / gafas */}
+          <mesh position={[0, 0.02, 0.21]}>
+            <boxGeometry args={[0.28, 0.07, 0.03]} />
+            <meshStandardMaterial color="#17164F" metalness={0.4} />
+          </mesh>
+        </group>
+        {/* Libro en mano izquierda */}
+        <group position={[-0.3, 0.65, 0.15]} rotation={[0.4, 0.3, -0.2]}>
+          <mesh castShadow={calidad === "alta"}>
+            <boxGeometry args={[0.25, 0.35, 0.08]} />
+            <meshStandardMaterial color="#2472CC" roughness={0.6} />
+          </mesh>
+          <mesh position={[0.02, 0, 0]}>
+            <boxGeometry args={[0.23, 0.33, 0.06]} />
+            <meshStandardMaterial color="#FFFFFF" roughness={0.9} />
+          </mesh>
+        </group>
+        {/* Brazo derecho en reposo */}
+        <mesh position={[0.28, 0.65, 0]} rotation={[0, 0, -0.15]}>
+          <cylinderGeometry args={[0.06, 0.07, 0.45, 8]} />
+          <meshStandardMaterial color="#8E2845" roughness={0.7} />
+        </mesh>
+      </group>
+
+      {/* Sabio Mateo (junto a Tu casa) */}
+      <group ref={mateoRef} position={PERSONAJES_GUIA[1].posicion}>
+        {preguntasDisponibles.mateo && (
+          <Float speed={3} rotationIntensity={1} floatIntensity={0.5}>
+            <mesh position={[0, 2.05, 0]}>
+              <octahedronGeometry args={[0.22, 0]} />
+              <meshStandardMaterial color="#2DBE70" emissive="#1B8A4F" emissiveIntensity={0.85} />
+            </mesh>
+          </Float>
+        )}
+        {/* Poncho andino tradicional */}
+        <mesh position={[0, 0.55, 0]} castShadow={calidad === "alta"}>
+          <coneGeometry args={[0.48, 0.85, 4]} />
+          <meshStandardMaterial color="#C85A32" roughness={0.85} />
+        </mesh>
+        {/* Guarda decorativa del poncho */}
+        <mesh position={[0, 0.22, 0]}>
+          <boxGeometry args={[0.72, 0.12, 0.72]} />
+          <meshStandardMaterial color="#FFC928" roughness={0.8} />
+        </mesh>
+        {/* Pantalón oscuro */}
+        <mesh position={[0, 0.12, 0]}>
+          <cylinderGeometry args={[0.18, 0.2, 0.25, 8]} />
+          <meshStandardMaterial color="#3A2F2B" roughness={0.85} />
+        </mesh>
+        {/* Cabeza con chullo andino */}
+        <group position={[0, 1.12, 0]}>
+          <mesh castShadow={calidad === "alta"}>
+            <sphereGeometry args={[0.22, 14, 12]} />
+            <meshStandardMaterial color="#D7A17A" roughness={0.8} />
+          </mesh>
+          {/* Barba sabia */}
+          <mesh position={[0, -0.1, 0.16]}>
+            <sphereGeometry args={[0.12, 8, 8]} />
+            <meshStandardMaterial color="#E8E8E8" roughness={0.9} />
+          </mesh>
+          {/* Chullo con orejeras */}
+          <mesh position={[0, 0.14, 0]}>
+            <coneGeometry args={[0.25, 0.35, 12]} />
+            <meshStandardMaterial color="#2DBE70" roughness={0.85} />
+          </mesh>
+          {/* Orejeras */}
+          <mesh position={[-0.2, -0.04, 0]} rotation={[0, 0, 0.3]}>
+            <boxGeometry args={[0.06, 0.2, 0.12]} />
+            <meshStandardMaterial color="#C85A32" roughness={0.85} />
+          </mesh>
+          <mesh position={[0.2, -0.04, 0]} rotation={[0, 0, -0.3]}>
+            <boxGeometry args={[0.06, 0.2, 0.12]} />
+            <meshStandardMaterial color="#C85A32" roughness={0.85} />
+          </mesh>
+        </group>
+        {/* Morral de saberes cruzado */}
+        <mesh position={[0.26, 0.38, 0.14]} rotation={[0.2, -0.3, 0]}>
+          <boxGeometry args={[0.22, 0.24, 0.12]} />
+          <meshStandardMaterial color="#8B5A2B" roughness={0.8} />
+        </mesh>
+      </group>
+
+      {/* Astrónoma Vega (junto al Observatorio) */}
+      <group ref={vegaRef} position={PERSONAJES_GUIA[2].posicion}>
+        {preguntasDisponibles.vega && (
+          <Float speed={3} rotationIntensity={1} floatIntensity={0.5}>
+            <mesh position={[0, 2.05, 0]}>
+              <octahedronGeometry args={[0.22, 0]} />
+              <meshStandardMaterial color="#5636D9" emissive="#3B229D" emissiveIntensity={0.85} />
+            </mesh>
+          </Float>
+        )}
+        {/* Chaqueta estelar azul noche */}
+        <mesh position={[0, 0.55, 0]} castShadow={calidad === "alta"}>
+          <boxGeometry args={[0.44, 0.65, 0.3]} />
+          <meshStandardMaterial color="#1B263B" roughness={0.65} />
+        </mesh>
+        {/* Insignia / Galón estelar dorado */}
+        <mesh position={[0.1, 0.65, 0.16]}>
+          <circleGeometry args={[0.06, 10]} />
+          <meshStandardMaterial color="#FFC928" metalness={0.7} />
+        </mesh>
+        {/* Pantalón espacial */}
+        <mesh position={[0, 0.15, 0]}>
+          <cylinderGeometry args={[0.18, 0.18, 0.3, 8]} />
+          <meshStandardMaterial color="#0D1B2A" roughness={0.75} />
+        </mesh>
+        {/* Cabeza con visor celestial */}
+        <group position={[0, 1.12, 0]}>
+          <mesh castShadow={calidad === "alta"}>
+            <sphereGeometry args={[0.22, 14, 12]} />
+            <meshStandardMaterial color="#F7D3BA" roughness={0.75} />
+          </mesh>
+          {/* Cabello recogido */}
+          <mesh position={[0, 0.08, -0.1]}>
+            <sphereGeometry args={[0.22, 10, 10]} />
+            <meshStandardMaterial color="#2B1D0C" roughness={0.8} />
+          </mesh>
+          {/* Visor celestial translúcido cian */}
+          <mesh position={[0, 0.06, 0.2]} rotation={[0.1, 0, 0]}>
+            <boxGeometry args={[0.32, 0.1, 0.08]} />
+            <meshStandardMaterial color="#25CFE0" transparent opacity={0.85} roughness={0.2} metalness={0.6} />
+          </mesh>
+        </group>
+        {/* Cilindro con mapa estelar en el cinto */}
+        <mesh position={[-0.24, 0.38, 0]} rotation={[0.4, 0, 0]}>
+          <cylinderGeometry args={[0.06, 0.06, 0.35, 8]} />
+          <meshStandardMaterial color="#CD7F32" metalness={0.7} roughness={0.3} />
+        </mesh>
       </group>
     </>
   );

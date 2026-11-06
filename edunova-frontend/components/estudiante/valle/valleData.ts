@@ -129,6 +129,45 @@ export const PUENTE_Z_MAX = 3.0;
 
 export const CLAVE_LOCALSTORAGE_ULTIMO_LUGAR = "edunova-valle-ultimo-lugar";
 export const CLAVE_LOCALSTORAGE_CALIDAD = "edunova-valle-calidad";
+export const CLAVE_LOCALSTORAGE_PREGUNTAS_RESUELTAS = "edunova-valle-preguntas-resueltas";
+
+export type PersonajeGuiaId = "elena" | "mateo" | "vega";
+
+export interface PersonajeGuiaDef {
+  id: PersonajeGuiaId;
+  nombre: string;
+  rol: string;
+  lugarId: LugarValleId;
+  posicion: [number, number, number];
+  saludo: string;
+}
+
+export const PERSONAJES_GUIA: PersonajeGuiaDef[] = [
+  {
+    id: "elena",
+    nombre: "Maestra Elena",
+    rol: "Guía de la Escuela",
+    lugarId: "escuela",
+    posicion: [-12.0, 0, -8.0],
+    saludo: "¡Hola, explorador! Las lecciones del aula están listas para ti.",
+  },
+  {
+    id: "mateo",
+    nombre: "Sabio Mateo",
+    rol: "Guía de Tu Casa",
+    lugarId: "casa",
+    posicion: [13.5, 0, -8.5],
+    saludo: "¡Bienvenido! En casa guardamos los saberes y tradiciones de la familia.",
+  },
+  {
+    id: "vega",
+    nombre: "Astrónoma Vega",
+    rol: "Guía del Observatorio",
+    lugarId: "observatorio",
+    posicion: [-14.5, 0.4, 9.5],
+    saludo: "¡Saludos, cadete estelar! El telescopio apunta hacia nuevos mundos.",
+  },
+];
 
 export type ClimaHora = "dia" | "atardecer" | "noche";
 export type CalidadGrafica = "alta" | "ligera";

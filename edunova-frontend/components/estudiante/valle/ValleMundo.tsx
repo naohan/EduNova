@@ -2,22 +2,36 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type CalidadGrafica,
   type ClimaHora,
   type LugarValleId,
+  type PersonajeGuiaId,
   CLAVE_LOCALSTORAGE_CALIDAD,
+  CLAVE_LOCALSTORAGE_PREGUNTAS_RESUELTAS,
   CLAVE_LOCALSTORAGE_ULTIMO_LUGAR,
   LUGARES_VALLE,
+  PERSONAJES_GUIA,
 } from "./valleData";
 import { hayWebGL } from "@/components/estudiante/aventuras/comun";
 import { BotonSalir, Mosaico } from "@/components/estudiante/shared/kit";
+import { Pregunta } from "@/components/estudiante/UnidadesAula";
+import { listUnits } from "@/lib/api/client";
+import { useApi } from "@/lib/api/use-api";
+import { useSessionUser } from "@/lib/api/use-session";
+import type { LearningUnit, UnitQuestion } from "@/lib/api/edunova-contract";
 import {
+  ChatCircleIcon,
   CubeIcon,
   ListIcon,
   SparkleIcon,
+  WarningIcon,
+  XIcon,
 } from "@/components/ui/icons";
+
+const AULA_DEMO = "EDU-402";
 
 // Carga perezosa del Canvas 3D sin SSR
 const ValleEscena = dynamic(() => import("./ValleEscena"), {
@@ -34,6 +48,10 @@ const ValleEscena = dynamic(() => import("./ValleEscena"), {
 
 export function ValleMundo() {
   const router = useRouter();
+  const usuario = useSessionUser();
+
+  // Consulta de unidades sin bloquear el render del valle (P15)
+  const respuestaUnidades = useApi(listUnits, []);
 
   // Detección inicial de soporte WebGL sin efecto en cascada
   const [webglDisponible] = useState(() => (typeof document === "undefined" ? true : hayWebGL()));
@@ -65,6 +83,22 @@ export function ValleMundo() {
   // Lugar cercano actual para la tarjeta contextual
   const [lugarCercano, setLugarCercano] = useState<LugarValleId | null>(null);
 
+  // Personaje guía cercano actual (P15)
+  const [personajeCercano, setPersonajeCercano] = useState<PersonajeGuiaId | null>(null);
+
+  // Estado del diálogo abierto con un personaje guía (P15)
+  const [dialogoPersonaje, setDialogoPersonaje] = useState<PersonajeGuiaId | null>(null);
+
+  // Preguntas resueltas en el valle persistidas en localStorage (P15)
+  const [preguntasResueltas, setPreguntasResueltas] = useState<string[]>(() => {
+    try {
+      const data = typeof window !== "undefined" ? localStorage.getItem(CLAVE_LOCALSTORAGE_PREGUNTAS_RESUELTAS) : null;
+      return data ? (JSON.parse(data) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // Posición del jugador: último lugar visitado o [0, 0, 0]
   const [posicionJugador, setPosicionJugador] = useState<[number, number, number]>(() => {
     try {
@@ -79,6 +113,83 @@ export function ValleMundo() {
     return [0, 0, 0];
   });
   const [objetivoMovimiento, setObjetivoMovimiento] = useState<[number, number] | null>(null);
+
+  // Filtros de unidades publicadas (P15)
+  const unidadesAula = useMemo(() => {
+    if (respuestaUnidades.status !== "ok") return [];
+    const aula = usuario?.classroomCode ?? AULA_DEMO;
+    return respuestaUnidades.data
+      .filter((u) => u.status === "PUBLISHED" && u.classroomCode === aula && !u.familyStudentId)
+      .reverse();
+  }, [respuestaUnidades, usuario]);
+
+  const unidadesFamilia = useMemo(() => {
+    if (respuestaUnidades.status !== "ok" || !usuario?.id) return [];
+    return respuestaUnidades.data
+      .filter((u) => u.status === "PUBLISHED" && u.familyStudentId === usuario.id)
+      .reverse();
+  }, [respuestaUnidades, usuario]);
+
+  // Novedades en los edificios (Escuela y Tu casa)
+  const novedades = useMemo(() => {
+    return {
+      escuela: unidadesAula.length,
+      casa: unidadesFamilia.length,
+    };
+  }, [unidadesAula, unidadesFamilia]);
+
+  // Pools de preguntas de las unidades para los 3 personajes guía (P15)
+  // 1. Maestra Elena: preguntas de unidades del aula
+  const poolElena = useMemo(() => {
+    const lista: { unidad: LearningUnit; subtopicId: string; pregunta: UnitQuestion }[] = [];
+    for (const u of unidadesAula) {
+      for (const st of u.subtopics) {
+        for (const q of st.stages.demonstrate.questions) {
+          lista.push({ unidad: u, subtopicId: st.id, pregunta: q });
+        }
+      }
+    }
+    return lista;
+  }, [unidadesAula]);
+
+  // 2. Sabio Mateo: preguntas de unidades familiares
+  const poolMateo = useMemo(() => {
+    const lista: { unidad: LearningUnit; subtopicId: string; pregunta: UnitQuestion }[] = [];
+    for (const u of unidadesFamilia) {
+      for (const st of u.subtopics) {
+        for (const q of st.stages.demonstrate.questions) {
+          lista.push({ unidad: u, subtopicId: st.id, pregunta: q });
+        }
+      }
+    }
+    return lista;
+  }, [unidadesFamilia]);
+
+  // 3. Astrónoma Vega: preguntas de unidades del aula con integración SOLAR_SYSTEM
+  const poolVega = useMemo(() => {
+    const lista: { unidad: LearningUnit; subtopicId: string; pregunta: UnitQuestion }[] = [];
+    for (const u of unidadesAula) {
+      for (const st of u.subtopics) {
+        if (st.lab3DIntegration?.type === "SOLAR_SYSTEM") {
+          for (const q of st.stages.demonstrate.questions) {
+            lista.push({ unidad: u, subtopicId: st.id, pregunta: q });
+          }
+        }
+      }
+    }
+    return lista;
+  }, [unidadesAula]);
+
+  // Próxima pregunta pendiente para cada personaje
+  const retoElena = useMemo(() => poolElena.find((p) => !preguntasResueltas.includes(p.pregunta.id)) ?? null, [poolElena, preguntasResueltas]);
+  const retoMateo = useMemo(() => poolMateo.find((p) => !preguntasResueltas.includes(p.pregunta.id)) ?? null, [poolMateo, preguntasResueltas]);
+  const retoVega = useMemo(() => poolVega.find((p) => !preguntasResueltas.includes(p.pregunta.id)) ?? null, [poolVega, preguntasResueltas]);
+
+  const preguntasDisponibles = useMemo(() => ({
+    elena: Boolean(retoElena),
+    mateo: Boolean(retoMateo),
+    vega: Boolean(retoVega),
+  }), [retoElena, retoMateo, retoVega]);
 
   // Escuchar cambios de prefers-reduced-motion
   useEffect(() => {
@@ -106,6 +217,40 @@ export function ValleMundo() {
     return LUGARES_VALLE.find((l) => l.id === lugarCercano) ?? null;
   }, [lugarCercano]);
 
+  // Personaje cercano actual
+  const infoPersonaje = useMemo(() => {
+    if (!personajeCercano) return null;
+    return PERSONAJES_GUIA.find((pg) => pg.id === personajeCercano) ?? null;
+  }, [personajeCercano]);
+
+  // Personaje con quien se está hablando en diálogo abierto
+  const personajeEnDialogo = useMemo(() => {
+    if (!dialogoPersonaje) return null;
+    return PERSONAJES_GUIA.find((pg) => pg.id === dialogoPersonaje) ?? null;
+  }, [dialogoPersonaje]);
+
+  // Reto activo en el diálogo
+  const retoEnDialogo = useMemo(() => {
+    if (dialogoPersonaje === "elena") return retoElena;
+    if (dialogoPersonaje === "mateo") return retoMateo;
+    if (dialogoPersonaje === "vega") return retoVega;
+    return null;
+  }, [dialogoPersonaje, retoElena, retoMateo, retoVega]);
+
+  // Guardar pregunta resuelta cuando Pregunta llama a onSiguiente (solo tras acertar)
+  const alResolverPregunta = useCallback((idPregunta: string) => {
+    setPreguntasResueltas((prev) => {
+      if (prev.includes(idPregunta)) return prev;
+      const actualizadas = [...prev, idPregunta];
+      try {
+        localStorage.setItem(CLAVE_LOCALSTORAGE_PREGUNTAS_RESUELTAS, JSON.stringify(actualizadas));
+      } catch {
+        // Ignorar fallo de localStorage
+      }
+      return actualizadas;
+    });
+  }, []);
+
   // Acción para entrar al lugar activo (guarda último lugar y navega)
   const entrarAlLugar = useCallback((lugar: (typeof LUGARES_VALLE)[0]) => {
     try {
@@ -116,12 +261,27 @@ export function ValleMundo() {
     router.push(lugar.ruta);
   }, [router]);
 
-  // Tecla Enter o Espacio para entrar al lugar si la tarjeta está visible
+  // Tecla Enter o Espacio para entrar al lugar si la tarjeta está visible, o 'E' para hablar con personaje
   useEffect(() => {
     const alPresionarTecla = (e: KeyboardEvent) => {
-      if (!infoLugar) return;
-      if (e.key === "Enter" || e.key === " ") {
-        // Evitar que la barra espaciadora haga scroll en la página
+      // Si el diálogo está abierto, Escape lo cierra
+      if (dialogoPersonaje) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setDialogoPersonaje(null);
+        }
+        return;
+      }
+
+      // Tecla 'e' o 'E' para abrir diálogo con personaje cercano
+      if ((e.key === "e" || e.key === "E") && personajeCercano) {
+        e.preventDefault();
+        setDialogoPersonaje(personajeCercano);
+        return;
+      }
+
+      // Enter o Espacio para entrar al edificio si está en el radio
+      if (infoLugar && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
         entrarAlLugar(infoLugar);
       }
@@ -130,7 +290,7 @@ export function ValleMundo() {
     return () => {
       window.removeEventListener("keydown", alPresionarTecla);
     };
-  }, [infoLugar, entrarAlLugar]);
+  }, [dialogoPersonaje, personajeCercano, infoLugar, entrarAlLugar]);
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-[#EBF4FA]">
@@ -143,6 +303,10 @@ export function ValleMundo() {
             prefersReducedMotion={prefersReducedMotion}
             lugarCercano={lugarCercano}
             onLugarCercanoChange={setLugarCercano}
+            personajeCercano={personajeCercano}
+            onPersonajeCercanoChange={setPersonajeCercano}
+            novedades={novedades}
+            preguntasDisponibles={preguntasDisponibles}
             posicionJugador={posicionJugador}
             setPosicionJugador={setPosicionJugador}
             objetivoMovimiento={objetivoMovimiento}
@@ -223,8 +387,22 @@ export function ValleMundo() {
             </div>
           </header>
 
+          {/* BOTÓN HABLAR CON PERSONAJE GUÍA CERCANO (P15) */}
+          {infoPersonaje && !dialogoPersonaje && (
+            <div className="pointer-events-auto absolute inset-x-4 bottom-24 z-20 mx-auto flex max-w-xs justify-center animate-in fade-in zoom-in-95 duration-150">
+              <button
+                type="button"
+                onClick={() => setDialogoPersonaje(infoPersonaje.id)}
+                className="flex items-center gap-2 rounded-2xl border-2 border-[#5636D9] bg-white px-5 py-3 font-bold text-[#5636D9] shadow-lg transition-transform hover:scale-105 active:scale-95"
+              >
+                <ChatCircleIcon weight="fill" className="h-6 w-6 text-[#5636D9]" aria-hidden />
+                <span>Hablar con {infoPersonaje.nombre} <kbd className="ml-1 rounded bg-[#F2EEFF] px-1.5 py-0.5 text-xs font-semibold">E</kbd></span>
+              </button>
+            </div>
+          )}
+
           {/* GUÍA TÁCTIL / TECLADO INFERIOR SUTIL (cuando no hay tarjeta abierta) */}
-          {!infoLugar && (
+          {!infoLugar && !infoPersonaje && !dialogoPersonaje && (
             <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
               <p className="rounded-full bg-white/80 px-4 py-1.5 text-xs font-medium text-[#17164F] backdrop-blur-sm sm:text-sm">
                 Toca el suelo o usa las flechas / WASD para caminar
@@ -233,8 +411,8 @@ export function ValleMundo() {
           )}
 
           {/* TARJETA CONTEXTUAL DEL LUGAR (HUD INFERIOR) */}
-          {infoLugar && (
-            <div className="pointer-events-auto absolute inset-x-4 bottom-4 z-30 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-4 duration-200">
+          {infoLugar && !dialogoPersonaje && (
+            <div className="pointer-events-auto absolute inset-x-4 bottom-4 z-20 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-4 duration-200">
               <div className="flex items-center gap-4 rounded-2xl border-2 border-[#E8E0FF] border-b-4 border-b-[#CFC4F5] bg-white p-4 shadow-lg sm:p-5">
                 <span
                   className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
@@ -262,6 +440,116 @@ export function ValleMundo() {
                 >
                   Entrar
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* DIÁLOGO ACCESIBLE 2D SOBRE EL CANVAS CON PERSONAJE GUÍA (P15) */}
+          {personajeEnDialogo && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="titulo-dialogo-guia"
+              className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+            >
+              <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-[#E8E0FF] bg-white p-5 shadow-2xl sm:p-6">
+                {/* Cabecera del diálogo */}
+                <div className="mb-4 flex items-center justify-between gap-3 border-b border-[#E8E0FF] pb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F2EEFF] text-[#5636D9]">
+                      <ChatCircleIcon weight="fill" className="h-6 w-6" aria-hidden />
+                    </span>
+                    <div>
+                      <h2 id="titulo-dialogo-guia" className="font-[family-name:var(--font-fredoka)] text-xl font-bold text-[#17164F]">
+                        {personajeEnDialogo.nombre}
+                      </h2>
+                      <p className="text-xs font-medium text-[#5B5678]">{personajeEnDialogo.rol}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDialogoPersonaje(null)}
+                    aria-label="Cerrar diálogo"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7F4FF] text-[#17164F] transition-colors hover:bg-[#E8E0FF]"
+                  >
+                    <XIcon weight="bold" className="h-5 w-5" aria-hidden />
+                  </button>
+                </div>
+
+                {/* Contenido: Pregunta real o invitación a explorar */}
+                {retoEnDialogo ? (
+                  <div>
+                    <p className="mb-3 text-sm font-medium text-[#17164F]">
+                      {personajeEnDialogo.saludo}
+                    </p>
+
+                    {/* Nota de seguridad destacada si es Tu casa / Sabio Mateo y la unidad tiene safetyNote */}
+                    {dialogoPersonaje === "mateo" && retoEnDialogo.unidad.safetyNote ? (
+                      <div className="mb-3 flex items-start gap-2 rounded-xl border border-[#FFC928] bg-[#FFFBEB] p-3 text-xs font-medium text-[#92400E]">
+                        <WarningIcon weight="fill" className="mt-0.5 h-4 w-4 shrink-0 text-[#C98F00]" aria-hidden />
+                        <span>{retoEnDialogo.unidad.safetyNote}</span>
+                      </div>
+                    ) : null}
+
+                    {/* Componente Pregunta reutilizado sin alterar contrato ni eventos (P15) */}
+                    <div className="rounded-xl bg-[#FAF9FF] p-2">
+                      <Pregunta
+                        key={retoEnDialogo.pregunta.id}
+                        pregunta={retoEnDialogo.pregunta}
+                        subtopicId={retoEnDialogo.subtopicId}
+                        onSiguiente={() => alResolverPregunta(retoEnDialogo.pregunta.id)}
+                      />
+                    </div>
+
+                    {/* Enlace secundario hacia la unidad */}
+                    <div className="mt-4 flex items-center justify-between pt-2">
+                      <Link
+                        href={`/estudiante/unidades?unidad=${retoEnDialogo.unidad.id}`}
+                        className="text-xs font-bold text-[#5636D9] underline hover:text-[#3B229D]"
+                      >
+                        Ir a esta unidad completa
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setDialogoPersonaje(null)}
+                        className="rounded-xl border border-[#E8E0FF] bg-white px-3 py-1.5 text-xs font-bold text-[#17164F] hover:bg-[#F2EEFF]"
+                      >
+                        Seguir caminando
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Sin preguntas pendientes o sin conexión: invita a explorar el lugar */
+                  <div className="space-y-4 text-center">
+                    <p className="text-sm text-[#17164F]">
+                      {dialogoPersonaje === "elena"
+                        ? "¡Has completado todos los retos de hoy! Entra a la Escuela para repasar todas las lecciones del aula."
+                        : dialogoPersonaje === "mateo"
+                          ? "¡Qué gran trabajo con tus saberes! Entra a Tu casa para compartir historias y lecciones en familia."
+                          : "¡Los telescopios están calibrados! Entra al Observatorio para pilotar tu nave por el Sistema Solar."}
+                    </p>
+                    <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const lugarDestino = LUGARES_VALLE.find((l) => l.id === personajeEnDialogo.lugarId);
+                          setDialogoPersonaje(null);
+                          if (lugarDestino) entrarAlLugar(lugarDestino);
+                        }}
+                        className="rounded-xl bg-[#2DBE70] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#249E5D]"
+                      >
+                        Entrar al edificio
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDialogoPersonaje(null)}
+                        className="rounded-xl border border-[#E8E0FF] bg-white px-4 py-2 text-sm font-bold text-[#17164F] hover:bg-[#F2EEFF]"
+                      >
+                        Seguir caminando
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -299,6 +587,8 @@ export function ValleMundo() {
             <nav aria-label="Lugares del Valle" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {LUGARES_VALLE.map((lugar) => {
                 const Icono = lugar.icon;
+                const cantidadNovedades = lugar.id === "escuela" ? novedades.escuela : lugar.id === "casa" ? novedades.casa : 0;
+
                 return (
                   <div
                     key={lugar.id}
@@ -309,6 +599,7 @@ export function ValleMundo() {
                         // Ignorar fallo
                       }
                     }}
+                    className="relative flex flex-col"
                   >
                     <Mosaico
                       href={lugar.ruta}
@@ -320,6 +611,14 @@ export function ValleMundo() {
                         <Icono weight="duotone" className="h-16 w-16" />
                       </span>
                     </Mosaico>
+
+                    {/* Insignia con texto, forma y color si tiene unidades (P15) */}
+                    {cantidadNovedades > 0 && (
+                      <div className="pointer-events-none absolute top-2 right-2 flex items-center gap-1 rounded-full bg-[#5636D9] px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
+                        <SparkleIcon weight="fill" className="h-3 w-3 text-[#FFC928]" aria-hidden />
+                        <span>{cantidadNovedades} {cantidadNovedades === 1 ? "unidad" : "unidades"}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}

@@ -24,7 +24,7 @@ import { usePerfilAlumno } from "./usePerfilAlumno";
 const tarjetaCls = "rounded-2xl border border-[#E8E0FF] bg-white p-5";
 const botonCls = "rounded-xl bg-[#5636D9] px-5 py-3 text-sm font-bold text-white disabled:opacity-50";
 
-function Pregunta({
+export function Pregunta({
   pregunta,
   subtopicId,
   onSiguiente,
@@ -370,7 +370,24 @@ export function UnidadesAula() {
   const effectiveTier: AgeTier = nivelDiagnostico ?? tierElegido;
 
   const unidades = useApi(listUnits, []);
-  const [abierta, setAbierta] = useState<string | null>(null);
+  const [abierta, setAbierta] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("unidad");
+  });
+
+  // Si la URL incluye ?unidad=<id> o navega por historial, sincroniza la unidad abierta (RNF/P15)
+  useEffect(() => {
+    const alCambiarHistorial = () => {
+      const idUnidad = new URLSearchParams(window.location.search).get("unidad");
+      if (idUnidad) {
+        setAbierta(idUnidad);
+      }
+    };
+    window.addEventListener("popstate", alCambiarHistorial);
+    return () => {
+      window.removeEventListener("popstate", alCambiarHistorial);
+    };
+  }, []);
 
   if (unidades.status === "loading") return <p className="text-sm text-[#5B5678]">Cargando tus unidades…</p>;
   if (unidades.status === "error") {

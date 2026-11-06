@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { type CalidadGrafica, type ClimaHora, type LugarValleId } from "./valleData";
+import {
+  type CalidadGrafica,
+  type ClimaHora,
+  type LugarValleId,
+  type PersonajeGuiaId,
+} from "./valleData";
 import { ValleEntorno } from "./ValleEntorno";
 import { ValleEdificios } from "./ValleEdificios";
 
@@ -12,6 +17,10 @@ interface Props {
   prefersReducedMotion: boolean;
   lugarCercano: LugarValleId | null;
   onLugarCercanoChange: (id: LugarValleId | null) => void;
+  personajeCercano: PersonajeGuiaId | null;
+  onPersonajeCercanoChange: (id: PersonajeGuiaId | null) => void;
+  novedades: { escuela: number; casa: number };
+  preguntasDisponibles: { elena: boolean; mateo: boolean; vega: boolean };
   posicionJugador: [number, number, number];
   setPosicionJugador: (pos: [number, number, number]) => void;
   objetivoMovimiento: [number, number] | null;
@@ -25,6 +34,10 @@ export default function ValleEscena({
   prefersReducedMotion,
   lugarCercano,
   onLugarCercanoChange,
+  personajeCercano,
+  onPersonajeCercanoChange,
+  novedades,
+  preguntasDisponibles,
   posicionJugador,
   setPosicionJugador,
   objetivoMovimiento,
@@ -93,6 +106,10 @@ export default function ValleEscena({
         prefersReducedMotion={prefersReducedMotion}
         lugarCercano={lugarCercano}
         onLugarCercanoChange={onLugarCercanoChange}
+        personajeCercano={personajeCercano}
+        onPersonajeCercanoChange={onPersonajeCercanoChange}
+        novedades={novedades}
+        preguntasDisponibles={preguntasDisponibles}
         posicionJugador={posicionJugador}
         setPosicionJugador={setPosicionJugador}
         objetivoMovimiento={objetivoMovimiento}
