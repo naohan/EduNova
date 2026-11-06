@@ -1,6 +1,6 @@
 // Service Worker de EduNova (HU-08, RNF-01): una lección y las flashcards funcionan sin internet.
 // Al cambiar la lógica o el paquete, sube VERSION para descartar las cachés anteriores.
-const VERSION = "edunova-v2";
+const VERSION = "edunova-v3";
 const CACHE_PAGINAS = `${VERSION}-paginas`;
 const CACHE_ESTATICOS = `${VERSION}-estaticos`;
 const CACHE_API = `${VERSION}-api`;
@@ -8,6 +8,24 @@ const CACHE_API = `${VERSION}-api`;
 const PAQUETE_OFFLINE = ["/estudiante", "/estudiante/leccion", "/estudiante/flashcards", "/estudiante/practica"];
 const PAGINA_RESPALDO = "/estudiante";
 const ESPERA_RED_MS = 3000;
+
+// La caché es opcional: con el almacenamiento lleno o bloqueado, abrirla falla, pero la red sigue
+// sirviendo. Por eso un error aquí nunca debe tumbar la página.
+async function guardarEnCache(nombreCache, clave, respuesta) {
+  try {
+    await (await caches.open(nombreCache)).put(clave, respuesta);
+  } catch {
+    // sin caché la app sigue funcionando con conexión
+  }
+}
+
+async function buscarEnCache(clave) {
+  try {
+    return await caches.match(clave);
+  } catch {
+    return undefined;
+  }
+}
 
 // Baja la página y los JS y CSS que nombra, para que también funcione sin red al abrirla por primera vez.
 async function guardarPagina(ruta) {
@@ -38,18 +56,18 @@ self.addEventListener("activate", (event) => {
 });
 
 async function primeroCache(request, nombreCache) {
-  const guardada = await caches.match(request);
+  const guardada = await buscarEnCache(request);
   if (guardada) return guardada;
   const respuesta = await fetch(request);
-  if (respuesta.ok) (await caches.open(nombreCache)).put(request, respuesta.clone());
+  if (respuesta.ok) await guardarEnCache(nombreCache, request, respuesta.clone());
   return respuesta;
 }
 
 async function cacheYActualiza(request, nombreCache) {
-  const guardada = await caches.match(request);
+  const guardada = await buscarEnCache(request);
   const red = fetch(request)
     .then(async (respuesta) => {
-      if (respuesta.ok) (await caches.open(nombreCache)).put(request, respuesta.clone());
+      if (respuesta.ok) await guardarEnCache(nombreCache, request, respuesta.clone());
       return respuesta;
     })
     .catch(() => undefined);
@@ -59,24 +77,26 @@ async function cacheYActualiza(request, nombreCache) {
 async function primeroRed(request, nombreCache) {
   try {
     const respuesta = await fetch(request);
-    if (respuesta.ok) (await caches.open(nombreCache)).put(request, respuesta.clone());
+    if (respuesta.ok) await guardarEnCache(nombreCache, request, respuesta.clone());
     return respuesta;
   } catch {
-    return (await caches.match(request)) ?? Response.error();
+    return (await buscarEnCache(request)) ?? Response.error();
   }
 }
 
 // Con red lenta no se deja esperando al estudiante: pasado un momento se sirve la copia guardada.
+// Sin copia de esa página no hay a qué volver, así que se espera a la red aunque tarde.
 async function pagina(request) {
   const ruta = new URL(request.url).pathname;
+  const guardada = await buscarEnCache(ruta);
   const control = new AbortController();
-  const espera = setTimeout(() => control.abort(), ESPERA_RED_MS);
+  const espera = guardada ? setTimeout(() => control.abort(), ESPERA_RED_MS) : undefined;
   try {
     const respuesta = await fetch(request, { signal: control.signal });
-    if (respuesta.ok && !respuesta.redirected) (await caches.open(CACHE_PAGINAS)).put(ruta, respuesta.clone());
+    if (respuesta.ok && !respuesta.redirected) await guardarEnCache(CACHE_PAGINAS, ruta, respuesta.clone());
     return respuesta;
   } catch {
-    return (await caches.match(ruta)) ?? (await caches.match(PAGINA_RESPALDO)) ?? Response.error();
+    return guardada ?? (await buscarEnCache(PAGINA_RESPALDO)) ?? Response.error();
   } finally {
     clearTimeout(espera);
   }

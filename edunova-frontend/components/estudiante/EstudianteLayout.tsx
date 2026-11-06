@@ -9,6 +9,7 @@ import { ageTierLabel } from "@/lib/api/helpers";
 import {
   BellIcon,
   BookOpenIcon,
+  ListChecksIcon,
   BrainIcon,
   ChalkboardTeacherIcon,
   ChartBarIcon,
@@ -41,6 +42,7 @@ type Item = {
 const sideNav: Item[] = [
   { href: "/estudiante", label: "Inicio", seccion: "magia", icon: HouseIcon, match: "^/estudiante$" },
   { href: "/estudiante/ruta", label: "Aprender", seccion: "explorar", icon: BookOpenIcon },
+  { href: "/estudiante/unidades", label: "Mis unidades", seccion: "explorar", icon: ListChecksIcon },
   { href: "/estudiante/juegos", label: "Juegos", seccion: "juego", icon: GameControllerIcon },
   { href: "/estudiante/aventuras", label: "Aventuras 3D", seccion: "explorar", icon: CubeIcon },
   { href: "/estudiante/flashcards", label: "Flashcards", seccion: "refuerzo", icon: CheckSquareIcon },

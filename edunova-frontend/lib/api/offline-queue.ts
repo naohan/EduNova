@@ -1,4 +1,5 @@
-import { completeMission, syncProgress } from "./client";
+import { completeMission, sendEvents, syncProgress } from "./client";
+import type { LearningEvent } from "./edunova-contract";
 
 // Cola de progreso sin conexión (HU-08). Lo que el estudiante gana sin red se guarda en este
 // dispositivo y se envía al volver internet. Solo se encola si el navegador está sin red: tras un
@@ -8,7 +9,8 @@ type Mision = Parameters<typeof completeMission>[0];
 type Eventos = Parameters<typeof syncProgress>[1];
 type Pendiente =
   | { tipo: "mision"; input: Mision }
-  | { tipo: "progreso"; studentId: string; eventos: Eventos };
+  | { tipo: "progreso"; studentId: string; eventos: Eventos }
+  | { tipo: "eventos"; eventos: LearningEvent[] };
 
 export type ResultadoGuardado = "guardado" | "enCola" | "error";
 
@@ -64,6 +66,22 @@ export const guardarMision = (input: Mision) =>
 export const guardarProgreso = (studentId: string, eventos: Eventos) =>
   guardar({ tipo: "progreso", studentId, eventos }, () => syncProgress(studentId, eventos));
 
+/** Los eventos tienen id propio: reenviarlos no duplica nada, así que también se encolan si se agota el tiempo. */
+export async function guardarEventos(eventos: LearningEvent[]) {
+  if (sinRed()) {
+    encolar({ tipo: "eventos", eventos });
+    return;
+  }
+  const r = await sendEvents(eventos);
+  if (!r.ok && r.status === 0) encolar({ tipo: "eventos", eventos });
+}
+
+const enviar = (item: Pendiente) => {
+  if (item.tipo === "mision") return completeMission(item.input);
+  if (item.tipo === "eventos") return sendEvents(item.eventos);
+  return syncProgress(item.studentId, item.eventos);
+};
+
 /** Envía la cola en orden. Si se corta la red, lo que falta queda para la próxima vez. */
 export async function sincronizarCola() {
   if (sincronizando) return;
@@ -72,8 +90,7 @@ export async function sincronizarCola() {
     for (;;) {
       const [item, ...resto] = leer();
       if (!item || sinRed()) return;
-      const r =
-        item.tipo === "mision" ? await completeMission(item.input) : await syncProgress(item.studentId, item.eventos);
+      const r = await enviar(item);
       if (!r.ok && r.status === 0) return;
       // Un rechazo del servidor (4xx) no se arregla reintentando: se descarta para no bloquear la cola.
       escribir(resto);

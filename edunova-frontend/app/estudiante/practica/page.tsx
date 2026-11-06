@@ -5,16 +5,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { preguntaPractica } from "@/components/estudiante/data";
+import { registrarEvento } from "@/lib/api/learning-events";
 import { CheckIcon, StarIcon } from "@/components/ui/icons";
+
+// La pregunta del planeta más grande pertenece al subtema de los gigantes gaseosos.
+const SUBTEMA_PRACTICA = "st-solar-3";
 
 export default function Page() {
   const [sel, setSel] = useState<string | null>(null);
   const [ok, setOk] = useState<boolean | null>(null);
+  const [intentos, setIntentos] = useState(0);
 
   function responder(id: string) {
     const op = preguntaPractica.opciones.find((o) => o.id === id)!;
     setSel(id);
     setOk(op.correcta);
+    if (ok) return;
+    setIntentos(intentos + 1);
+    registrarEvento({
+      activity: "QUIZ",
+      correct: op.correcta,
+      subtopicId: SUBTEMA_PRACTICA,
+      questionId: "practica-planeta-grande",
+      attempt: intentos + 1,
+      hintsUsed: 0,
+      timeMs: 0,
+    });
   }
 
   return (

@@ -41,6 +41,15 @@ export interface Flashcard {
   image?: string;
 }
 
+export interface UnitQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+  answerIndex: number;
+  hint: string;
+  rubricCriterionId: string;
+}
+
 export interface SubtopicNode {
   id: string;
   order: number;
@@ -58,7 +67,7 @@ export interface SubtopicNode {
     discover: { storyTextByAge: Record<AgeTier, string>; audioUrl: string };
     practice: { flashcards: Flashcard[]; gameMode: string };
     demonstrate: {
-      questions: unknown[];
+      questions: UnitQuestion[];
       acceptsHandwrittenPhoto: boolean;
       reasoningBonusXP: number;
     };
@@ -168,6 +177,21 @@ export interface ExplainableAlert {
   rubricCriterionId: string;
 }
 
+// ---- Datos de proceso: de aquí salen el dominio (BKT), las alertas y los talentos ----
+export type EventActivity = 'FLASHCARD' | 'QUIZ' | 'LAB_3D';
+
+export interface LearningEvent {
+  id: string; // lo genera el cliente: reenviar sin conexión no duplica la evidencia
+  activity: EventActivity;
+  correct: boolean;
+  subtopicId?: string; // define a qué criterios de la rúbrica aporta evidencia
+  questionId?: string;
+  attempt: number; // 1 = primer intento; solo este mide dominio
+  hintsUsed: number;
+  timeMs: number;
+  occurredAt: string;
+}
+
 // ---- Dominio por criterio de rúbrica (RF-02) ----
 export interface CriterionMastery {
   rubricCriterionId: string;
@@ -239,7 +263,8 @@ export interface LabMissionComplete {
 // GET  /api/units/:id?ageTier=...        -> LearningUnit
 // POST /api/progress/sync                -> { synced: number }
 // POST /api/labs/complete-mission        body: LabMissionComplete
-// POST /api/ai/ingest-document           -> LearningUnit (status DRAFT)
+// POST /api/ai/ingest-document           -> LearningUnit (status DRAFT), solo docente
+// POST /api/events  body: { events }     -> { accepted, duplicates, rejected }, solo estudiante
 // PUT  /api/teacher/approve-rubric       -> LearningUnit (status PUBLISHED)
 // POST /api/ai/analyze-handwritten-photo -> HandwrittenAnalysis
 // POST /api/ai/validate-duel-question    -> { valid: boolean; reason: string }

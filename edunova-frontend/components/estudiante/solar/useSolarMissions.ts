@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { getUnit } from "@/lib/api/client";
+import { marcaDeTiempo, msDesde, registrarEvento } from "@/lib/api/learning-events";
 import { guardarMision } from "@/lib/api/offline-queue";
 import { useApi } from "@/lib/api/use-api";
 import { useSessionUser } from "@/lib/api/use-session";
@@ -100,6 +101,8 @@ export function useSolarMissions() {
   const unidad = useApi(() => getUnit("unit-solar-system"), []);
   const [logro, setLogro] = useState<Logro | null>(null);
   const [pista, setPista] = useState<string | null>(null);
+  const intentos = useRef(0);
+  const inicioMision = useRef(0);
 
   const misiones = MISIONES.map((m) => {
     const subtemas = unidad.status === "ok" ? unidad.data?.subtopics : undefined;
@@ -127,6 +130,7 @@ export function useSolarMissions() {
       subtopicId: mision.subtopicId,
       rewardXP: mision.xp,
       rewardCoins: mision.coins,
+      firstTry: false, // el dominio ya lo mueve el evento de cada toque
     });
     cambiar(resultado);
   }
@@ -134,12 +138,26 @@ export function useSolarMissions() {
   /** Se llama cuando el estudiante toca un planeta, en el modelo 3D o en la barra. */
   function seleccionar(id: PlanetId) {
     if (!actual || logro) return;
-    if (id !== actual.objetivo) {
+    const acierto = id === actual.objetivo;
+    intentos.current += 1;
+    if (!inicioMision.current) inicioMision.current = marcaDeTiempo();
+    registrarEvento({
+      activity: "LAB_3D",
+      correct: acierto,
+      subtopicId: actual.subtopicId,
+      questionId: `mision-${actual.subtopicId}`,
+      attempt: intentos.current,
+      hintsUsed: intentos.current > 1 ? 1 : 0,
+      timeMs: msDesde(inicioMision.current),
+    });
+    if (!acierto) {
       const nombre = SOLAR_BODIES.find((p) => p.id === id)?.name ?? id;
       setPista(`${nombre} no es. Pista: ${actual.pista}`);
       return;
     }
     setPista(null);
+    intentos.current = 0;
+    inicioMision.current = 0;
     escribir(clave, [...hechas, actual.subtopicId]);
     const dato = SOLAR_BODIES.find((p) => p.id === actual.objetivo)?.info.dato ?? "";
     setLogro({ mision: actual, dato, puntos: "guardando" });

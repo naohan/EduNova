@@ -70,7 +70,8 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/tienda` | **Conectada** | `getShopItems`, `buyItem`, `toggleItem` (piden sesión de estudiante) |
 | `/docente`, `/docente/resultados`, `/docente/competencias`, `/docente/reportes`, `/docente/estudiante/[id]` | **Conectadas** | `useAula.ts`: `getClassAnalytics` y `getClassStudents`, con sesión de docente. Sin sesión muestran los datos fijos |
 | `/docente/evaluacion` | **Conectada** | `getClassAssessments` y `overrideAssessment` (`RevisionNotasIA.tsx`) |
-| Studio (subir PDF) | **Conectada** | `ingestDocument` + `approveRubric` |
+| Studio (subir PDF) | **Conectada** | Pide sesión de docente. `ingestDocument` manda el archivo real a Gemini y `approveRubric` publica |
+| `/estudiante/unidades` | **Conectada** | `listUnits`: historia por edad y quiz de cada unidad publicada. Cada respuesta va a `sendEvents` |
 | `/familia` | **Conectada** | `getStudentProfile`, `getBenchmark`, `getFamilyExplanation`, `getPassport`. El pacto es de solo lectura, con una meta fija |
 
 ## Modo sin internet
@@ -83,6 +84,6 @@ El backend sigue el **Plan Maestro**, no los datos fijos de `data.ts`:
 
 1. **Dominio, no notas.** El backend devuelve **% de dominio por criterio de rúbrica**, no notas sobre 20. No existen notas, evolución semanal (`classroomWeekly`), bimestres, `topicComparison`, `strategyAnalysis` ni la ficha `rosaRecord`. Esas tarjetas deben mostrar el % de dominio o quedar con datos fijos. Además, los criterios del backend son de las unidades de prueba (por ejemplo "Qué es el Sistema Solar"), no "Cantidad" ni "Regularidad" de `competenciaMastery`.
 2. **Solo alias.** Las vistas de estudiantes deben mostrar el nombre sin apellido (Safe-Play del plan). El backend ya devuelve solo el alias.
-3. **La rúbrica no se muestra al estudiante.** Hoy `getUnit` la incluye en la respuesta; no la pintes en pantallas de estudiante.
-4. **La IA es simulada.** Las respuestas de foto, ingesta y "explicar en casa" son fijas, con una espera de 1 s. La foto siempre analiza la hoja de "1/3 + 1/4".
+3. **La rúbrica no se muestra al estudiante.** El backend se la quita a `listUnits` y `getUnit` cuando quien pide es un estudiante.
+4. **Dónde hay IA real.** La ingesta y "explicar en casa" llaman a Gemini desde el backend; si falla, responden con respaldo y `usedFallback: true`. El duelo usa `/api/gemini-duel` de este frontend, que necesita su propia `GEMINI_API_KEY`. La foto sigue simulada y siempre analiza la hoja de "1/3 + 1/4".
 5. **Ids.** Los ids del backend son `u-student-1` y `unit-solar-system`, no `"1"` ni `"sistema-solar"`.

@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { RubricCriterion } from "@/lib/api/edunova-contract";
+import type { AgeTier, RubricCriterion } from "@/lib/api/edunova-contract";
 import { approveRubric, ingestDocument } from "@/lib/api/client";
+import { useSessionUser } from "@/lib/api/use-session";
 import {
   aBorrador,
   borradorDeEjemplo,
   esArchivoDeTexto,
   labNombre,
+  leerBase64,
+  motivoDeRechazo,
   tituloDesdeArchivo,
   type Borrador,
 } from "./studioData";
@@ -28,6 +31,12 @@ const columnas: { campo: "topicName" | "evaluationCriterion" | "suggestedActivit
   { campo: "suggestedActivity", label: "Actividad sugerida" },
 ];
 
+const edades: { tier: AgeTier; label: string }[] = [
+  { tier: "EXPLORADOR_7_9", label: "7 a 9 años" },
+  { tier: "AVENTURERO_10_12", label: "10 a 12 años" },
+  { tier: "CREADOR_13_15", label: "13 a 15 años" },
+];
+
 const MAX_TEXTO = 200_000;
 
 const inputCls =
@@ -36,6 +45,7 @@ const botonCls = "rounded-xl bg-[#5636D9] px-5 py-3 text-sm font-bold text-white
 
 /** HU-01: subir material, revisar la rúbrica y publicar. La IA nunca publica sin este clic del docente. */
 export function StudioWizard() {
+  const usuario = useSessionUser();
   const [paso, setPaso] = useState<Paso>("subir");
   const [archivo, setArchivo] = useState<File | null>(null);
   const [titulo, setTitulo] = useState("");
@@ -53,11 +63,26 @@ export function StudioWizard() {
       setError("Sube un archivo o pega el texto de tu clase.");
       return;
     }
+    const rechazo = archivo ? motivoDeRechazo(archivo) : null;
+    if (rechazo) {
+      setError(rechazo);
+      return;
+    }
     setError(null);
     setOcupado(true);
-    const contenido = archivo && esArchivoDeTexto(archivo) ? await archivo.text() : "";
+    const esTexto = archivo ? esArchivoDeTexto(archivo) : false;
+    const contenido = archivo && esTexto ? await archivo.text() : "";
     const textoFinal = `${texto} ${contenido}`.trim().slice(0, MAX_TEXTO);
-    const r = await ingestDocument({ title: tituloFinal || undefined, text: textoFinal });
+    const r = await ingestDocument({
+      title: titulo.trim() || undefined,
+      text: textoFinal,
+      ...(archivo && !esTexto ? { fileBase64: await leerBase64(archivo), mimeType: archivo.type } : {}),
+    });
+    if (!r.ok && (r.status === 401 || r.status === 403 || r.status === 413 || r.status === 415)) {
+      setError(r.status === 413 ? "El archivo pesa demasiado. Prueba con una versión más liviana." : r.error);
+      setOcupado(false);
+      return;
+    }
     const recibido = r.ok ? aBorrador(r.data) : null;
     setBorrador(recibido ?? borradorDeEjemplo(tituloFinal, textoFinal));
     if (!recibido) {
@@ -98,6 +123,18 @@ export function StudioWizard() {
     setError(null);
   }
 
+  if (usuario !== undefined && usuario?.role !== "TEACHER") {
+    return (
+      <section className="rounded-2xl border border-[#E8E0FF] bg-white p-6 text-center">
+        <h2 className="font-bold text-[#17164F]">Inicia sesión como docente</h2>
+        <p className="mt-1 text-sm text-[#5B5678]">Solo un docente puede crear y publicar unidades.</p>
+        <Link href="/login" className={`${botonCls} mt-4 inline-block`}>
+          Iniciar sesión
+        </Link>
+      </section>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <ol className="flex gap-2">
@@ -130,11 +167,11 @@ export function StudioWizard() {
               <FilePlusIcon className="mx-auto h-7 w-7 text-[#5636D9]" aria-hidden />
             </span>
             <span className="mt-2 block text-sm font-bold text-[#17164F]">
-              {archivo ? archivo.name : "Elige un PDF, presentación, imagen o texto"}
+              {archivo ? archivo.name : "Elige un PDF, una imagen o un archivo de texto"}
             </span>
             <input
               type="file"
-              accept=".pdf,.ppt,.pptx,.txt,.md,image/*"
+              accept=".pdf,.txt,.md,image/png,image/jpeg,image/webp"
               className="sr-only"
               onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
             />
@@ -158,8 +195,13 @@ export function StudioWizard() {
             />
           </label>
           <button type="button" onClick={analizar} disabled={ocupado} className={botonCls}>
-            {ocupado ? "Analizando material…" : "Analizar material"}
+            {ocupado ? "Leyendo tu material con IA…" : "Analizar material"}
           </button>
+          {ocupado ? (
+            <p role="status" className="text-sm text-[#5B5678]">
+              Puede tardar hasta un minuto. La IA arma un borrador; tú decides qué se publica.
+            </p>
+          ) : null}
         </section>
       ) : null}
 
@@ -168,6 +210,17 @@ export function StudioWizard() {
           {borrador.sinConexion ? (
             <p role="status" className="rounded-xl bg-[#FEF3C7] px-4 py-3 text-sm text-[#92400E]">
               No se pudo analizar en el servidor ({motivoEjemplo}): este es un ejemplo y no se guardará.
+            </p>
+          ) : null}
+          {!borrador.sinConexion && !borrador.modeloIa ? (
+            <p role="status" className="rounded-xl bg-[#FEF3C7] px-4 py-3 text-sm text-[#92400E]">
+              No se usó la IA ({borrador.avisoIa ?? "no disponible"}): este contenido es un ejemplo, no sale de tu material.
+              Puedes intentarlo otra vez.
+            </p>
+          ) : null}
+          {borrador.modeloIa ? (
+            <p role="status" className="rounded-xl bg-[#F2EEFF] px-4 py-3 text-sm text-[#17164F]">
+              Borrador generado con IA a partir de tu material. Revísalo: nada llega a tus estudiantes sin tu aprobación.
             </p>
           ) : null}
 
@@ -186,6 +239,21 @@ export function StudioWizard() {
                 >
                   <span className="font-semibold text-[#17164F]">{s.titulo}</span>
                   <span className="text-xs text-[#5636D9]">{labNombre[s.lab]}</span>
+                  {borrador.modeloIa && s.textos ? (
+                    <details className="w-full text-sm text-[#17164F]/85">
+                      <summary className="cursor-pointer font-semibold text-[#5636D9]">
+                        Ver textos por edad, {s.tarjetas} tarjetas y {s.preguntas} preguntas
+                      </summary>
+                      <dl className="mt-2 space-y-2">
+                        {edades.map((e) => (
+                          <div key={e.tier}>
+                            <dt className="text-xs font-bold text-[#5B5678]">{e.label}</dt>
+                            <dd>{s.textos?.[e.tier]}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </details>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -261,7 +329,7 @@ export function StudioWizard() {
               : `«${borrador.titulo}» ya está disponible para el aula ${borrador.aula}.`}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <Link href="/estudiante/leccion" className={botonCls}>
+            <Link href="/estudiante/unidades" className={botonCls}>
               Ver como estudiante
             </Link>
             <button

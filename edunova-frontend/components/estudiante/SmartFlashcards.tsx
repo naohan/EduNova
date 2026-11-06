@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getUnit } from "@/lib/api/client";
 import type { Flashcard } from "@/lib/api/edunova-contract";
+import { registrarEvento } from "@/lib/api/learning-events";
 import { guardarProgreso } from "@/lib/api/offline-queue";
 import { useApi } from "@/lib/api/use-api";
 import { useSessionUser } from "@/lib/api/use-session";
@@ -67,6 +68,19 @@ export function SmartFlashcards() {
     if (!cola?.[0]) return;
     const pregunta = cola[0].front;
     const yaFallo = falladas.includes(pregunta);
+    const subtema =
+      unidad.status === "ok"
+        ? unidad.data.subtopics.find((s) => s.stages.practice.flashcards.some((t) => t.id === cola[0].id))
+        : undefined;
+    registrarEvento({
+      activity: "FLASHCARD",
+      correct: laSabia,
+      subtopicId: subtema?.id,
+      questionId: cola[0].id,
+      attempt: yaFallo ? 2 : 1,
+      hintsUsed: 0,
+      timeMs: 0,
+    });
     const nuevasFalladas = laSabia || yaFallo ? falladas : [...falladas, pregunta];
     // Sale del repaso solo si la acierta sin fallar en esta sesión.
     const nuevoRepaso = laSabia && !yaFallo
