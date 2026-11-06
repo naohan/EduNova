@@ -1004,54 +1004,60 @@ function PlayScreen({
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl">
-      <header className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white px-3 py-2 text-[#17164F]">
-        <div className="flex items-center gap-2">
-          <div className="relative h-11 w-11 shrink-0">
+    <div className="relative mx-auto flex h-full max-h-[100%] w-full max-w-6xl flex-col justify-between overflow-hidden">
+      <header className="flex shrink-0 flex-nowrap items-center justify-between gap-1.5 rounded-2xl bg-white px-2.5 py-1.5 text-[#17164F] sm:px-3 sm:py-2">
+        <div
+          className={`flex items-center gap-2 rounded-2xl p-1.5 transition-all ${
+            current?.id === me.id || canControlTurn
+              ? "bg-[#FFF6D6] ring-2 ring-[#FFC928] shadow-[0_0_12px_rgba(255,201,40,0.35)]"
+              : "bg-transparent"
+          }`}
+        >
+          <div className="relative h-10 w-10 shrink-0 sm:h-11 sm:w-11">
             <Image src={currentProfile.avatarSrc} alt="" fill sizes="44px" className="rounded-full object-cover ring-2 ring-[#5636D9]" />
             {current?.id === leaderId ? (
               <CrownIcon weight="fill" className="absolute -right-1.5 -top-1.5 h-5 w-5 text-[#FFC928]" aria-label="Va ganando" />
             ) : null}
           </div>
           <div>
-            <p className="text-sm font-black">{current?.name}</p>
+            <p className="text-xs font-black sm:text-sm">{current?.name}</p>
             <div className="flex items-center gap-0.5" role="img" aria-label={`${current?.lives ?? 3} corazones`}>
               {Array.from({ length: current?.maxLives ?? 3 }).map((_, i) => (
                 <HeartIcon
                   key={i}
                   weight="fill"
-                  className={`h-4 w-4 ${i < (current?.lives ?? 3) ? "text-[#FF8A73]" : "text-[#17164F]/15"}`}
+                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${i < (current?.lives ?? 3) ? "text-[#FF8A73]" : "text-[#17164F]/15"}`}
                   aria-hidden
                 />
               ))}
-              {(current?.shields ?? 0) > 0 ? <ShieldCheckIcon weight="fill" className="ml-1 h-4 w-4 text-[#C98F00]" aria-label="Escudo" /> : null}
+              {(current?.shields ?? 0) > 0 ? <ShieldCheckIcon weight="fill" className="ml-1 h-3.5 w-3.5 text-[#C98F00] sm:h-4 sm:w-4" aria-label="Escudo" /> : null}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <button
             type="button"
             onClick={onShowTerritories}
             aria-label={`Nivel ${room.currentLevel ?? 1}, ${unlocked} de 6 territorios`}
-            className="flex h-11 items-center gap-1.5 rounded-xl bg-[#F2EEFF] px-3 text-base font-extrabold text-[#17164F]"
+            className="flex h-9 items-center gap-1 rounded-xl bg-[#F2EEFF] px-2 text-xs font-extrabold text-[#17164F] sm:h-11 sm:gap-1.5 sm:px-3 sm:text-base"
           >
-            <TrophyIcon weight="fill" className="h-5 w-5 text-[#5636D9]" aria-hidden />
+            <TrophyIcon weight="fill" className="h-4 w-4 text-[#5636D9] sm:h-5 sm:w-5" aria-hidden />
             {unlocked}/6
           </button>
-          <span className="flex h-11 items-center gap-1.5 rounded-xl bg-[#FFF6D6] px-3 text-base font-black text-[#17164F]" aria-label={`${me.novaCoins ?? 80} monedas`}>
-            <DiamondIcon weight="fill" className="h-5 w-5 text-[#C98F00]" aria-hidden />
+          <span className="flex h-9 items-center gap-1 rounded-xl bg-[#FFF6D6] px-2 text-xs font-black text-[#17164F] sm:h-11 sm:gap-1.5 sm:px-3 sm:text-base" aria-label={`${me.novaCoins ?? 80} monedas`}>
+            <DiamondIcon weight="fill" className="h-4 w-4 text-[#C98F00] sm:h-5 sm:w-5" aria-hidden />
             {me.novaCoins ?? 80}
           </span>
-          <span className="flex h-11 items-center gap-1.5 rounded-xl bg-[#E3F8EC] px-3 text-base font-black text-[#17164F]" aria-label={`${me.xp} puntos`}>
-            <LightningIcon weight="fill" className="h-5 w-5 text-[#1B8A4F]" aria-hidden />
+          <span className="flex h-9 items-center gap-1 rounded-xl bg-[#E3F8EC] px-2 text-xs font-black text-[#17164F] sm:h-11 sm:gap-1.5 sm:px-3 sm:text-base" aria-label={`${me.xp} puntos`}>
+            <LightningIcon weight="fill" className="h-4 w-4 text-[#1B8A4F] sm:h-5 sm:w-5" aria-hidden />
             {me.xp}
           </span>
         </div>
       </header>
 
-      <div className="mt-3 flex flex-col items-center gap-3 lg:flex-row lg:items-start lg:justify-center">
-        <div className="mx-auto w-full max-w-[560px] flex-1 sm:max-w-[620px]">
+      <div className="mt-2 flex flex-1 min-h-0 flex-col items-center justify-center gap-2 lg:flex-row lg:items-center">
+        <div className="flex h-full w-full items-center justify-center">
           <GameBoard
             players={room.players}
             turnIndex={room.turnIndex}
@@ -1064,8 +1070,8 @@ function PlayScreen({
           />
         </div>
 
-        <aside className="flex w-full shrink-0 flex-col gap-3 lg:w-56">
-          <div className="rounded-2xl bg-white p-4 text-center">
+        <aside className="flex w-full shrink-0 flex-row items-center justify-center gap-2 sm:gap-3 lg:w-56 lg:flex-col">
+          <div className="flex-1 rounded-2xl bg-white p-2.5 text-center sm:p-3.5 lg:w-full lg:flex-none">
             <Dice3D
               value={diceFace ?? (room.dice ? Math.min(6, room.dice) : null)}
               rolling={rolling}
@@ -1078,25 +1084,30 @@ function PlayScreen({
                 type="button"
                 onClick={() => handleRoll(2)}
                 aria-label={`${currentProfile.activeName}: ${currentProfile.activeDesc}`}
-                className="btn-tactil tactil-refuerzo mt-3 w-full gap-2 py-2.5 text-base text-[#17164F]"
+                className="btn-tactil tactil-refuerzo mt-2 w-full gap-1.5 py-2 text-sm text-[#17164F] sm:mt-3 sm:py-2.5 sm:text-base"
               >
-                <Habilidad weight="fill" className="h-5 w-5" aria-hidden />
+                <Habilidad weight="fill" className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
                 {currentProfile.activeShort}
               </button>
             ) : null}
             {!isMyTurn && canControlTurn ? (
-              <p className="mt-2 text-sm font-bold text-[#17164F]">Lanza por {current?.name}</p>
+              <p className="mt-1 text-xs font-bold text-[#17164F] sm:text-sm">Lanza por {current?.name}</p>
             ) : null}
-            {error ? <p className="mt-2 text-sm font-bold text-[#D9583F]">{error}</p> : null}
+            {error ? <p className="mt-1 text-xs font-bold text-[#D9583F] sm:text-sm">{error}</p> : null}
           </div>
 
-          <ul className="hidden gap-1.5 rounded-2xl bg-white p-2 text-[#17164F] lg:grid" aria-label="Jugadores">
+          <ul className="hidden gap-1.5 rounded-2xl bg-white p-2 text-[#17164F] lg:grid lg:w-full" aria-label="Jugadores">
             {ranked.map((p) => {
               const av = JUEGO_ASSETS.avatars.find((a) => a.id === p.avatarId)?.src ?? JUEGO_ASSETS.avatars[0].src;
+              const isTurn = p.id === current?.id;
               return (
                 <li
                   key={p.id}
-                  className={`flex items-center gap-2 rounded-xl p-1.5 ${p.id === current?.id ? "bg-[#FFF6D6]" : ""}`}
+                  className={`flex items-center gap-2 rounded-xl p-1.5 transition-all ${
+                    isTurn
+                      ? "bg-[#FFF6D6] ring-2 ring-[#FFC928] font-black shadow-sm"
+                      : "hover:bg-slate-50"
+                  }`}
                 >
                   <Image src={av} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
                   <span className="min-w-0 flex-1 truncate text-sm font-bold">{p.name}</span>

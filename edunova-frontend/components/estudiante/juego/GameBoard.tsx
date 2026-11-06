@@ -19,6 +19,26 @@ type Props = {
   onTileClick?: (tileIndex: number) => void;
 };
 
+// Ranuras de posicionamiento para sub-cuadrícula interna (cero solapamiento)
+const RANURAS_POR_CANTIDAD: Record<number, Array<{ x: number; y: number }>> = {
+  1: [{ x: 0, y: -38 }],
+  2: [
+    { x: -14, y: -40 },
+    { x: 14, y: -40 },
+  ],
+  3: [
+    { x: -14, y: -44 },
+    { x: 14, y: -44 },
+    { x: 0, y: -20 },
+  ],
+  4: [
+    { x: -14, y: -46 },
+    { x: 14, y: -46 },
+    { x: -14, y: -22 },
+    { x: 14, y: -22 },
+  ],
+};
+
 export function GameBoard({
   players,
   turnIndex,
@@ -59,8 +79,8 @@ export function GameBoard({
   }
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[720px] select-none">
-      <div className="absolute inset-0 overflow-hidden rounded-3xl shadow-[0_24px_60px_rgba(23,22,79,0.45)] border-4 border-white/20">
+    <div className="relative mx-auto aspect-square w-full max-h-[min(620px,calc(100dvh-130px))] max-w-[min(620px,calc(100dvh-130px))] select-none">
+      <div className="absolute inset-0 overflow-hidden rounded-3xl border-4 border-white/20 shadow-[0_24px_60px_rgba(23,22,79,0.45)]">
         {/* Dynamic Sky Environment by Level */}
         <div
           className="absolute inset-0 transition-all duration-1000"
@@ -75,12 +95,12 @@ export function GameBoard({
             className="pointer-events-none absolute inset-0 transition-opacity duration-700"
             style={{ opacity: levelConfig.starsOpacity }}
           >
-            <div className="absolute top-[8%] left-[12%] h-1.5 w-1.5 rounded-full bg-white animate-ping" />
-            <div className="absolute top-[14%] right-[22%] h-2 w-2 rounded-full bg-[#FFC928] animate-pulse" />
-            <div className="absolute top-[22%] left-[45%] h-1 w-1 rounded-full bg-white" />
-            <div className="absolute top-[6%] right-[10%] h-1.5 w-1.5 rounded-full bg-white" />
-            <div className="absolute top-[28%] left-[18%] h-2 w-2 rounded-full bg-[#25CFE0] animate-pulse" />
-            <div className="absolute top-[32%] right-[15%] h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+            <div className="absolute left-[12%] top-[8%] h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+            <div className="absolute right-[22%] top-[14%] h-2 w-2 rounded-full bg-[#FFC928] animate-pulse" />
+            <div className="absolute left-[45%] top-[22%] h-1 w-1 rounded-full bg-white" />
+            <div className="absolute right-[10%] top-[6%] h-1.5 w-1.5 rounded-full bg-white" />
+            <div className="absolute left-[18%] top-[28%] h-2 w-2 rounded-full bg-[#25CFE0] animate-pulse" />
+            <div className="absolute right-[15%] top-[32%] h-1.5 w-1.5 rounded-full bg-white animate-ping" />
           </div>
         )}
 
@@ -97,7 +117,41 @@ export function GameBoard({
             boxShadow:
               "0 20px 0 rgba(0,0,0,0.3), 0 30px 45px rgba(0,0,0,0.35), inset 0 8px 24px rgba(255,255,255,0.25)",
           }}
-        />
+        >
+          {/* Mosaico de adoquines de la Plaza del Dado */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[46%] opacity-15"
+            style={{
+              backgroundImage:
+                "radial-gradient(#FFC928 15%, transparent 16%), radial-gradient(#38BDF8 15%, transparent 16%)",
+              backgroundSize: "24px 24px",
+              backgroundPosition: "0 0, 12px 12px",
+            }}
+          />
+        </div>
+
+        {/* Banderines festivos en SVG sobre la plaza */}
+        <svg
+          className="pointer-events-none absolute inset-x-0 top-[2.5%] z-[5] h-10 w-full"
+          viewBox="0 0 400 36"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M 20 6 Q 200 30 380 6"
+            fill="none"
+            stroke="#FFFFFF"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+            opacity="0.5"
+          />
+          <polygon points="50,11 64,13 57,25" fill="#EF4444" />
+          <polygon points="95,16 109,18 102,30" fill="#FFC928" />
+          <polygon points="140,21 154,22 147,34" fill="#3B82F6" />
+          <polygon points="192,23 206,23 199,35" fill="#10B981" />
+          <polygon points="244,22 258,21 251,34" fill="#F97316" />
+          <polygon points="290,18 304,16 297,29" fill="#8B5CF6" />
+          <polygon points="334,13 348,11 341,24" fill="#EC4899" />
+        </svg>
 
         {/* Camino base (anillo de tierra) */}
         <svg
@@ -143,11 +197,11 @@ export function GameBoard({
         </svg>
 
         {/* Centro del Tablero: Ciudad & Mascota Robot & Nivel */}
-        <div className="absolute left-1/2 top-[47%] z-[6] w-[34%] -translate-x-1/2 -translate-y-1/2 sm:w-[30%] text-center">
-          {/* Level Header Pill */}
-          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 text-[10px] sm:text-xs font-black text-white shadow-lg backdrop-blur-md border border-white/20">
+        <div className="absolute left-1/2 top-[47%] z-[6] w-[34%] -translate-x-1/2 -translate-y-1/2 text-center sm:w-[30%]">
+          {/* Level Header Pill sin cortes de texto */}
+          <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-[#17164F]/85 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur-md">
             <span>{levelConfig.badge}</span>
-            <span className="truncate max-w-[140px] sm:max-w-none">{levelConfig.name.split(":")[0]}</span>
+            <span className="whitespace-nowrap">{`Nivel ${currentLevel}`}</span>
           </div>
 
           <div className="relative mx-auto w-full">
@@ -169,10 +223,10 @@ export function GameBoard({
               alt="Cosmo"
               width={20}
               height={20}
-              className="h-4 w-4 object-contain animate-bounce"
+              className="h-4 w-4 animate-bounce object-contain"
             />
             <span className="text-[9px] font-extrabold text-[#17164F]">
-              Misión Activa
+              Plaza Activa
             </span>
           </div>
         </div>
@@ -183,28 +237,28 @@ export function GameBoard({
           alt=""
           width={48}
           height={48}
-          className="pointer-events-none absolute left-[16%] top-[30%] z-[5] h-11 w-11 object-contain opacity-90 drop-shadow"
+          className="pointer-events-none absolute left-[16%] top-[30%] z-[5] h-10 w-10 object-contain opacity-90 drop-shadow sm:h-11 sm:w-11"
         />
         <Image
           src={JUEGO_ASSETS.territorioCascada}
           alt=""
           width={44}
           height={44}
-          className="pointer-events-none absolute right-[15%] top-[32%] z-[5] h-10 w-10 object-contain opacity-90 drop-shadow"
+          className="pointer-events-none absolute right-[15%] top-[32%] z-[5] h-9 w-9 object-contain opacity-90 drop-shadow sm:h-10 sm:w-10"
         />
         <Image
           src={JUEGO_ASSETS.territorioMontana}
           alt=""
           width={40}
           height={40}
-          className="pointer-events-none absolute right-[18%] bottom-[25%] z-[5] h-9 w-9 object-contain opacity-85 drop-shadow"
+          className="pointer-events-none absolute bottom-[25%] right-[18%] z-[5] h-8 w-8 object-contain opacity-85 drop-shadow sm:h-9 sm:w-9"
         />
         <Image
           src={JUEGO_ASSETS.regalo}
           alt=""
           width={28}
           height={28}
-          className="pointer-events-none absolute left-[20%] bottom-[26%] z-[5] h-7 w-7 object-contain opacity-90 drop-shadow"
+          className="pointer-events-none absolute bottom-[26%] left-[20%] z-[5] h-6 w-6 object-contain opacity-90 drop-shadow sm:h-7 sm:w-7"
         />
 
         {/* Casillas */}
@@ -217,6 +271,9 @@ export function GameBoard({
           const isLanding = landingTile === i;
           const isHover = hoverTile === i;
           const isSalida = tile.kind === "salida";
+
+          const cantJugadores = Math.min(4, Math.max(1, here.length));
+          const slots = RANURAS_POR_CANTIDAD[cantJugadores] ?? RANURAS_POR_CANTIDAD[1];
 
           return (
             <button
@@ -240,9 +297,17 @@ export function GameBoard({
               {/* Tile shadow */}
               <div className="absolute left-0.5 top-1.5 h-full w-full rounded-2xl bg-black/25 blur-[1.5px]" />
 
-              {/* 3D Tile Face */}
+              {/* Destello del color de la casilla al aterrizar */}
+              {isLanding && (
+                <span
+                  className="pointer-events-none absolute -inset-2.5 rounded-2xl animate-ping motion-reduce:hidden"
+                  style={{ backgroundColor: tile.color, opacity: 0.7 }}
+                />
+              )}
+
+              {/* 3D Tile Face con relieve táctil inferior */}
               <div
-                className={`relative flex h-11 w-11 items-center justify-center rounded-2xl sm:h-[52px] sm:w-[52px] transition-all ${
+                className={`relative flex h-10 w-10 items-center justify-center rounded-2xl transition-all sm:h-12 sm:w-12 ${
                   isCurrentTurnTile || isLanding
                     ? "ring-4 ring-[#FFC928] animate-pulse"
                     : isCompleted
@@ -251,7 +316,7 @@ export function GameBoard({
                 }`}
                 style={{
                   background: `linear-gradient(145deg, ${lighten(tile.color)} 0%, ${tile.color} 50%, ${darken(tile.color)} 100%)`,
-                  boxShadow: `0 6px 0 ${darken(tile.color)}, 0 10px 18px rgba(0,0,0,0.3)`,
+                  boxShadow: `0 6px 0 ${darken(tile.color)}, 0 10px 18px rgba(0,0,0,0.32)`,
                   opacity: isCompleted && !isCurrentTurnTile ? 0.95 : 1,
                 }}
               >
@@ -261,7 +326,7 @@ export function GameBoard({
                   alt=""
                   width={28}
                   height={28}
-                  className="relative h-6 w-6 object-contain drop-shadow sm:h-7 sm:w-7"
+                  className="relative h-5 w-5 object-contain drop-shadow sm:h-6 sm:w-6"
                 />
 
                 {isCompleted && !isCurrentTurnTile && (
@@ -271,13 +336,13 @@ export function GameBoard({
                 )}
 
                 {isSalida && (
-                  <span className="absolute -bottom-5 left-1/2 z-30 w-[4.8rem] -translate-x-1/2 rounded-full bg-[#E53935] px-1 py-0.5 text-center text-[7px] font-extrabold text-white shadow-md sm:text-[8px] tracking-wide">
+                  <span className="absolute -bottom-5 left-1/2 z-30 w-[4.8rem] -translate-x-1/2 rounded-full bg-[#E53935] px-1 py-0.5 text-center text-[7px] font-extrabold tracking-wide text-white shadow-md sm:text-[8px]">
                     SALIDA +50
                   </span>
                 )}
               </div>
 
-              {/* Fichas de Jugadores con Vidas y Nombres Flotantes */}
+              {/* Fichas de Jugadores en Ranuras Anti-Solapamiento con Salto Parabólico */}
               {here.map((p, idx) => {
                 const av =
                   JUEGO_ASSETS.avatars.find((a) => a.id === p.avatarId)?.src ??
@@ -287,64 +352,87 @@ export function GameBoard({
                 const colors = ["#5636D9", "#E85D9A", "#4C9EFF", "#FFC928", "#2DBE70", "#FF8A3D"];
                 const ring = colors[players.findIndex((x) => x.id === p.id) % colors.length];
                 const playerLives = p.lives ?? 3;
+                const slot = slots[idx] ?? slots[0];
+
+                const scaleClass =
+                  cantJugadores === 1
+                    ? "scale-100"
+                    : cantJugadores === 2
+                      ? "scale-90"
+                      : "scale-80";
 
                 return (
                   <div
                     key={p.id}
-                    className={`absolute z-30 transition-all duration-300 ease-out ${
-                      moving ? "-translate-y-4 scale-125" : ""
-                    }`}
+                    className={`absolute z-30 transition-all duration-300 ease-out ${scaleClass}`}
                     style={{
-                      left: `${2 + idx * 12}px`,
-                      top: `${-44 - idx * 7}px`,
+                      left: `calc(50% + ${slot.x}px)`,
+                      top: `${slot.y}px`,
+                      transform: "translateX(-50%)",
                     }}
                   >
-                    {/* Active Turn Halo */}
+                    {/* Active Turn Halo Pulsante Dorado */}
                     {active && (
-                      <span className="absolute -inset-2 animate-ping rounded-full bg-[#FFC928]/40" />
+                      <>
+                        <span className="pointer-events-none absolute -inset-2.5 animate-ping rounded-full bg-[#FFC928]/40 motion-reduce:hidden" />
+                        <span className="pointer-events-none absolute -inset-1.5 animate-pulse rounded-full border-2 border-[#FFC928] bg-[#FFC928]/25 shadow-[0_0_12px_#FFC928]" />
+                      </>
                     )}
 
-                    {/* Ficha Base */}
+                    {/* Sombra inferior que responde a la elevación del salto */}
                     <span
-                      className="absolute -bottom-1 left-1/2 h-2.5 w-8 -translate-x-1/2 rounded-full opacity-80 blur-[1px]"
+                      className={`absolute -bottom-1 left-1/2 h-2.5 w-7 -translate-x-1/2 rounded-full blur-[1px] transition-all duration-200 ${
+                        moving
+                          ? "scale-50 opacity-30"
+                          : "opacity-80"
+                      }`}
                       style={{ backgroundColor: ring }}
                     />
 
-                    {/* Floating Health Badge over token */}
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.5 border border-white/30 text-[9px]">
-                      {Array.from({ length: p.maxLives ?? 3 }).map((_, lIdx) => (
-                        <HeartIcon
-                          key={lIdx}
-                          weight="fill"
-                          className={`h-2.5 w-2.5 ${lIdx < playerLives ? "text-[#FF8A73]" : "text-white/20"}`}
-                          aria-hidden
-                        />
-                      ))}
-                    </div>
+                    {/* Contenedor con animación de salto parabólico */}
+                    <div
+                      className={`relative transition-transform duration-200 ${
+                        moving
+                          ? "-translate-y-5 scale-110 motion-reduce:translate-y-0"
+                          : ""
+                      }`}
+                    >
+                      {/* Floating Health Badge over token */}
+                      <div className="absolute -top-3.5 left-1/2 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-white/30 bg-black/75 px-1 py-0.2 text-[8px]">
+                        {Array.from({ length: p.maxLives ?? 3 }).map((_, lIdx) => (
+                          <HeartIcon
+                            key={lIdx}
+                            weight="fill"
+                            className={`h-2.5 w-2.5 ${lIdx < playerLives ? "text-[#FF8A73]" : "text-white/20"}`}
+                            aria-hidden
+                          />
+                        ))}
+                      </div>
 
-                    {/* Turn Crown */}
-                    {active && (
-                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[#FFC928]">
-                        <CrownIcon weight="fill" className="h-4 w-4" aria-hidden />
+                      {/* Turn Crown */}
+                      {active && (
+                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 animate-bounce text-[#FFC928] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] motion-reduce:animate-none">
+                          <CrownIcon weight="fill" className="h-4 w-4" aria-hidden />
+                        </span>
+                      )}
+
+                      {/* Avatar Token */}
+                      <Image
+                        src={av}
+                        alt={p.name}
+                        width={44}
+                        height={44}
+                        className="relative h-9 w-9 rounded-full bg-white object-cover shadow-xl sm:h-10 sm:w-10"
+                        style={{
+                          boxShadow: `0 0 0 3px ${ring}, 0 6px 14px rgba(0,0,0,0.35)`,
+                        }}
+                      />
+
+                      {/* Mini Name Badge */}
+                      <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white/95 px-1 text-[8px] font-black text-[#17164F] shadow">
+                        {p.name.slice(0, 7)}
                       </span>
-                    )}
-
-                    {/* Avatar Token */}
-                    <Image
-                      src={av}
-                      alt={p.name}
-                      width={44}
-                      height={44}
-                      className="relative h-10 w-10 rounded-full bg-white object-cover shadow-xl sm:h-11 sm:w-11"
-                      style={{
-                        boxShadow: `0 0 0 3px ${ring}, 0 8px 16px rgba(0,0,0,0.35)`,
-                      }}
-                    />
-
-                    {/* Mini Name Badge */}
-                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white/95 px-1 text-[8px] font-black text-[#17164F] shadow">
-                      {p.name.slice(0, 8)}
-                    </span>
+                    </div>
                   </div>
                 );
               })}
