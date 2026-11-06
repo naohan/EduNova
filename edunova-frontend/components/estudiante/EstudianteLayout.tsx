@@ -53,6 +53,7 @@ const lugares: Item[] = [
     seccion: "juego",
     icon: GameControllerIcon,
     incluye: [
+      "/estudiante/valle",
       "/estudiante/juegos",
       "/estudiante/duelo",
       "/estudiante/aventuras",
