@@ -174,9 +174,13 @@ export interface HypothesisReview {
 export interface ExplainableAlert {
   id: string;
   classId: string;
+  kind: 'TOPIC' | 'INACTIVITY';
   message: string; // "34% del aula comprende el numerador pero falla al hallar el denominador común"
   affectedPercent: number;
-  rubricCriterionId: string;
+  rubricCriterionId?: string;
+  suggestedAction: string;
+  affectedAliases: string[];
+  attendedAt?: string;
 }
 
 // ---- Datos de proceso: de aquí salen el dominio (BKT), las alertas y los talentos ----

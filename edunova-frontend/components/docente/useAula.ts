@@ -76,9 +76,12 @@ const alertasEjemplo: ExplainableAlert[] = [
   {
     id: "ejemplo-fracciones",
     classId: "EDU-402",
+    kind: "TOPIC",
     message: "34% del aula comprende el numerador pero falla al hallar el denominador común en sumas heterogéneas.",
     affectedPercent: 34,
     rubricCriterionId: "rc-frac-1",
+    suggestedAction: "Repasa «Fracciones heterogéneas» en grupo pequeño con Gloria, Mateo. Empieza por una unidad o actividad de refuerzo.",
+    affectedAliases: ["Gloria", "Mateo"],
   },
 ];
 

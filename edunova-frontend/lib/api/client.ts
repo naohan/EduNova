@@ -193,3 +193,10 @@ export const getClassAssessments = (classCode: string) =>
   request<AssessmentRecord[]>("GET", `/classes/${encodeURIComponent(classCode)}/assessments`);
 export const overrideAssessment = (assessmentId: string, score: number | null) =>
   request<AssessmentRecord>("PUT", `/teacher/assessments/${encodeURIComponent(assessmentId)}/override`, { score }, WRITE_TIMEOUT_MS);
+export const markAlertAttended = (alertId: string) =>
+  request<{ ok: boolean; alertId: string; attendedAt: string }>(
+    "PUT",
+    `/teacher/alerts/${encodeURIComponent(alertId)}/attended`,
+    undefined,
+    WRITE_TIMEOUT_MS,
+  );
