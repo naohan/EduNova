@@ -56,6 +56,7 @@ export interface UnitQuestion {
   answerIndex: number;
   hint: string;
   rubricCriterionId: string;
+  mistakes?: string[];
 }
 
 export interface SubtopicNode {
@@ -229,6 +230,7 @@ export interface ExplainableAlert {
   suggestedAction: string;
   affectedAliases: string[];
   attendedAt?: string;
+  commonMistake?: { text: string; students: number };
 }
 
 // ---- Datos de proceso: de aquí salen el dominio (BKT), las alertas y los talentos ----
@@ -244,6 +246,7 @@ export interface LearningEvent {
   hintsUsed: number;
   timeMs: number;
   occurredAt: string;
+  selectedOption?: number;
 }
 
 // ---- Dominio por criterio de rúbrica (RF-02) ----

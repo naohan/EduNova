@@ -1,5 +1,5 @@
 import type { IngestedUnit } from "@/lib/api/client";
-import type { AgeTier, Lab3DType, RubricCriterion } from "@/lib/api/edunova-contract";
+import type { AgeTier, Lab3DType, RubricCriterion, UnitQuestion } from "@/lib/api/edunova-contract";
 
 export type SubtemaBorrador = {
   id: string;
@@ -10,6 +10,7 @@ export type SubtemaBorrador = {
   pictogramas?: Array<{ word: string; id: number }>;
   tarjetas: number;
   preguntas: number;
+  listaPreguntas?: UnitQuestion[];
 };
 
 /** Lo que el docente revisa antes de publicar. */
@@ -82,6 +83,7 @@ export function aBorrador(unidad: IngestedUnit): Borrador | null {
       pictogramas: s.stages?.discover?.pictograms,
       tarjetas: s.stages?.practice?.flashcards?.length ?? 0,
       preguntas: s.stages?.demonstrate?.questions?.length ?? 0,
+      listaPreguntas: s.stages?.demonstrate?.questions,
     })),
     rubrica: unidad.rubric,
     sinConexion: false,

@@ -320,6 +320,36 @@ export function StudioWizard() {
                             ) : null}
                           </div>
                         ) : null}
+                        {s.listaPreguntas && s.listaPreguntas.length > 0 ? (
+                          <div>
+                            <dt className="text-xs font-bold text-[#5B5678]">Preguntas y revisión de errores</dt>
+                            <dd className="mt-1 space-y-2">
+                              {s.listaPreguntas.map((q, qIdx) => (
+                                <div key={q.id || qIdx} className="rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] p-3 text-xs">
+                                  <p className="font-bold text-[#17164F]">{q.prompt}</p>
+                                  <ul className="mt-2 space-y-1">
+                                    {q.options.map((opt, optIdx) => {
+                                      const esCorrecta = optIdx === q.answerIndex;
+                                      const errorDesc = q.mistakes?.[optIdx];
+                                      return (
+                                        <li key={optIdx} className="rounded-lg border border-[#E8E0FF] bg-white p-2">
+                                          <div className="font-semibold text-[#17164F]">
+                                            {opt} {esCorrecta ? <span className="font-bold text-[#127A43]">(Opción correcta)</span> : null}
+                                          </div>
+                                          {!esCorrecta && errorDesc ? (
+                                            <p className="mt-0.5 text-[#92400E]">
+                                              Confusión prevista: {errorDesc}
+                                            </p>
+                                          ) : null}
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
+                              ))}
+                            </dd>
+                          </div>
+                        ) : null}
                       </dl>
                     </details>
                   ) : null}

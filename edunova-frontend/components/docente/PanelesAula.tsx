@@ -84,6 +84,15 @@ export function AlertasExplicables({ alertas }: { alertas: ExplainableAlert[] })
                 </p>
               )}
 
+              {a.commonMistake ? (
+                <div className="mt-2 text-xs text-[#92400E]">
+                  <span className="font-semibold text-[#17164F]">
+                    Error frecuente ({a.commonMistake.students} estudiantes):
+                  </span>{" "}
+                  {a.commonMistake.text}
+                </div>
+              ) : null}
+
               {a.suggestedAction && (
                 <div className="mt-2.5 rounded-lg border border-[#FDE68A] bg-white/80 p-2.5 text-xs text-[#17164F]">
                   <strong className="block font-semibold text-[#92400E] mb-0.5">Qué hacer:</strong>

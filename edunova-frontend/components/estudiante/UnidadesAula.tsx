@@ -80,6 +80,7 @@ function Pregunta({
       attempt: descartadas.length + 1,
       hintsUsed: pistas,
       timeMs: msDesde(inicio.current),
+      selectedOption: indice,
     }).then((res) => {
       if (res?.effortBonus) setAvisoBono("Tres seguidas. +5 de esfuerzo");
     });
