@@ -65,7 +65,7 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/explorar` (Sistema Solar) | **Conectada** | `getUnit` para las misiones y `completeMission` al completarlas (`useSolarMissions.ts`) |
 | `/estudiante/cuerpo` | **Conectada** | `completeMission` al aprobar un quiz o completar una misión |
 | `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `submitReasoning`, que guarda la nota para el docente y suma el bono. La imagen no se envía: el análisis simulado no la usa |
-| `/estudiante/duelo` | — | `validateDuelQuestion`, `getGhostOpponent`, `reportDuelResult` |
+| `/estudiante/duelo` | **Conectada** | `getDuelOpponentQuestions` (IA segura en backend), `validateDuelQuestion`, `getGhostOpponent`, `reportDuelResult` |
 | `/estudiante/ligas` | **Conectada** | `getLeaderboard` y `getStudentProfile` |
 | `/estudiante/tienda` | **Conectada** | `getShopItems`, `buyItem`, `toggleItem` (piden sesión de estudiante) |
 | `/docente`, `/docente/resultados`, `/docente/competencias`, `/docente/reportes`, `/docente/estudiante/[id]` | **Conectadas** | `useAula.ts`: `getClassAnalytics` y `getClassStudents`, con sesión de docente. Sin sesión muestran los datos fijos |
@@ -85,5 +85,5 @@ El backend sigue el **Plan Maestro**, no los datos fijos de `data.ts`:
 1. **Dominio, no notas.** El backend devuelve **% de dominio por criterio de rúbrica**, no notas sobre 20. No existen notas, evolución semanal (`classroomWeekly`), bimestres, `topicComparison`, `strategyAnalysis` ni la ficha `rosaRecord`. Esas tarjetas deben mostrar el % de dominio o quedar con datos fijos. Además, los criterios del backend son de las unidades de prueba (por ejemplo "Qué es el Sistema Solar"), no "Cantidad" ni "Regularidad" de `competenciaMastery`.
 2. **Solo alias.** Las vistas de estudiantes deben mostrar el nombre sin apellido (Safe-Play del plan). El backend ya devuelve solo el alias.
 3. **La rúbrica no se muestra al estudiante.** El backend se la quita a `listUnits` y `getUnit` cuando quien pide es un estudiante.
-4. **Dónde hay IA real.** La ingesta y "explicar en casa" llaman a Gemini desde el backend; si falla, responden con respaldo y `usedFallback: true`. El duelo usa `/api/gemini-duel` de este frontend, que necesita su propia `GEMINI_API_KEY`. La foto sigue simulada y siempre analiza la hoja de "1/3 + 1/4".
+4. **Dónde hay IA real.** La ingesta, "explicar en casa" y las preguntas del rival en el duelo llaman a Gemini desde el backend; si falla, responden con respaldo y `usedFallback: true`. El rival solo recibe curso y tema, nunca datos ni preguntas escritas por niños. La foto y la verificación de preguntas del duelo siguen simuladas.
 5. **Ids.** Los ids del backend son `u-student-1` y `unit-solar-system`, no `"1"` ni `"sistema-solar"`.

@@ -143,6 +143,24 @@ export const getLeaderboard = (league: "mastery" | "effort" = "mastery") =>
 export const getShopItems = () => request<ShopItem[]>("GET", "/shop/items");
 export const buyItem = (itemId: string) => request<Inventory>("POST", "/shop/buy", { itemId }, WRITE_TIMEOUT_MS);
 export const toggleItem = (itemId: string) => request<Inventory>("POST", "/shop/equip", { itemId }, WRITE_TIMEOUT_MS);
+export interface DuelOpponentQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  correctAnswer: string;
+  explanation?: string;
+}
+export interface DuelOpponentQuestionsResponse {
+  questions: DuelOpponentQuestion[];
+  usedFallback: boolean;
+}
+export const getDuelOpponentQuestions = (params: {
+  course: string;
+  topic: string;
+  count?: number;
+  alternativesCount?: number;
+}) =>
+  request<DuelOpponentQuestionsResponse>("POST", "/ai/duel-opponent-questions", params, 20000);
 export const validateDuelQuestion = (question: string, topic?: string) =>
   request<{ valid: boolean; reason: string }>("POST", "/ai/validate-duel-question", { question, topic });
 export const getGhostOpponent = (ageTier?: string) =>

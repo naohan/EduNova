@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
+import { validateDuelQuestion, getDuelOpponentQuestions } from "@/lib/api/client";
 
 // Types
 type DuelPhase =
@@ -192,28 +193,6 @@ export default function DueloPage() {
     }
   }, [phase]);
 
-  // Battle countdown timer
-  useEffect(() => {
-    if (phase === "duel_battle" && hasTimeLimit) {
-      setTimeLeft(secondsPerQuestion);
-      if (timerRef.current) clearInterval(timerRef.current);
-
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            handleAnswerConfirm(-1);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-      };
-    }
-  }, [phase, currentBattleIndex, hasTimeLimit, secondsPerQuestion]);
-
   // Current question draft
   const currentQ = questions[currentQIndex] || {
     question: "",
@@ -242,71 +221,62 @@ export default function DueloPage() {
     updateCurrentQuestion({ wrongAnswers: updated });
   };
 
-  // Verify question with Gemini AI
+  // Verify question with simulated local verification (no third-party data sending)
   const handleVerifyWithGemini = async () => {
     if (!currentQ.question.trim() || !currentQ.correctAnswer.trim()) {
       setVerificationError("Por favor escribe la pregunta y la respuesta correcta antes de verificar.");
       return;
     }
 
+    const targetWrongCount = alternativesCount - 1;
+    const filledWrong = (currentQ.wrongAnswers || []).filter((w) => w.trim().length > 0);
+    if (currentQ.autocompleteWrong || filledWrong.length < targetWrongCount) {
+      setVerificationError(
+        "Por favor escribe todas las alternativas incorrectas. Ya no usamos IA para autocompletar preguntas; ¡inventa tú mismo las opciones para desafiar a tu rival!"
+      );
+      return;
+    }
+
     setIsVerifying(true);
     setVerificationError(null);
 
-    const previousQuestionTexts = questions
-      .slice(0, currentQIndex)
-      .map((q) => q.question.trim())
-      .filter(Boolean);
-
     try {
-      const res = await fetch("/api/gemini-duel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "verify_question",
-          course: selectedCourse.name,
-          topic: topic.trim() || selectedCourse.name,
-          question: currentQ.question,
-          correctAnswer: currentQ.correctAnswer,
-          wrongAnswers: currentQ.wrongAnswers,
-          targetWrongCount: alternativesCount - 1,
-          autocompleteWrong: currentQ.autocompleteWrong,
-          previousQuestions: previousQuestionTexts,
-          fileInfo: attachedFile ? { name: attachedFile.name, type: attachedFile.type } : undefined,
-        }),
-      });
+      const res = await validateDuelQuestion(
+        currentQ.question.trim(),
+        topic.trim() || selectedCourse.name
+      );
 
-      const data = await res.json();
+      if (!res.ok) {
+        setVerificationError("No pudimos conectar con el Verificador. Intenta de nuevo.");
+        return;
+      }
 
-      if (data.status === "REJECTED") {
+      const { valid, reason } = res.data;
+
+      if (!valid) {
         setQuestions((prev) => {
           const next = [...prev];
           next[currentQIndex] = {
             ...next[currentQIndex],
             status: "REJECTED",
-            feedback: data.feedback,
-            recommendation: data.recommendation,
+            feedback: reason,
+            recommendation: "Agrega más detalle del tema para que tu pregunta sea clara y retadora.",
             isVerified: false,
           };
           return next;
         });
-        setVerificationError(data.feedback);
+        setVerificationError(reason);
       } else {
-        const finalWrong = Array.isArray(data.wrongAnswers) && data.wrongAnswers.length > 0
-          ? data.wrongAnswers.map(formatAnswerText)
-          : currentQ.wrongAnswers.map(formatAnswerText);
-
-        const finalCorrect = data.correctAnswer
-          ? formatAnswerText(data.correctAnswer)
-          : formatAnswerText(currentQ.correctAnswer);
+        const finalWrong = currentQ.wrongAnswers.map(formatAnswerText);
+        const finalCorrect = formatAnswerText(currentQ.correctAnswer);
 
         setQuestions((prev) => {
           const next = [...prev];
           next[currentQIndex] = {
             ...next[currentQIndex],
-            status: data.status,
-            feedback: data.feedback,
-            recommendation: data.recommendation,
-            improvedQuestion: data.improvedQuestion,
+            status: "APPROVED",
+            feedback: reason,
+            recommendation: "¡Buena formulación! Tus alternativas desafiarán la agudeza de tu oponente.",
             correctAnswer: finalCorrect,
             wrongAnswers: finalWrong,
             isVerified: true,
@@ -355,28 +325,20 @@ export default function DueloPage() {
     }
   };
 
-  // Submit duel and fetch opponent's questions from Gemini
+  // Submit duel and fetch opponent's questions from secure backend API
   const submitDuelAndPrepareBattle = async () => {
     setPhase("sync_waiting");
 
     try {
-      const res = await fetch("/api/gemini-duel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "generate_opponent_questions",
-          course: selectedCourse.name,
-          topic: topic.trim() || selectedCourse.name,
-          count: totalQuestions,
-          alternativesCount,
-          opponentName: opponentName.trim() || "Compañero",
-          fileInfo: attachedFile ? { name: attachedFile.name, type: attachedFile.type } : undefined,
-        }),
+      const res = await getDuelOpponentQuestions({
+        course: selectedCourse.name,
+        topic: topic.trim() || selectedCourse.name,
+        count: totalQuestions,
+        alternativesCount,
       });
 
-      const data = await res.json();
-      if (Array.isArray(data.questions) && data.questions.length > 0) {
-        setBattleQuestions(data.questions);
+      if (res.ok && Array.isArray(res.data.questions) && res.data.questions.length > 0) {
+        setBattleQuestions(res.data.questions as BattleQuestion[]);
       } else {
         throw new Error("No questions returned");
       }
@@ -426,6 +388,30 @@ export default function DueloPage() {
       setPhase("duel_results");
     }
   };
+
+  // Battle countdown timer
+  useEffect(() => {
+    if (phase === "duel_battle" && hasTimeLimit) {
+      const resetId = setTimeout(() => setTimeLeft(secondsPerQuestion), 0);
+      if (timerRef.current) clearInterval(timerRef.current);
+
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            handleAnswerConfirm(-1);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => {
+        clearTimeout(resetId);
+        if (timerRef.current) clearInterval(timerRef.current);
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, currentBattleIndex, hasTimeLimit, secondsPerQuestion]);
 
   // Calculate final score
   const calculateScore = () => {
