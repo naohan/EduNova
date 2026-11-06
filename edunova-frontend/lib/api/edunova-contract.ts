@@ -98,6 +98,16 @@ export interface LearningUnit {
   familyStudentId?: string;
   familyCategory?: FamilyCategory;
   safetyNote?: string;
+  sharedWithFamilies?: boolean;
+  sourceUnitId?: string;
+}
+
+export interface SharedFamilyRoute {
+  id: string;
+  title: string;
+  familyCategory?: FamilyCategory;
+  topicsCount: number;
+  subtopicsCount: number;
 }
 
 export interface FamilyDraftResponse {

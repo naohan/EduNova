@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { AgeTier, RubricCriterion } from "@/lib/api/edunova-contract";
-import { approveRubric, ingestDocument, pictogramUrl } from "@/lib/api/client";
+import { approveRubric, ingestDocument, pictogramUrl, shareUnitWithFamilies } from "@/lib/api/client";
 import { useSessionUser } from "@/lib/api/use-session";
 import {
   aBorrador,
@@ -54,6 +54,9 @@ export function StudioWizard() {
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [motivoEjemplo, setMotivoEjemplo] = useState("");
+  const [compartidoFamilias, setCompartidoFamilias] = useState(false);
+  const [guardandoCompartir, setGuardandoCompartir] = useState(false);
+  const [errorCompartir, setErrorCompartir] = useState<string | null>(null);
 
   const rubricaCompleta = borrador?.rubrica.every((c) => columnas.every(({ campo }) => c[campo].trim())) ?? false;
 
@@ -114,6 +117,23 @@ export function StudioWizard() {
     else setError(`No se pudo publicar: ${r.error}. La unidad sigue en borrador; puedes reintentar.`);
   }
 
+  async function cambiarCompartir(nuevoValor: boolean) {
+    if (!borrador) return;
+    if (borrador.sinConexion) {
+      setCompartidoFamilias(nuevoValor);
+      return;
+    }
+    setGuardandoCompartir(true);
+    setErrorCompartir(null);
+    const r = await shareUnitWithFamilies(borrador.id, nuevoValor);
+    setGuardandoCompartir(false);
+    if (r.ok) {
+      setCompartidoFamilias(nuevoValor);
+    } else {
+      setErrorCompartir(r.error || "No se pudo actualizar el estado para familias.");
+    }
+  }
+
   function reiniciar() {
     setPaso("subir");
     setArchivo(null);
@@ -121,6 +141,8 @@ export function StudioWizard() {
     setTexto("");
     setBorrador(null);
     setError(null);
+    setCompartidoFamilias(false);
+    setErrorCompartir(null);
   }
 
   if (usuario !== undefined && usuario?.role !== "TEACHER") {
@@ -363,7 +385,38 @@ export function StudioWizard() {
               ? "Era un ejemplo: esta unidad no se guardó ni llegó a los estudiantes."
               : `«${borrador.titulo}» ya está disponible para el aula ${borrador.aula}.`}
           </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
+
+          <div className="mx-auto mt-5 max-w-md rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] p-4 text-left">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <label htmlFor="compartir-familias-toggle" className="block text-sm font-bold text-[#17164F]">
+                  Compartir con familias
+                </label>
+                <span className="block text-xs text-[#5B5678]">
+                  Permite que las familias usen esta ruta desde Saberes de casa.
+                </span>
+              </div>
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  id="compartir-familias-toggle"
+                  type="checkbox"
+                  aria-label="Compartir con familias"
+                  checked={compartidoFamilias}
+                  disabled={guardandoCompartir}
+                  onChange={(e) => cambiarCompartir(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="h-6 w-11 rounded-full bg-[#E8E0FF] transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#5636D9] peer-checked:after:translate-x-full peer-focus:ring-2 peer-focus:ring-[#5636D9]/25 peer-disabled:opacity-50" />
+              </label>
+            </div>
+            {errorCompartir ? (
+              <p role="alert" className="mt-3 rounded-lg bg-[#FEE2E2] px-3 py-2 text-xs text-[#991B1B]">
+                {errorCompartir}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/estudiante/unidades" className={botonCls}>
               Ver como estudiante
             </Link>

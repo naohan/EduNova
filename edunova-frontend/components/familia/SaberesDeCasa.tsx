@@ -10,8 +10,15 @@ import {
   SparkleIcon,
   WarningIcon,
 } from "@/components/ui/icons";
-import { createFamilyDraft, publishFamilyUnit } from "@/lib/api/client";
+import {
+  assignFamilyRoute,
+  createFamilyDraft,
+  listFamilyRoutes,
+  listFamilyUnits,
+  publishFamilyUnit,
+} from "@/lib/api/client";
 import type { FamilyCategory, FamilyDraftResponse, LearningUnit } from "@/lib/api/edunova-contract";
+import { useApi } from "@/lib/api/use-api";
 import { useSessionUser } from "@/lib/api/use-session";
 
 const categorias: Array<{ id: FamilyCategory; label: string; desc: string }> = [
@@ -41,6 +48,31 @@ export function SaberesDeCasa() {
   const [publicando, setPublicando] = useState(false);
   const [publicada, setPublicada] = useState<LearningUnit | null>(null);
   const [escuchando, setEscuchando] = useState(false);
+
+  const rutasApi = useApi(listFamilyRoutes, []);
+  const unidadesFamiliaApi = useApi(listFamilyUnits, []);
+  const [asignadasRecientes, setAsignadasRecientes] = useState<Set<string>>(new Set());
+  const [asignandoId, setAsignandoId] = useState<string | null>(null);
+  const [errorRuta, setErrorRuta] = useState<string | null>(null);
+
+  const asignadasDesdeApi = new Set<string>();
+  if (unidadesFamiliaApi.status === "ok") {
+    for (const u of unidadesFamiliaApi.data) {
+      if (u.sourceUnitId) asignadasDesdeApi.add(u.sourceUnitId);
+    }
+  }
+
+  async function agregarRuta(routeId: string) {
+    setAsignandoId(routeId);
+    setErrorRuta(null);
+    const r = await assignFamilyRoute(routeId);
+    setAsignandoId(null);
+    if (r.ok) {
+      setAsignadasRecientes((prev) => new Set([...prev, routeId]));
+    } else {
+      setErrorRuta(r.error || "No se pudo agregar la ruta. Intenta de nuevo.");
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -401,6 +433,73 @@ export function SaberesDeCasa() {
           </button>
         </div>
       </div>
+
+      <section className={tarjetaCls}>
+        <h2 className="font-[family-name:var(--font-fredoka)] text-xl font-bold text-[#17164F]">
+          ¿No sabes cómo enseñarlo? Usa la ruta de un docente
+        </h2>
+        <p className="mt-1 text-sm text-[#5B5678]">
+          Lecciones preparadas por docentes para acompañar a las familias. Puedes agregarlas a las unidades de tu hijo con un solo clic.
+        </p>
+
+        {errorRuta ? (
+          <p role="alert" className="mt-3 rounded-xl bg-[#FEE2E2] px-4 py-3 text-xs text-[#991B1B]">
+            {errorRuta}
+          </p>
+        ) : null}
+
+        {rutasApi.status === "loading" ? (
+          <p className="mt-4 text-xs text-[#5B5678]">Cargando rutas de docentes…</p>
+        ) : rutasApi.status !== "ok" || rutasApi.data.length === 0 ? (
+          <p className="mt-4 text-xs text-[#5B5678]">Por el momento no hay rutas docentes compartidas.</p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {rutasApi.data.map((r) => {
+              const estaAsignada = asignadasDesdeApi.has(r.id) || asignadasRecientes.has(r.id);
+              const estaCargando = asignandoId === r.id;
+              const catObj = categorias.find((c) => c.id === r.familyCategory);
+              return (
+                <div
+                  key={r.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] p-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#17164F]">{r.title}</span>
+                      {catObj ? (
+                        <span className="rounded-full bg-[#EAE5FF] px-2.5 py-0.5 text-[11px] font-bold text-[#5636D9]">
+                          {catObj.label}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-0.5 text-xs text-[#5B5678]">
+                      {r.subtopicsCount} {r.subtopicsCount === 1 ? "tema" : "temas"} con lecturas y preguntas
+                    </p>
+                  </div>
+
+                  <div>
+                    {estaAsignada ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#127A43]">
+                        <CheckCircleIcon weight="fill" className="h-4 w-4 text-[#2DBE70]" aria-hidden />
+                        Ya está en sus unidades
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => agregarRuta(r.id)}
+                        disabled={estaCargando}
+                        className="rounded-xl bg-[#5636D9] px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                      >
+                        {estaCargando ? "Agregando…" : "Agregar para mi hijo"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

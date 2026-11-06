@@ -19,6 +19,7 @@ import type {
   LearningEvent,
   LearningUnit,
   RubricCriterion,
+  SharedFamilyRoute,
   ShopItem,
   StudentProfile,
   User,
@@ -125,6 +126,8 @@ export const ingestDocument = (input: IngestInput) =>
   request<IngestedUnit>("POST", "/ai/ingest-document", input, AI_TIMEOUT_MS);
 export const approveRubric = (unitId: string, rubric?: RubricCriterion[]) =>
   request<LearningUnit>("PUT", "/teacher/approve-rubric", { unitId, rubric }, WRITE_TIMEOUT_MS);
+export const shareUnitWithFamilies = (unitId: string, shared: boolean) =>
+  request<LearningUnit>("PUT", `/teacher/units/${encodeURIComponent(unitId)}/share`, { shared }, WRITE_TIMEOUT_MS);
 
 // ---- Estudiante ----
 export const getStudentProfile = (studentId: string) =>
@@ -189,6 +192,10 @@ export const listFamilyUnits = () =>
   request<LearningUnit[]>("GET", "/family/units");
 export const publishFamilyUnit = (unitId: string) =>
   request<LearningUnit>("PUT", `/family/units/${encodeURIComponent(unitId)}/publish`, {}, WRITE_TIMEOUT_MS);
+export const listFamilyRoutes = () =>
+  request<SharedFamilyRoute[]>("GET", "/family/routes");
+export const assignFamilyRoute = (routeId: string) =>
+  request<LearningUnit>("POST", `/family/routes/${encodeURIComponent(routeId)}/assign`, {}, WRITE_TIMEOUT_MS);
 export const getBenchmark = (studentId: string) =>
   request<BenchmarkResult>("GET", `/benchmark/external/${encodeURIComponent(studentId)}`);
 export const getPassport = (studentId: string) =>
