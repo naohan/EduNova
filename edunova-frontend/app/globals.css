@@ -317,3 +317,16 @@ html[data-reading-contrast="alto"] [aria-checked="true"] {
   outline: 3px solid #000000;
   outline-offset: 1px;
 }
+
+/* Salto de una ficha del tablero entre dos casillas */
+@keyframes saltoFicha {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

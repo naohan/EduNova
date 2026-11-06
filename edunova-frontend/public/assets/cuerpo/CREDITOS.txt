@@ -1,7 +1,0 @@
-# Créditos y Licencias — Anatomía 3D y Doctor Detective
-
-## Modelos Anatómicos de Referencia
-- **Fuente original de referencia:** `jceronch1/Cuerpo-humano_3D` (https://github.com/jceronch1/Cuerpo-humano_3D) y Z-Anatomy (https://www.z-anatomy.com/).
-- **Licencia:** Creative Commons Attribution-ShareAlike (CC-BY-SA 4.0) / Open Data.
-- **Implementación en Cliente:** Para garantizar carga instantánea en dispositivos móviles (menos de 400 KB y 0 KB de descargas en vivo de archivos .glb de 7 MB), los órganos se sintetizan paramétricamente en memoria con mallas continuas de alta precisión (`TubeGeometry`, `CatmullRomCurve3`, deformación sinusoidal de circunvoluciones y normales recalculadas), shader médico Fresnel en la silueta continua y bio-escáner del consultorio bajo licencia MIT (EduNova / Hack4Edu 2026).
-

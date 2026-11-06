@@ -588,9 +588,9 @@ export function construirBanderin() {
 }
 
 /** Explorador en cinco piezas, para que brazos y piernas se muevan desde el hombro y la cadera. */
-export function construirExplorador() {
+export function construirExplorador({ chaqueta = "#5636D9", gorra = "#4C9EFF", ala = "#2472CC" } = {}) {
   const cuerpo = new Obra();
-  const CHAQUETA = "#5636D9";
+  const CHAQUETA = chaqueta;
   const PIEL = "#F2C9A8";
 
   cuerpo.cilindro(0.22, 0.26, 0.56, 12, CHAQUETA, [0, 0, 0]);
@@ -606,9 +606,9 @@ export function construirExplorador() {
     cuerpo.esfera(0.03, "#17164F", [x, 0.58, 0.28], undefined, 1);
   }
   cuerpo.caja(0.1, 0.022, 0.02, "#C9806B", [0, 0.46, 0.27]);
-  cuerpo.agregar(new THREE.SphereGeometry(0.3, 18, 10, 0, PI * 2, 0, PI / 2), "#4C9EFF", [0, 0.6, 0]);
-  cuerpo.cilindro(0.3, 0.31, 0.05, 18, "#2472CC", [0, 0.6, 0]);
-  cuerpo.caja(0.34, 0.035, 0.22, "#2472CC", [0, 0.6, 0.31], [0.12, 0, 0]);
+  cuerpo.agregar(new THREE.SphereGeometry(0.3, 18, 10, 0, PI * 2, 0, PI / 2), gorra, [0, 0.6, 0]);
+  cuerpo.cilindro(0.3, 0.31, 0.05, 18, ala, [0, 0.6, 0]);
+  cuerpo.caja(0.34, 0.035, 0.22, ala, [0, 0.6, 0.31], [0.12, 0, 0]);
 
   const brazo = () => {
     const o = new Obra();

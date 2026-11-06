@@ -1,8 +1,0 @@
-# Créditos y Licencias — Assets de Espacio y Sistema Solar
-
-## Texturas Planetarias y Sistema Solar
-- **Fuente original:** Solar System Scope (https://www.solarsystemscope.com/textures/) y NASA 3D Resources (https://nasa3d.arc.nasa.gov/).
-- **Licencia:** Creative Commons Attribution 4.0 International (CC-BY 4.0) / Dominio Público (NASA / Wikimedia Commons).
-- **Procesamiento y Respaldo:** Mapas equirectangulares optimizados y motor de síntesis procedural fractal (fBm + domain warping) en memoria, libre de dependencias externas en tiempo de ejecución.
-- **Modelos y Efectos:** Geometría de nave espacial y galaxia espiral procedimentales construidas con Three.js y Obra bajo licencia MIT (EduNova / Hack4Edu 2026).
-

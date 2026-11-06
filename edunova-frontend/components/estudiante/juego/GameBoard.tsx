@@ -19,24 +19,34 @@ type Props = {
   onTileClick?: (tileIndex: number) => void;
 };
 
-// Ranuras de posicionamiento para sub-cuadrícula interna (cero solapamiento)
-const RANURAS_POR_CANTIDAD: Record<number, Array<{ x: number; y: number }>> = {
-  1: [{ x: 0, y: -38 }],
-  2: [
-    { x: -14, y: -40 },
-    { x: 14, y: -40 },
-  ],
-  3: [
-    { x: -14, y: -44 },
-    { x: 14, y: -44 },
-    { x: 0, y: -20 },
-  ],
-  4: [
-    { x: -14, y: -46 },
-    { x: 14, y: -46 },
-    { x: -14, y: -22 },
-    { x: 14, y: -22 },
-  ],
+// Fichas sobre la casilla, en px desde su centro. El tamaño baja con la cantidad para que nunca se tapen,
+// y van encima y no arriba de la casilla: en la fila superior se saldrían del tablero.
+const RANURAS_POR_CANTIDAD: Record<number, { tamano: number; lugares: Array<{ x: number; y: number }> }> = {
+  1: { tamano: 38, lugares: [{ x: 0, y: -4 }] },
+  2: {
+    tamano: 32,
+    lugares: [
+      { x: -17, y: 0 },
+      { x: 17, y: 0 },
+    ],
+  },
+  3: {
+    tamano: 28,
+    lugares: [
+      { x: -15, y: -14 },
+      { x: 15, y: -14 },
+      { x: 0, y: 15 },
+    ],
+  },
+  4: {
+    tamano: 28,
+    lugares: [
+      { x: -15, y: -15 },
+      { x: 15, y: -15 },
+      { x: -15, y: 15 },
+      { x: 15, y: 15 },
+    ],
+  },
 };
 
 export function GameBoard({
@@ -79,7 +89,7 @@ export function GameBoard({
   }
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-h-[min(620px,calc(100dvh-130px))] max-w-[min(620px,calc(100dvh-130px))] select-none">
+    <div className="relative mx-auto aspect-square w-full max-w-[max(240px,min(620px,calc(100dvh-372px)))] select-none lg:max-w-[max(240px,min(620px,calc(100dvh-172px)))]">
       <div className="absolute inset-0 overflow-hidden rounded-3xl border-4 border-white/20 shadow-[0_24px_60px_rgba(23,22,79,0.45)]">
         {/* Dynamic Sky Environment by Level */}
         <div
@@ -200,7 +210,7 @@ export function GameBoard({
         <div className="absolute left-1/2 top-[47%] z-[6] w-[34%] -translate-x-1/2 -translate-y-1/2 text-center sm:w-[30%]">
           {/* Level Header Pill sin cortes de texto */}
           <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-[#17164F]/85 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur-md">
-            <span>{levelConfig.badge}</span>
+            <span className="hidden whitespace-nowrap sm:inline">{levelConfig.badge}</span>
             <span className="whitespace-nowrap">{`Nivel ${currentLevel}`}</span>
           </div>
 
@@ -217,18 +227,13 @@ export function GameBoard({
           </div>
 
           {/* Cheering Robot Mascot Mini */}
-          <div className="mt-1 flex items-center justify-center gap-1 rounded-full bg-white/90 px-2 py-0.5 shadow-md">
-            <Image
-              src={JUEGO_ASSETS.robot}
-              alt="Cosmo"
-              width={20}
-              height={20}
-              className="h-4 w-4 animate-bounce object-contain"
-            />
-            <span className="text-[9px] font-extrabold text-[#17164F]">
-              Plaza Activa
-            </span>
-          </div>
+          <Image
+            src={JUEGO_ASSETS.robot}
+            alt="Cosmo"
+            width={28}
+            height={28}
+            className="mx-auto -mt-2 h-6 w-6 animate-bounce object-contain motion-reduce:animate-none sm:h-7 sm:w-7"
+          />
         </div>
 
         {/* Ambient landmarks */}
@@ -273,7 +278,8 @@ export function GameBoard({
           const isSalida = tile.kind === "salida";
 
           const cantJugadores = Math.min(4, Math.max(1, here.length));
-          const slots = RANURAS_POR_CANTIDAD[cantJugadores] ?? RANURAS_POR_CANTIDAD[1];
+          const { tamano, lugares } = RANURAS_POR_CANTIDAD[cantJugadores];
+          const conDetalle = cantJugadores <= 2; // con 3 o 4 fichas, corazones y nombre se pisarían
 
           return (
             <button
@@ -282,8 +288,10 @@ export function GameBoard({
               onClick={() => onTileClick?.(i)}
               onMouseEnter={() => setHoverTile(i)}
               onMouseLeave={() => setHoverTile(null)}
-              className="absolute z-20 transition-transform duration-200 focus:outline-none"
+              className="absolute transition-transform duration-200 focus:outline-none"
               style={{
+                // En las esquinas coinciden dos casillas: arriba va la que tiene fichas, y si no, Salida.
+                zIndex: here.length > 0 ? 25 : isSalida ? 22 : 20,
                 left: pos.left,
                 top: pos.top,
                 transform: `translate(-50%, -50%) ${
@@ -336,7 +344,7 @@ export function GameBoard({
                 )}
 
                 {isSalida && (
-                  <span className="absolute -bottom-5 left-1/2 z-30 w-[4.8rem] -translate-x-1/2 rounded-full bg-[#E53935] px-1 py-0.5 text-center text-[7px] font-extrabold tracking-wide text-white shadow-md sm:text-[8px]">
+                  <span className="absolute -bottom-3 left-1/2 z-30 w-[3.6rem] -translate-x-1/2 rounded-full bg-[#E53935] px-1 py-0.5 text-center text-[7px] font-extrabold tracking-wide text-white shadow-md sm:text-[8px]">
                     SALIDA +50
                   </span>
                 )}
@@ -352,23 +360,18 @@ export function GameBoard({
                 const colors = ["#5636D9", "#E85D9A", "#4C9EFF", "#FFC928", "#2DBE70", "#FF8A3D"];
                 const ring = colors[players.findIndex((x) => x.id === p.id) % colors.length];
                 const playerLives = p.lives ?? 3;
-                const slot = slots[idx] ?? slots[0];
-
-                const scaleClass =
-                  cantJugadores === 1
-                    ? "scale-100"
-                    : cantJugadores === 2
-                      ? "scale-90"
-                      : "scale-80";
+                const slot = lugares[idx] ?? lugares[0];
 
                 return (
                   <div
                     key={p.id}
-                    className={`absolute z-30 transition-all duration-300 ease-out ${scaleClass}`}
+                    className="absolute z-30"
                     style={{
+                      width: tamano,
+                      height: tamano,
                       left: `calc(50% + ${slot.x}px)`,
-                      top: `${slot.y}px`,
-                      transform: "translateX(-50%)",
+                      top: `calc(50% + ${slot.y}px)`,
+                      transform: "translate(-50%, -50%)",
                     }}
                   >
                     {/* Active Turn Halo Pulsante Dorado */}
@@ -389,29 +392,25 @@ export function GameBoard({
                       style={{ backgroundColor: ring }}
                     />
 
-                    {/* Contenedor con animación de salto parabólico */}
-                    <div
-                      className={`relative transition-transform duration-200 ${
-                        moving
-                          ? "-translate-y-5 scale-110 motion-reduce:translate-y-0"
-                          : ""
-                      }`}
-                    >
+                    {/* La ficha se vuelve a montar en cada casilla: la animación corre una vez por paso */}
+                    <div className={`relative h-full w-full ${moving ? "animate-[saltoFicha_260ms_ease-out] motion-reduce:animate-none" : ""}`}>
                       {/* Floating Health Badge over token */}
-                      <div className="absolute -top-3.5 left-1/2 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-white/30 bg-black/75 px-1 py-0.2 text-[8px]">
-                        {Array.from({ length: p.maxLives ?? 3 }).map((_, lIdx) => (
-                          <HeartIcon
-                            key={lIdx}
-                            weight="fill"
-                            className={`h-2.5 w-2.5 ${lIdx < playerLives ? "text-[#FF8A73]" : "text-white/20"}`}
-                            aria-hidden
-                          />
-                        ))}
-                      </div>
+                      {conDetalle ? (
+                        <div className="absolute -top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-px rounded-full border border-white/30 bg-black/75 px-1 text-[8px]">
+                          {Array.from({ length: p.maxLives ?? 3 }).map((_, lIdx) => (
+                            <HeartIcon
+                              key={lIdx}
+                              weight="fill"
+                              className={`h-2 w-2 ${lIdx < playerLives ? "text-[#FF8A73]" : "text-white/20"}`}
+                              aria-hidden
+                            />
+                          ))}
+                        </div>
+                      ) : null}
 
                       {/* Turn Crown */}
-                      {active && (
-                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 animate-bounce text-[#FFC928] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] motion-reduce:animate-none">
+                      {active && conDetalle && (
+                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce text-[#FFC928] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] motion-reduce:animate-none">
                           <CrownIcon weight="fill" className="h-4 w-4" aria-hidden />
                         </span>
                       )}
@@ -422,16 +421,18 @@ export function GameBoard({
                         alt={p.name}
                         width={44}
                         height={44}
-                        className="relative h-9 w-9 rounded-full bg-white object-cover shadow-xl sm:h-10 sm:w-10"
+                        className="relative h-full w-full rounded-full bg-white object-cover shadow-xl"
                         style={{
                           boxShadow: `0 0 0 3px ${ring}, 0 6px 14px rgba(0,0,0,0.35)`,
                         }}
                       />
 
                       {/* Mini Name Badge */}
-                      <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white/95 px-1 text-[8px] font-black text-[#17164F] shadow">
-                        {p.name.slice(0, 7)}
-                      </span>
+                      {conDetalle ? (
+                        <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white/95 px-1 text-[8px] font-black text-[#17164F] shadow">
+                          {p.name.slice(0, 7)}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 );

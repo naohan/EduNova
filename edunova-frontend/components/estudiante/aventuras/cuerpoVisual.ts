@@ -1,59 +1,81 @@
 import * as THREE from "three";
-import { Obra } from "../valle/valleObra";
+import { Obra, type V3 } from "../valle/valleObra";
 import { type IdOrgano } from "./cuerpoData";
 
 // Visuales médicos optimizados para Doctor Detective (Consultorio).
 // Cero descargas pesadas de 7 MB: modelos paramétricos de alta precisión anatómica en memoria.
+
+/** Elipsoide invisible que recibe el toque, relativo al centro del órgano. */
+export interface ZonaToque {
+  centro: V3;
+  radio: number;
+  escala?: V3;
+}
 
 export interface ConfigOrganoVisual {
   posicion: [number, number, number];
   etiquetaEn: [number, number, number];
   hitRadio: number;
   colorBase: string;
+  /** Más holgadas que el órgano, pero sin tapar a sus vecinos: si no, tocar uno marca el de al lado. */
+  zonas: ZonaToque[];
 }
 
 export const CONFIG_ORGANOS_VISUAL: Record<IdOrgano, ConfigOrganoVisual> = {
   cerebro: {
-    posicion: [0, 3.05, 0.05],
-    etiquetaEn: [0, 3.65, 0.5],
+    posicion: [0, 3.34, 0.02],
+    etiquetaEn: [0, 3.86, 0.5],
     hitRadio: 0.65,
     colorBase: "#F4A6B8",
+    zonas: [{ centro: [0, 0, 0], radio: 0.5 }],
   },
   pulmones: {
     posicion: [0, 1.35, 0.05],
     etiquetaEn: [-0.95, 1.9, 0.4],
     hitRadio: 0.85,
     colorBase: "#F28B82",
+    zonas: [
+      { centro: [-0.44, 0.08, 0], radio: 0.5, escala: [0.9, 1.3, 0.8] },
+      { centro: [0.44, 0.08, 0], radio: 0.5, escala: [0.9, 1.3, 0.8] },
+    ],
   },
   corazon: {
     posicion: [0.15, 1.32, 0.28],
     etiquetaEn: [0.35, 1.35, 0.75],
     hitRadio: 0.5,
     colorBase: "#D31238",
+    zonas: [{ centro: [0, 0, 0], radio: 0.44 }],
   },
   higado: {
     posicion: [-0.38, 0.55, 0.18],
     etiquetaEn: [-0.9, 0.55, 0.55],
     hitRadio: 0.62,
     colorBase: "#94382A",
+    zonas: [{ centro: [0, 0, 0], radio: 0.5, escala: [1.1, 0.62, 0.85] }],
   },
   estomago: {
     posicion: [0.38, 0.52, 0.18],
     etiquetaEn: [0.95, 0.52, 0.55],
     hitRadio: 0.58,
     colorBase: "#E5A844",
+    zonas: [{ centro: [0.04, 0.08, 0], radio: 0.44, escala: [0.95, 1, 0.8] }],
   },
   intestinos: {
     posicion: [0, -0.22, 0.14],
     etiquetaEn: [0, -0.85, 0.6],
     hitRadio: 0.72,
     colorBase: "#E27E6A",
+    zonas: [{ centro: [0, -0.16, 0], radio: 0.62, escala: [1, 0.72, 0.7] }],
   },
   rinones: {
     posicion: [0, 0.25, -0.28],
     etiquetaEn: [0.95, 0.25, -0.4],
     hitRadio: 0.75,
     colorBase: "#7E3258",
+    zonas: [
+      { centro: [-0.44, 0, 0], radio: 0.34, escala: [0.9, 1.3, 1] },
+      { centro: [0.44, 0, 0], radio: 0.34, escala: [0.9, 1.3, 1] },
+    ],
   },
 };
 
@@ -333,10 +355,9 @@ export function crearGeometriaEstomago(): THREE.BufferGeometry {
   const pos = estomagoGeo.getAttribute("position");
   for (let i = 0; i < pos.count; i++) {
     const y = pos.getY(i);
-    // Dilatación del fundus y cuerpo gástrico
-    if (y > -0.05 && y < 0.3) {
-      pos.setXYZ(i, pos.getX(i) * 1.25, pos.getY(i), pos.getZ(i) * 1.3);
-    }
+    // Dilatación del fundus y cuerpo gástrico: gradual, porque un corte en seco rasga la malla
+    const bolsa = 1 + 0.26 * Math.exp(-(((y - 0.12) / 0.2) ** 2));
+    pos.setXYZ(i, pos.getX(i) * bolsa, y, pos.getZ(i) * bolsa);
   }
   estomagoGeo.computeVertexNormals();
   o.agregar(estomagoGeo, "#E5A844", [0, 0, 0]);
@@ -471,9 +492,18 @@ export function crearGeometriaCuerpo(): THREE.BufferGeometry {
   o.cilindro(0.25, 0.2, 1.2, 16, "#A5F3FC", [-0.42, -1.82, 0]);
   o.cilindro(0.25, 0.2, 1.2, 16, "#A5F3FC", [0.42, -1.82, 0]);
   // Pies planos sobre la plataforma (Y=-2.55)
-  o.caja(0.36, 0.18, 0.72, "#A5F3FC", [-0.42, -2.48, 0.16]);
-  o.caja(0.36, 0.18, 0.72, "#A5F3FC", [0.42, -2.48, 0.16]);
+  o.esfera(0.3, "#A5F3FC", [-0.42, -2.43, 0.14], [0.7, 0.42, 1.25], 2);
+  o.esfera(0.3, "#A5F3FC", [0.42, -2.43, 0.14], [0.7, 0.42, 1.25], 2);
 
+  return o.geometria();
+}
+
+/** Cara amable del paciente: ojos y sonrisa, debajo del cerebro. */
+export function crearGeometriaCara(): THREE.BufferGeometry {
+  const o = new Obra();
+  o.esfera(0.07, "#0F766E", [-0.25, 2.92, 0.68], [1, 1.2, 0.5], 2);
+  o.esfera(0.07, "#0F766E", [0.25, 2.92, 0.68], [1, 1.2, 0.5], 2);
+  o.aro(0.17, 0.022, "#0F766E", [0, 2.76, 0.66], [-0.3, 0, Math.PI], Math.PI);
   return o.geometria();
 }
 
@@ -503,31 +533,48 @@ export function crearGeometriaEsqueletoGuia(): THREE.BufferGeometry {
 // ENTORNO DEL CONSULTORIO Y PLATAFORMA DE BIO-ESCÁNER
 // -----------------------------------------------------------------------------
 
-/** Sala médica luminosa en verde menta y blanco marfil */
-export function crearGeometriaConsultorio(): THREE.BufferGeometry {
+const RADIO_SALA = 15;
+
+/** Pared circular. Se dibuja solo por dentro: al girar el paciente, la cámara nunca queda tapada. */
+export function crearGeometriaParedSala(): THREE.BufferGeometry {
+  const o = new Obra();
+  o.tubo(RADIO_SALA, 30, 48, "#EDF9F2", [0, 12.2, 0]);
+  return o.geometria();
+}
+
+/** Suelo, zócalo y ventanas a los lados: detrás del paciente no va nada que compita con los órganos. */
+export function crearGeometriaSala(): THREE.BufferGeometry {
   const o = new Obra();
 
-  // Pared posterior curva luminosa
-  o.tubo(14, 12, 32, "#F0FDF4", [0, 2.5, -3]);
+  o.cilindro(RADIO_SALA, RADIO_SALA, 0.4, 48, "#D3EFE0", [0, -3, 0]);
+  o.aro(RADIO_SALA - 0.1, 0.16, "#7FD8C2", [0, -2.5, 0], [Math.PI / 2, 0, 0]);
 
-  // Suelo clínico limpio
-  o.caja(28, 0.4, 28, "#E6F4EA", [0, -2.8, 0]);
-
-  // Ventana médica con marco y luz cálida
-  o.caja(3.6, 4.2, 0.15, "#0D9488", [0, 4.2, -6.8]);
-  o.caja(3.2, 3.8, 0.16, "#CCFBF1", [0, 4.2, -6.78]);
-
-  // Maceta con planta botánica en la esquina
-  o.cilindro(0.65, 0.45, 1.2, 14, "#F8FAFC", [-4.2, -2.2, -3.2]);
-  // Hojas de la planta
-  for (let i = 0; i < 5; i++) {
-    const ang = (i * Math.PI * 2) / 5;
-    const x = -4.2 + Math.cos(ang) * 0.55;
-    const z = -3.2 + Math.sin(ang) * 0.55;
-    o.esfera(0.38, "#16A34A", [x, -1.3, z], [1.2, 0.4, 0.8]);
+  for (const lado of [-1, 1]) {
+    const x = lado * 7.2;
+    const z = -Math.sqrt(RADIO_SALA ** 2 - x ** 2) + 0.5;
+    const giro: V3 = [0, -Math.asin(x / RADIO_SALA), 0];
+    o.caja(4.6, 6.4, 0.2, "#7FD8C2", [x, 2.6, z], giro);
+    o.caja(4.1, 5.9, 0.24, "#FFFDF0", [x, 2.6, z], giro);
+    o.caja(0.14, 5.9, 0.28, "#7FD8C2", [x, 2.6, z], giro);
+    o.caja(4.1, 0.14, 0.28, "#7FD8C2", [x, 2.9, z], giro);
   }
 
-  // Mesa auxiliar médica a la derecha
+  return o.geometria();
+}
+
+/** Planta y mesa auxiliar: reciben luz, a diferencia de la sala. */
+export function crearGeometriaMuebles(): THREE.BufferGeometry {
+  const o = new Obra();
+
+  o.cilindro(0.65, 0.45, 1.2, 14, "#F8FAFC", [-4.2, -2.2, -3.2]);
+  o.cilindro(0.08, 0.1, 1.5, 8, "#3F8F5A", [-4.2, -0.9, -3.2]);
+  for (let i = 0; i < 7; i++) {
+    const ang = (i * Math.PI * 2) / 7;
+    const alto = i % 2 === 0 ? -0.35 : 0.05;
+    o.esfera(0.42, i % 2 === 0 ? "#22A95A" : "#3CC274", [-4.2 + Math.cos(ang) * 0.55, alto, -3.2 + Math.sin(ang) * 0.55], [1.15, 0.4, 0.7], 2);
+  }
+  o.esfera(0.42, "#3CC274", [-4.2, 0.28, -3.2], [0.9, 0.7, 0.9], 2);
+
   o.caja(1.8, 1.4, 1.2, "#FFFFFF", [4.2, -2.1, -2.8]);
   o.caja(1.9, 0.12, 1.3, "#0D9488", [4.2, -1.35, -2.8]);
 

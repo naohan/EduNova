@@ -285,7 +285,7 @@ function Mundo({ config, objetivo, celebracion, onPlaneta, onEstrella, onChoque,
               esObjetivo={config.flecha && objetivo === p.id}
             >
               {config.etiquetas ? (
-                <Html center position={[0, p.radio + 1.2, 0]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
+                <Html center position={[0, 0, -(p.radio + 1.1)]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
                   <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-white">
                     {p.nombre}
                   </span>
@@ -311,7 +311,7 @@ function Mundo({ config, objetivo, celebracion, onPlaneta, onEstrella, onChoque,
       </group>
 
       <group ref={nave} position={INICIO}>
-        <CoheteVisual velocidad={velocidad.current.length()} />
+        <CoheteVisual velocidad={velocidad} />
       </group>
 
       <group ref={flecha} visible={false}>

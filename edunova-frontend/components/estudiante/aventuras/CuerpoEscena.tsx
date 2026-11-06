@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
-import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { ORGANOS, type IdOrgano } from "./cuerpoData";
@@ -12,17 +12,20 @@ import {
   FRAG_PIEL_FRESNEL,
   VERT_ESCANER,
   VERT_PIEL_FRESNEL,
+  crearGeometriaCara,
   crearGeometriaCerebro,
   crearGeometriaCorazon,
   crearGeometriaCuerpo,
-  crearGeometriaConsultorio,
   crearGeometriaEsqueletoGuia,
   crearGeometriaEstomago,
   crearGeometriaHigado,
   crearGeometriaIntestinos,
+  crearGeometriaMuebles,
+  crearGeometriaParedSala,
   crearGeometriaPlataforma,
   crearGeometriaPulmones,
   crearGeometriaRinones,
+  crearGeometriaSala,
 } from "./cuerpoVisual";
 
 type Props = {
@@ -34,10 +37,42 @@ type Props = {
 const MOVIMIENTO_MAXIMO_PX = 8; // más que esto es girar el cuerpo, no tocar un órgano
 const sinToque = () => null;
 
+// El paciente, desde la plataforma hasta la coronilla.
+const CENTRO_ESCENA = new THREE.Vector3(0, 0.58, 0);
+const ALTO_ESCENA = 7.5;
+const ANCHO_ESCENA = 3.6;
+
+/**
+ * Deja al paciente entero debajo de la burbuja. La distancia depende del tamaño de la pantalla, y el
+ * desplazamiento de la vista baja la imagen sin mover la cámara, para que siga girando alrededor del cuerpo.
+ */
+function Encuadre() {
+  const ancho = useThree((s) => s.size.width);
+  const alto = useThree((s) => s.size.height);
+  const obtener = useThree((s) => s.get);
+
+  useEffect(() => {
+    const camara = obtener().camera as THREE.PerspectiveCamera;
+    const reserva = ancho < 640 ? 132 : 84; // lo que ocupa la burbuja dentro del lienzo
+    const altoLibre = Math.max(200, alto - reserva - 8);
+    const tangente = Math.tan(THREE.MathUtils.degToRad(camara.fov / 2));
+    const distancia = Math.max((ALTO_ESCENA * alto) / (altoLibre * 2 * tangente), ANCHO_ESCENA / (2 * tangente * (ancho / alto)));
+
+    camara.position.sub(CENTRO_ESCENA).setLength(distancia).add(CENTRO_ESCENA);
+    camara.setViewOffset(ancho, alto, 0, -reserva / 2, ancho, alto);
+    return () => camara.clearViewOffset();
+  }, [ancho, alto, obtener]);
+
+  return null;
+}
+
 /** Silueta continua del paciente con shader médico Fresnel y guía esquelética */
 function PacienteSilueta() {
   const geoCuerpo = useMemo(() => crearGeometriaCuerpo(), []);
   const geoEsqueleto = useMemo(() => crearGeometriaEsqueletoGuia(), []);
+  const geoCara = useMemo(() => crearGeometriaCara(), []);
+  // Pinta solo profundidad: así la piel muestra su capa exterior y no las uniones de adentro.
+  const matProfundidad = useMemo(() => new THREE.MeshBasicMaterial({ colorWrite: false, transparent: true }), []);
 
   const matFresnel = useMemo(
     () =>
@@ -53,15 +88,19 @@ function PacienteSilueta() {
         },
         transparent: true,
         depthWrite: false,
-        side: THREE.DoubleSide,
       }),
     [],
   );
 
   return (
     <group>
-      {/* Piel translúcida médica (sinToque para no bloquear órganos) */}
-      <mesh geometry={geoCuerpo} material={matFresnel} raycast={sinToque} />
+      {/* Lo opaco y la guía se dibujan antes; la piel va al final, encima de todo (sinToque no bloquea órganos) */}
+      <mesh geometry={geoCuerpo} material={matProfundidad} renderOrder={1} raycast={sinToque} />
+      <mesh geometry={geoCuerpo} material={matFresnel} renderOrder={2} raycast={sinToque} />
+
+      <mesh geometry={geoCara} raycast={sinToque}>
+        <meshBasicMaterial vertexColors />
+      </mesh>
 
       {/* Guía torácica sutil (esternón, costillas y columna vertebral al 15% de opacidad) */}
       <mesh geometry={geoEsqueleto} raycast={sinToque}>
@@ -81,7 +120,9 @@ function PacienteSilueta() {
 function BioEscaner() {
   const hazRef = useRef<THREE.Mesh>(null);
   const matHazRef = useRef<THREE.ShaderMaterial>(null);
-  const geoConsultorio = useMemo(() => crearGeometriaConsultorio(), []);
+  const geoPared = useMemo(() => crearGeometriaParedSala(), []);
+  const geoSala = useMemo(() => crearGeometriaSala(), []);
+  const geoMuebles = useMemo(() => crearGeometriaMuebles(), []);
   const geoPlataforma = useMemo(() => crearGeometriaPlataforma(), []);
 
   const matHaz = useMemo(
@@ -113,18 +154,24 @@ function BioEscaner() {
 
   return (
     <group>
-      {/* Consultorio médico (paredes, ventana iluminada, planta) en 1 draw call */}
-      <mesh geometry={geoConsultorio}>
+      {/* Sala sin luz ni tono: conserva el mismo verde menta del Consultorio del valle */}
+      <mesh geometry={geoPared} raycast={sinToque}>
+        <meshBasicMaterial vertexColors side={THREE.BackSide} toneMapped={false} />
+      </mesh>
+      <mesh geometry={geoSala} raycast={sinToque}>
+        <meshBasicMaterial vertexColors toneMapped={false} />
+      </mesh>
+      <mesh geometry={geoMuebles} raycast={sinToque}>
         <meshStandardMaterial vertexColors roughness={0.7} />
       </mesh>
 
       {/* Plataforma circular del paciente con anillos LED */}
-      <mesh geometry={geoPlataforma}>
+      <mesh geometry={geoPlataforma} raycast={sinToque}>
         <meshStandardMaterial vertexColors roughness={0.4} metalness={0.15} />
       </mesh>
 
       {/* Disco horizontal de escaneo holográfico */}
-      <mesh ref={hazRef} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh ref={hazRef} rotation={[-Math.PI / 2, 0, 0]} raycast={sinToque}>
         <ringGeometry args={[0.2, 1.85, 36]} />
         <primitive object={matHaz} ref={matHazRef} attach="material" />
       </mesh>
@@ -153,6 +200,7 @@ function OrganoInteractivo({
   const config = CONFIG_ORGANOS_VISUAL[id];
   const [encima, setEncima] = useState(false);
   const temblorHasta = useRef(0);
+  const temblorPedido = useRef(false);
 
   useFrame((state) => {
     if (!grupo.current) return;
@@ -175,8 +223,12 @@ function OrganoInteractivo({
       escalaPulso += Math.sin(ahora * 5) * 0.06;
     }
 
-    // 2. Efecto de temblor amable en error (sin rojo agresivo)
-    if (ahora < temblorHasta.current) {
+    // 2. Temblor amable en error (sin rojo agresivo). Se mide con el reloj de la escena.
+    if (temblorPedido.current) {
+      temblorPedido.current = false;
+      temblorHasta.current = ahora + 0.25;
+    }
+    if (ahora < temblorHasta.current && !encontrado) {
       const dt = temblorHasta.current - ahora;
       grupo.current.position.x = config.posicion[0] + Math.sin(dt * 40) * 0.04;
     } else {
@@ -198,10 +250,8 @@ function OrganoInteractivo({
   function manejarToque(e: ThreeEvent<MouseEvent>) {
     e.stopPropagation();
     if (e.delta <= MOVIMIENTO_MAXIMO_PX) {
-      if (!encontrado) {
-        // Marcamos breve temblor si fallara en la lógica del caso
-        temblorHasta.current = performance.now() / 1000 + 0.25;
-      }
+      // Si el toque fue correcto, el órgano pasa a encontrado en el siguiente cuadro y no llega a temblar.
+      if (!encontrado) temblorPedido.current = true;
       onTocar(id);
     }
   }
@@ -220,11 +270,13 @@ function OrganoInteractivo({
       {/* Geometría anatómica del órgano */}
       {children}
 
-      {/* Colisionador táctil generoso invisible para facilitar toque con dedos en pantallas de 390 px */}
-      <mesh>
-        <sphereGeometry args={[config.hitRadio, 14, 10]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
+      {/* Zonas invisibles para tocar con el dedo a 390 px. No se dibujan, pero sí reciben el toque. */}
+      {config.zonas.map((zona) => (
+        <mesh key={zona.centro.join()} position={zona.centro} scale={zona.escala} visible={false}>
+          <sphereGeometry args={[zona.radio, 14, 10]} />
+          <meshBasicMaterial />
+        </mesh>
+      ))}
 
       {/* Halo / onda expansiva de acierto verde esmeralda */}
       {encontrado ? (
@@ -367,12 +419,13 @@ export default function CuerpoEscena(props: Props) {
   return (
     <div className="isolate h-full w-full touch-none select-none">
       <Canvas
-        camera={{ position: [0, 0.45, 9.2], fov: 42 }}
+        camera={{ position: [0, 0.58, 11], fov: 42 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true }}
       >
-        <color attach="background" args={["#E6F4EA"]} />
+        <color attach="background" args={["#EDF9F2"]} />
         <HtmlInicial />
+        <Encuadre />
 
         {/* Iluminación clara y médica de consultorio */}
         <ambientLight intensity={1.1} color="#FFFFFF" />
@@ -392,7 +445,7 @@ export default function CuerpoEscena(props: Props) {
           enablePan={false}
           minDistance={4.5}
           maxDistance={14}
-          target={[0, 0.45, 0]}
+          target={[0, 0.58, 0]}
         />
       </Canvas>
     </div>

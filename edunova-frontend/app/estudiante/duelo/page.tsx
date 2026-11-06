@@ -12,10 +12,6 @@ import { validateDuelQuestion, getDuelOpponentQuestions, reportDuelResult } from
 import { useSessionUser } from "@/lib/api/use-session";
 import { hayWebGL } from "@/components/estudiante/aventuras/comun";
 
-const ArenaEscena = dynamic(() => import("@/components/estudiante/duelo/ArenaEscena"), {
-  ssr: false,
-  loading: () => <div className="h-full w-full bg-[#100E26] animate-pulse" />,
-});
 import {
   ArrowCounterClockwiseIcon,
   ArrowLeftIcon,
@@ -35,6 +31,11 @@ import {
   TrophyIcon,
   XIcon,
 } from "@/components/ui/icons";
+
+const ArenaEscena = dynamic(() => import("@/components/estudiante/duelo/ArenaEscena"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full animate-pulse bg-[#BFE3F5]" />,
+});
 
 type DuelPhase =
   | "intro"
@@ -187,7 +188,10 @@ export default function DueloPage() {
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [timeLeft, setTimeLeft] = useState(45);
   const [opponentBattleScore, setOpponentBattleScore] = useState(0);
-  const [soportadoWebGL] = useState(() => (typeof document === "undefined" ? true : hayWebGL()));
+  // Sin WebGL o con movimiento reducido se quedan los avatares 2D. Solo se usa después de la fase inicial.
+  const [soportadoWebGL] = useState(
+    () => typeof document === "undefined" || (hayWebGL() && !window.matchMedia("(prefers-reduced-motion: reduce)").matches),
+  );
   const [lastAnswer, setLastAnswer] = useState<{ correct: boolean; id: number } | null>(null);
 
   const usuario = useSessionUser();
@@ -369,6 +373,7 @@ export default function DueloPage() {
   };
 
   const startBattle = () => {
+    setLastAnswer(null);
     setCurrentBattleIndex(0);
     setUserAnswers([]);
     setPremio(null);
@@ -917,7 +922,7 @@ export default function DueloPage() {
             </div>
 
             {/* Escenario 3D compacto del Coliseo (máx 28dvh) */}
-            <div className="mt-2.5 h-[22dvh] max-h-[180px] w-full shrink-0 overflow-hidden rounded-3xl border border-white/10 shadow-md sm:h-[26dvh] sm:max-h-[210px]">
+            <div className="mt-2.5 h-[22dvh] max-h-[180px] w-full shrink-0 overflow-hidden rounded-3xl border border-white/10 shadow-md sm:h-[24dvh] sm:max-h-[200px]">
               {soportadoWebGL ? (
                 <ArenaEscena phase="duel_battle" lastAnswer={lastAnswer} />
               ) : (
@@ -967,7 +972,7 @@ export default function DueloPage() {
 
                 {/* 3D Coliseo con celebración y confeti */}
                 {soportadoWebGL ? (
-                  <div className="my-2 h-[22dvh] max-h-[180px] w-full shrink-0 overflow-hidden rounded-3xl border border-white/10 shadow-md sm:h-[26dvh] sm:max-h-[210px]">
+                  <div className="my-2 h-[22dvh] max-h-[180px] w-full shrink-0 overflow-hidden rounded-3xl border border-white/10 shadow-md sm:h-[24dvh] sm:max-h-[200px]">
                     <ArenaEscena phase="duel_results" userWon={isWin} />
                   </div>
                 ) : null}

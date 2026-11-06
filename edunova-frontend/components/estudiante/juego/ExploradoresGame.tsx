@@ -1004,7 +1004,7 @@ function PlayScreen({
   }
 
   return (
-    <div className="relative mx-auto flex h-full max-h-[100%] w-full max-w-6xl flex-col justify-between overflow-hidden">
+    <div className="relative mx-auto flex w-full max-w-6xl flex-col">
       <header className="flex shrink-0 flex-nowrap items-center justify-between gap-1.5 rounded-2xl bg-white px-2.5 py-1.5 text-[#17164F] sm:px-3 sm:py-2">
         <div
           className={`flex items-center gap-2 rounded-2xl p-1.5 transition-all ${
@@ -1056,8 +1056,8 @@ function PlayScreen({
         </div>
       </header>
 
-      <div className="mt-2 flex flex-1 min-h-0 flex-col items-center justify-center gap-2 lg:flex-row lg:items-center">
-        <div className="flex h-full w-full items-center justify-center">
+      <div className="mt-2 flex flex-col items-center justify-center gap-2 lg:flex-row lg:items-center">
+        <div className="flex w-full min-w-0 flex-1 items-center justify-center">
           <GameBoard
             players={room.players}
             turnIndex={room.turnIndex}

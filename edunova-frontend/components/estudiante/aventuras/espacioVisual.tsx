@@ -1,15 +1,18 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Obra } from "../valle/valleObra";
 import { PLANETAS, RADIO_SOL, type IdPlaneta } from "./espacioData";
 
-// Generador procedural y cargador de recursos para Piloto Espacial y Ordena los Planetas.
-// Funciona 100% offline sin peticiones externas y con cero errores 404.
+// Sol, planetas, galaxia y cohete de Piloto Espacial y Ordena los Planetas.
+// Todo se genera en memoria: no descarga nada y funciona sin conexión.
 
-// PRNG determinista con semilla fija para evitar cualquier impureza durante el prerenderizado
+// -----------------------------------------------------------------------------
+// RUIDO DETERMINISTA
+// -----------------------------------------------------------------------------
+
 function crearPrng(semilla = 123456789) {
   let s = semilla >>> 0;
   return () => {
@@ -20,352 +23,351 @@ function crearPrng(semilla = 123456789) {
   };
 }
 
-// Ruido pseudo-aleatorio suave para fBm
-const prngGlobal = crearPrng(987654321);
 const PERM = new Uint8Array(512);
-for (let i = 0; i < 256; i++) PERM[i] = i;
-for (let i = 255; i > 0; i--) {
-  const j = Math.floor(prngGlobal() * (i + 1));
-  const temp = PERM[i];
-  PERM[i] = PERM[j];
-  PERM[j] = temp;
+{
+  const prng = crearPrng(987654321);
+  for (let i = 0; i < 256; i++) PERM[i] = i;
+  for (let i = 255; i > 0; i--) {
+    const j = Math.floor(prng() * (i + 1));
+    const temp = PERM[i];
+    PERM[i] = PERM[j];
+    PERM[j] = temp;
+  }
+  for (let i = 0; i < 256; i++) PERM[256 + i] = PERM[i];
 }
-for (let i = 0; i < 256; i++) PERM[256 + i] = PERM[i];
 
-function grad2D(hash: number, x: number, y: number): number {
-  const h = hash & 7;
-  const u = h < 4 ? x : y;
-  const v = h < 4 ? y : x;
+function gradiente(hash: number, x: number, y: number, z: number) {
+  const h = hash & 15;
+  const u = h < 8 ? x : y;
+  const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
   return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
 }
 
-function noise2D(x: number, y: number): number {
-  const xi = Math.floor(x) & 255;
-  const yi = Math.floor(y) & 255;
-  const xf = x - Math.floor(x);
-  const yf = y - Math.floor(y);
+const curva = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-  // Fade curves
-  const u = xf * xf * xf * (xf * (xf * 6 - 15) + 10);
-  const v = yf * yf * yf * (yf * (yf * 6 - 15) + 10);
-
-  const aa = PERM[PERM[xi] + yi];
-  const ab = PERM[PERM[xi] + yi + 1];
-  const ba = PERM[PERM[xi + 1] + yi];
-  const bb = PERM[PERM[xi + 1] + yi + 1];
-
-  const x1 = (1 - u) * grad2D(aa, xf, yf) + u * grad2D(ba, xf - 1, yf);
-  const x2 = (1 - u) * grad2D(ab, xf, yf - 1) + u * grad2D(bb, xf - 1, yf - 1);
-  return (1 - v) * x1 + v * x2;
+/** Ruido en 3D: se evalúa sobre la esfera, así la textura no tiene costura ni se repite en espejo. */
+function ruido(x: number, y: number, z: number) {
+  const fx = Math.floor(x);
+  const fy = Math.floor(y);
+  const fz = Math.floor(z);
+  const X = fx & 255;
+  const Y = fy & 255;
+  const Z = fz & 255;
+  const dx = x - fx;
+  const dy = y - fy;
+  const dz = z - fz;
+  const u = curva(dx);
+  const v = curva(dy);
+  const w = curva(dz);
+  const A = PERM[X] + Y;
+  const B = PERM[X + 1] + Y;
+  const AA = PERM[A] + Z;
+  const AB = PERM[A + 1] + Z;
+  const BA = PERM[B] + Z;
+  const BB = PERM[B + 1] + Z;
+  return lerp(
+    lerp(
+      lerp(gradiente(PERM[AA], dx, dy, dz), gradiente(PERM[BA], dx - 1, dy, dz), u),
+      lerp(gradiente(PERM[AB], dx, dy - 1, dz), gradiente(PERM[BB], dx - 1, dy - 1, dz), u),
+      v,
+    ),
+    lerp(
+      lerp(gradiente(PERM[AA + 1], dx, dy, dz - 1), gradiente(PERM[BA + 1], dx - 1, dy, dz - 1), u),
+      lerp(gradiente(PERM[AB + 1], dx, dy - 1, dz - 1), gradiente(PERM[BB + 1], dx - 1, dy - 1, dz - 1), u),
+      v,
+    ),
+    w,
+  );
 }
 
-function fbm2D(x: number, y: number, octaves = 4): number {
-  let val = 0;
-  let amp = 0.5;
-  let freq = 1.0;
-  let max = 0;
-  for (let o = 0; o < octaves; o++) {
-    val += noise2D(x * freq, y * freq) * amp;
-    max += amp;
-    amp *= 0.5;
-    freq *= 2.0;
+const limitar = (t: number) => Math.max(0, Math.min(1, t));
+
+/** Ruido fractal entre 0 y 1, con media 0,5. El ruido crudo gira alrededor de 0. */
+function fractal(x: number, y: number, z: number, octavas = 4) {
+  let valor = 0;
+  let amplitud = 0.5;
+  let frecuencia = 1;
+  let total = 0;
+  for (let o = 0; o < octavas; o++) {
+    valor += ruido(x * frecuencia, y * frecuencia, z * frecuencia) * amplitud;
+    total += amplitud;
+    amplitud *= 0.5;
+    frecuencia *= 2;
   }
-  return val / max;
+  return limitar(0.5 + (valor / total) * 1.35);
 }
 
-// Cache en memoria para que cada textura se cree una sola vez
-const TEXTURE_CACHE = new Map<string, THREE.CanvasTexture>();
+const suave = (a: number, b: number, x: number) => {
+  const t = limitar((x - a) / (b - a));
+  return t * t * (3 - 2 * t);
+};
 
-function parseHex(hex: string): [number, number, number] {
-  const c = new THREE.Color(hex);
-  return [Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255)];
+type RGB = [number, number, number];
+
+const mezcla = (a: RGB, b: RGB, t: number): RGB => {
+  const k = limitar(t);
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+};
+
+// -----------------------------------------------------------------------------
+// TEXTURAS DE PLANETAS
+// -----------------------------------------------------------------------------
+
+const ANCHO_TEXTURA = 384;
+const ALTO_TEXTURA = 192;
+
+type Punto = { x: number; y: number; z: number; lat: number; u: number; v: number };
+
+/** Óvalo sobre la textura: devuelve 1 en el centro y 0 afuera. */
+function ovalo(p: Punto, u: number, v: number, ancho: number, alto: number) {
+  const d = ((p.u - u) / ancho) ** 2 + ((p.v - v) / alto) ** 2;
+  return d < 1 ? 1 - Math.sqrt(d) : 0;
 }
 
-function lerpColor(c1: [number, number, number], c2: [number, number, number], t: number): [number, number, number] {
-  const clampT = Math.max(0, Math.min(1, t));
-  return [
-    Math.round(c1[0] + (c2[0] - c1[0]) * clampT),
-    Math.round(c1[1] + (c2[1] - c1[1]) * clampT),
-    Math.round(c1[2] + (c2[2] - c1[2]) * clampT),
-  ];
+const PINTORES: Record<IdPlaneta, (p: Punto) => RGB> = {
+  mercurio: ({ x, y, z }) => mezcla([92, 88, 84], [182, 176, 168], fractal(x * 3, y * 3, z * 3, 4)),
+  venus: ({ x, y, z }) => {
+    const giro = fractal(x * 2, y * 2, z * 2, 3);
+    return mezcla([198, 132, 56], [252, 226, 164], fractal(x * 2.4 + giro * 2.4, y * 5 + giro * 2, z * 2.4, 4));
+  },
+  tierra: ({ x, y, z, lat }) => {
+    const n = fractal(x * 1.7 + 4, y * 1.7, z * 1.7, 6);
+    const polo = Math.abs(lat) / (Math.PI / 2);
+    if (polo + (n - 0.5) * 0.18 > 0.86) return [244, 249, 255];
+    if (n < 0.53) return mezcla([12, 44, 112], [38, 116, 196], suave(0.3, 0.53, n));
+    const seco = suave(0.1, 0.32, 1 - Math.abs(polo - 0.28) * 3.2);
+    const verde = mezcla([44, 138, 72], [112, 158, 74], suave(0.53, 0.68, n));
+    return mezcla(verde, [206, 170, 104], seco * suave(0.56, 0.66, n));
+  },
+  marte: ({ x, y, z, lat }) => {
+    const polo = Math.abs(lat) / (Math.PI / 2);
+    const n = fractal(x * 2.4, y * 2.4, z * 2.4, 5);
+    if (polo + (n - 0.5) * 0.12 > 0.9) return [246, 240, 234];
+    const base = mezcla([168, 66, 32], [232, 132, 78], n);
+    const canon = 1 - Math.abs(fractal(x * 3 + 7, y * 7, z * 3, 3) - 0.5) * 16;
+    return mezcla(base, [104, 40, 26], limitar(canon) * suave(0.5, 0.2, polo) * 0.75);
+  },
+  jupiter: (p) => {
+    const { x, y, z, lat } = p;
+    const onda = (fractal(x * 3, y * 11, z * 3, 3) - 0.5) * 0.2;
+    const franja = Math.sin((lat + onda) * 11);
+    const tono = mezcla([176, 98, 52], [246, 228, 200], suave(-0.45, 0.45, franja));
+    const fino = (fractal(x * 5, y * 30, z * 5, 2) - 0.5) * 0.45;
+    const base = mezcla(tono, fino > 0 ? [255, 244, 224] : [128, 70, 40], Math.abs(fino));
+    return mezcla(base, [204, 66, 38], suave(0, 0.42, ovalo(p, 0.3, 0.64, 0.07, 0.06)));
+  },
+  saturno: ({ x, y, z, lat }) => {
+    const onda = (fractal(x * 2, y * 9, z * 2, 2) - 0.5) * 0.14;
+    return mezcla([206, 170, 112], [246, 232, 186], suave(-0.8, 0.8, Math.sin((lat + onda) * 9)));
+  },
+  urano: ({ x, y, z, lat }) => {
+    const n = fractal(x * 1.6, y * 5, z * 1.6, 2);
+    return mezcla([116, 212, 214], [190, 244, 240], Math.abs(lat) * 0.5 + (n - 0.5) * 0.35);
+  },
+  neptuno: (p) => {
+    const { x, y, z } = p;
+    const base = mezcla([22, 54, 158], [62, 128, 238], fractal(x * 2, y * 5, z * 2, 4));
+    const viento = suave(0.6, 0.76, fractal(x * 3, y * 15, z * 3, 3));
+    const nubes = mezcla(base, [228, 240, 255], viento * 0.75);
+    return mezcla(nubes, [12, 28, 88], suave(0, 0.4, ovalo(p, 0.3, 0.6, 0.075, 0.07)));
+  },
+};
+
+function nuevoLienzo(ancho: number, alto: number) {
+  const lienzo = document.createElement("canvas");
+  lienzo.width = ancho;
+  lienzo.height = alto;
+  return { lienzo, ctx: lienzo.getContext("2d") };
 }
 
-/** Genera en memoria la textura equirectangular (512x256) de un planeta usando fBm determinista */
-export function obtenerTexturaPlaneta(id: IdPlaneta): THREE.CanvasTexture {
-  const cacheKey = `planet_${id}`;
-  const existente = TEXTURE_CACHE.get(cacheKey);
-  if (existente) return existente;
+function aTextura(lienzo: HTMLCanvasElement, repetir = false) {
+  const tex = new THREE.CanvasTexture(lienzo);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  if (repetir) tex.wrapS = THREE.RepeatWrapping;
+  return tex;
+}
 
-  if (typeof document === "undefined") {
-    // SSR fallback: textura mínima en blanco
-    const canvas = { width: 1, height: 1 } as unknown as HTMLCanvasElement;
-    return new THREE.CanvasTexture(canvas);
-  }
-
-  const W = 512;
-  const H = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.CanvasTexture(canvas);
-
-  const imgData = ctx.createImageData(W, H);
-  const data = imgData.data;
-
-  for (let y = 0; y < H; y++) {
-    const v = y / H;
-    const lat = (v - 0.5) * Math.PI; // -PI/2 a PI/2
+/** Recorre la esfera en la proyección de la textura. La fila 0 del lienzo es el polo norte. */
+function recorrerEsfera(ctx: CanvasRenderingContext2D, pintar: (p: Punto) => [number, number, number, number]) {
+  const imagen = ctx.createImageData(ANCHO_TEXTURA, ALTO_TEXTURA);
+  for (let fila = 0; fila < ALTO_TEXTURA; fila++) {
+    const v = (fila + 0.5) / ALTO_TEXTURA;
+    const lat = (0.5 - v) * Math.PI;
     const cosLat = Math.cos(lat);
-    const sinLat = Math.sin(lat);
-
-    for (let x = 0; x < W; x++) {
-      const u = x / W;
-      const lon = (u - 0.5) * Math.PI * 2; // -PI a PI
-      const px = cosLat * Math.sin(lon);
-      const py = sinLat;
-      const pz = cosLat * Math.cos(lon);
-
-      const idx = (y * W + x) * 4;
-      let r = 128;
-      let g = 128;
-      let b = 128;
-
-      if (id === "mercurio") {
-        // Cráteres de impacto y roca gris
-        const n1 = fbm2D(px * 4 + 10, py * 4 + 10, 5);
-        const n2 = fbm2D(px * 12, pz * 12, 3);
-        const craters = Math.sin(n1 * 12 + n2 * 6) * 0.5 + 0.5;
-        const col = lerpColor([92, 90, 86], [176, 172, 165], craters * 0.7 + n1 * 0.3);
-        [r, g, b] = col;
-      } else if (id === "venus") {
-        // Atmósfera densa con remolinos ámbar y domain warping
-        const warpX = fbm2D(px * 3 + 2, py * 3, 4);
-        const warpY = fbm2D(py * 3, pz * 3 + 4, 4);
-        const flow = fbm2D((px + warpX * 0.4) * 5, (py + warpY * 0.4) * 5, 5);
-        const col = lerpColor([168, 110, 42], [245, 205, 126], flow * 0.8 + v * 0.2);
-        [r, g, b] = col;
-      } else if (id === "tierra") {
-        // Continentes verdes/ocres, océanos profundos y casquetes polares
-        const n = fbm2D(px * 3.5, (py + 0.1) * 3.5, 6);
-        const polo = Math.abs(lat) / (Math.PI / 2);
-        if (polo > 0.82) {
-          // Casquetes polares
-          [r, g, b] = [245, 250, 255];
-        } else if (n > 0.48) {
-          // Tierra: costa a bosque/montaña
-          const tLand = (n - 0.48) / 0.52;
-          const col = lerpColor([46, 111, 64], [168, 142, 88], tLand);
-          [r, g, b] = col;
-        } else {
-          // Océano profundo con costa
-          const tWater = n / 0.48;
-          const col = lerpColor([10, 34, 68], [24, 76, 140], tWater);
-          [r, g, b] = col;
-        }
-      } else if (id === "marte") {
-        // Terreno rojizo, cañones oscuros y casquetes polares
-        const polo = Math.abs(lat) / (Math.PI / 2);
-        if (polo > 0.88) {
-          [r, g, b] = [240, 245, 250];
-        } else {
-          const n = fbm2D(px * 4, py * 4, 5);
-          const canyon = fbm2D(px * 8 + 3, pz * 8, 4);
-          const mixFactor = n * 0.6 + canyon * 0.4;
-          const col = lerpColor([105, 30, 16], [210, 85, 45], mixFactor);
-          [r, g, b] = col;
-        }
-      } else if (id === "jupiter") {
-        // Bandas zonales alternadas con turbulencia y Gran Mancha Roja
-        const perturb = fbm2D(px * 3, py * 2, 4) * 0.14;
-        const bandVal = Math.sin((v + perturb) * Math.PI * 14) * 0.5 + 0.5;
-        let col = lerpColor([168, 85, 42], [236, 218, 192], bandVal);
-
-        // Gran Mancha Roja en el hemisferio sur (~22° S, longitud centrada)
-        const spotX = 0.62 * W;
-        const spotY = 0.65 * H;
-        const dx = (x - spotX) / 26;
-        const dy = (y - spotY) / 14;
-        const distSpot = dx * dx + dy * dy;
-        if (distSpot < 1.0) {
-          const tSpot = 1.0 - Math.sqrt(distSpot);
-          col = lerpColor(col, [180, 45, 25], tSpot * 0.9);
-        }
-        [r, g, b] = col;
-      } else if (id === "saturno") {
-        // Bandas doradas suaves
-        const perturb = fbm2D(px * 2, py * 2, 3) * 0.08;
-        const bandVal = Math.sin((v + perturb) * Math.PI * 18) * 0.5 + 0.5;
-        const col = lerpColor([190, 155, 102], [238, 222, 172], bandVal);
-        [r, g, b] = col;
-      } else if (id === "urano") {
-        // Cian perlado con bandas muy tenues
-        const n = fbm2D(px * 2, py * 2, 3) * 0.15;
-        const col = lerpColor([80, 188, 180], [168, 240, 232], v * 0.5 + n);
-        [r, g, b] = col;
-      } else if (id === "neptuno") {
-        // Azul cobalto profundo con vientos y tormenta oscura
-        const n = fbm2D(px * 3.5, py * 3.5, 5);
-        let col = lerpColor([16, 40, 112], [40, 96, 216], n);
-
-        // Vientos blancos sutiles
-        const streaks = Math.pow(fbm2D(px * 8, py * 2, 4) * 0.5 + 0.5, 4.0);
-        col = lerpColor(col, [220, 235, 255], streaks * 0.6);
-
-        // Mancha oscura
-        const dx = (x - 0.45 * W) / 22;
-        const dy = (y - 0.58 * H) / 12;
-        const distSpot = dx * dx + dy * dy;
-        if (distSpot < 1.0) {
-          const tSpot = 1.0 - Math.sqrt(distSpot);
-          col = lerpColor(col, [10, 25, 75], tSpot * 0.8);
-        }
-        [r, g, b] = col;
-      }
-
-      data[idx] = r;
-      data[idx + 1] = g;
-      data[idx + 2] = b;
-      data[idx + 3] = 255;
+    const y = Math.sin(lat);
+    for (let col = 0; col < ANCHO_TEXTURA; col++) {
+      const u = (col + 0.5) / ANCHO_TEXTURA;
+      const lon = u * Math.PI * 2;
+      const color = pintar({ x: cosLat * Math.sin(lon), y, z: cosLat * Math.cos(lon), lat, u, v });
+      const i = (fila * ANCHO_TEXTURA + col) * 4;
+      imagen.data[i] = color[0];
+      imagen.data[i + 1] = color[1];
+      imagen.data[i + 2] = color[2];
+      imagen.data[i + 3] = color[3];
     }
   }
+  ctx.putImageData(imagen, 0, 0);
+}
 
-  ctx.putImageData(imgData, 0, 0);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  TEXTURE_CACHE.set(cacheKey, tex);
+/** Cráteres de Mercurio: anillo claro con centro oscuro. */
+function pintarCrateres(ctx: CanvasRenderingContext2D) {
+  const prng = crearPrng(5151);
+  for (let i = 0; i < 44; i++) {
+    const cx = prng() * ANCHO_TEXTURA;
+    const cy = 28 + prng() * (ALTO_TEXTURA - 56);
+    const r = 2.5 + prng() * prng() * 12;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r * 1.15, r, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(52, 48, 46, 0.5)";
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.22);
+    ctx.strokeStyle = "rgba(226, 220, 210, 0.55)";
+    ctx.stroke();
+  }
+}
+
+function crearTexturaPlaneta(id: IdPlaneta) {
+  const { lienzo, ctx } = nuevoLienzo(ANCHO_TEXTURA, ALTO_TEXTURA);
+  if (!ctx) return aTextura(lienzo, true);
+  const pintor = PINTORES[id];
+  recorrerEsfera(ctx, (p) => {
+    const [r, g, b] = pintor(p);
+    return [r, g, b, 255];
+  });
+  if (id === "mercurio") pintarCrateres(ctx);
+  const tex = aTextura(lienzo, true);
+  tex.anisotropy = 4;
   return tex;
 }
 
-/** Textura procedural semitransparente para las nubes terrestres */
-export function obtenerTexturaNubesTierra(): THREE.CanvasTexture {
-  const cacheKey = "earth_clouds";
-  const existente = TEXTURE_CACHE.get(cacheKey);
-  if (existente) return existente;
-
-  if (typeof document === "undefined") {
-    const canvas = { width: 1, height: 1 } as unknown as HTMLCanvasElement;
-    return new THREE.CanvasTexture(canvas);
-  }
-
-  const W = 512;
-  const H = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.CanvasTexture(canvas);
-
-  const imgData = ctx.createImageData(W, H);
-  const data = imgData.data;
-
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const idx = (y * W + x) * 4;
-      const u = x / W;
-      const v = y / H;
-      const n = fbm2D(u * 12, v * 6, 5);
-      const alpha = Math.max(0, Math.min(255, Math.floor((n - 0.35) * 380)));
-      data[idx] = 255;
-      data[idx + 1] = 255;
-      data[idx + 2] = 255;
-      data[idx + 3] = alpha;
-    }
-  }
-
-  ctx.putImageData(imgData, 0, 0);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  TEXTURE_CACHE.set(cacheKey, tex);
-  return tex;
+function crearTexturaNubes() {
+  const { lienzo, ctx } = nuevoLienzo(ANCHO_TEXTURA, ALTO_TEXTURA);
+  if (!ctx) return aTextura(lienzo, true);
+  recorrerEsfera(ctx, ({ x, y, z }) => [255, 255, 255, suave(0.54, 0.72, fractal(x * 2.6, y * 4.4, z * 2.6, 4)) * 235]);
+  return aTextura(lienzo, true);
 }
 
-/** Textura procedural para los anillos de Saturno con la división de Cassini */
-export function obtenerTexturaAnillosSaturno(): THREE.CanvasTexture {
-  const cacheKey = "saturn_rings";
-  const existente = TEXTURE_CACHE.get(cacheKey);
-  if (existente) return existente;
-
-  if (typeof document === "undefined") {
-    const canvas = { width: 1, height: 1 } as unknown as HTMLCanvasElement;
-    return new THREE.CanvasTexture(canvas);
+function crearTexturaAnillos() {
+  const { lienzo, ctx } = nuevoLienzo(256, 1);
+  if (!ctx) return aTextura(lienzo);
+  const imagen = ctx.createImageData(256, 1);
+  for (let x = 0; x < 256; x++) {
+    const t = x / 255; // del borde interior al exterior
+    const cassini = t > 0.68 && t < 0.75;
+    const brillo = 0.72 + Math.sin(t * 38) * 0.14 + Math.sin(t * 91) * 0.08;
+    const color = mezcla([190, 158, 112], [246, 232, 196], brillo);
+    imagen.data[x * 4] = color[0];
+    imagen.data[x * 4 + 1] = color[1];
+    imagen.data[x * 4 + 2] = color[2];
+    imagen.data[x * 4 + 3] = cassini ? 18 : suave(0, 0.05, t) * suave(1, 0.95, t) * brillo * 245;
   }
-
-  const W = 256;
-  const H = 1;
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.CanvasTexture(canvas);
-
-  const imgData = ctx.createImageData(W, H);
-  const data = imgData.data;
-
-  for (let x = 0; x < W; x++) {
-    const t = x / W; // de interior a exterior
-    const idx = x * 4;
-
-    // División de Cassini entre 0.70 y 0.76
-    const enCassini = t > 0.7 && t < 0.76;
-    if (enCassini || t < 0.05 || t > 0.98) {
-      data[idx] = 0;
-      data[idx + 1] = 0;
-      data[idx + 2] = 0;
-      data[idx + 3] = 0;
-    } else {
-      const brillo = Math.sin(t * Math.PI * 18) * 0.2 + 0.8;
-      const col = lerpColor([185, 155, 110], [240, 225, 185], brillo);
-      data[idx] = col[0];
-      data[idx + 1] = col[1];
-      data[idx + 2] = col[2];
-      data[idx + 3] = Math.round(brillo * 215);
-    }
-  }
-
-  ctx.putImageData(imgData, 0, 0);
-  const tex = new THREE.CanvasTexture(canvas);
-  TEXTURE_CACHE.set(cacheKey, tex);
-  return tex;
+  ctx.putImageData(imagen, 0, 0);
+  return aTextura(lienzo);
 }
 
-/** Textura suave para la corona solar (sin aros marrones, pura luminiscencia aditiva) */
-export function obtenerTexturaCoronaSolar(): THREE.CanvasTexture {
-  const cacheKey = "sun_corona";
-  const existente = TEXTURE_CACHE.get(cacheKey);
-  if (existente) return existente;
-
-  if (typeof document === "undefined") {
-    const canvas = { width: 1, height: 1 } as unknown as HTMLCanvasElement;
-    return new THREE.CanvasTexture(canvas);
-  }
-
+/** Corona del Sol con rayos: el degradado termina en amarillo pálido para no dejar un borde marrón. */
+function crearTexturaCorona() {
   const S = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = S;
-  canvas.height = S;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.CanvasTexture(canvas);
-
-  const cx = S / 2;
-  const cy = S / 2;
-  const grad = ctx.createRadialGradient(cx, cy, S * 0.12, cx, cy, S * 0.5);
-  grad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-  grad.addColorStop(0.25, "rgba(255, 210, 80, 0.75)");
-  grad.addColorStop(0.65, "rgba(255, 140, 20, 0.25)");
-  grad.addColorStop(1, "rgba(255, 80, 0, 0.0)");
-
-  ctx.fillStyle = grad;
+  const { lienzo, ctx } = nuevoLienzo(S, S);
+  if (!ctx) return aTextura(lienzo);
+  const c = S / 2;
+  const degradado = ctx.createRadialGradient(c, c, S * 0.2, c, c, S * 0.5);
+  degradado.addColorStop(0, "rgba(255, 236, 150, 0.95)");
+  degradado.addColorStop(0.22, "rgba(255, 214, 96, 0.5)");
+  degradado.addColorStop(0.55, "rgba(255, 226, 150, 0.12)");
+  degradado.addColorStop(1, "rgba(255, 236, 190, 0)");
+  ctx.fillStyle = degradado;
   ctx.fillRect(0, 0, S, S);
 
-  const tex = new THREE.CanvasTexture(canvas);
-  TEXTURE_CACHE.set(cacheKey, tex);
-  return tex;
+  const prng = crearPrng(2024);
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 46; i++) {
+    const a = prng() * Math.PI * 2;
+    const largo = S * (0.32 + prng() * 0.15);
+    const rayo = ctx.createLinearGradient(c, c, c + Math.cos(a) * largo, c + Math.sin(a) * largo);
+    rayo.addColorStop(0.5, "rgba(255, 224, 130, 0.3)");
+    rayo.addColorStop(1, "rgba(255, 224, 130, 0)");
+    ctx.strokeStyle = rayo;
+    ctx.lineWidth = 1 + prng() * 2.5;
+    ctx.beginPath();
+    ctx.moveTo(c, c);
+    ctx.lineTo(c + Math.cos(a) * largo, c + Math.sin(a) * largo);
+    ctx.stroke();
+  }
+  return aTextura(lienzo);
+}
+
+/** Punto redondo y difuso: sin esto, cada estrella de la galaxia se dibuja como un cuadrado. */
+function crearTexturaBrillo() {
+  const S = 64;
+  const { lienzo, ctx } = nuevoLienzo(S, S);
+  if (!ctx) return aTextura(lienzo);
+  const degradado = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  degradado.addColorStop(0, "rgba(255, 255, 255, 1)");
+  degradado.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
+  degradado.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = degradado;
+  ctx.fillRect(0, 0, S, S);
+  return aTextura(lienzo);
+}
+
+// Cada textura se crea una sola vez y se comparte entre Piloto y Ordena.
+const TEXTURAS = new Map<string, THREE.CanvasTexture>();
+
+function textura(clave: string, crear: () => THREE.CanvasTexture) {
+  const existente = TEXTURAS.get(clave);
+  if (existente) return existente;
+  const nueva = crear();
+  TEXTURAS.set(clave, nueva);
+  return nueva;
+}
+
+// Pintar un planeta tarda decenas de milisegundos, y mucho más en un celular. Se pintan de a uno y
+// con pausas para que la pantalla no se congele al entrar: mientras tanto se ve el color del planeta.
+const COLA: Array<() => void> = [];
+let colaActiva = false;
+
+function atenderCola() {
+  const tarea = COLA.shift();
+  if (!tarea) {
+    colaActiva = false;
+    return;
+  }
+  tarea();
+  setTimeout(atenderCola, 24);
+}
+
+function encolar(tarea: () => void) {
+  COLA.push(tarea);
+  if (!colaActiva) {
+    colaActiva = true;
+    setTimeout(atenderCola, 0);
+  }
+}
+
+function useTexturaDiferida(clave: string | null, crear: () => THREE.CanvasTexture) {
+  const [, avisar] = useState(0);
+  const fabrica = useRef(crear);
+
+  useEffect(() => {
+    if (!clave || TEXTURAS.has(clave)) return;
+    let vigente = true;
+    encolar(() => {
+      if (!vigente) return;
+      textura(clave, fabrica.current);
+      avisar((n) => n + 1);
+    });
+    return () => {
+      vigente = false;
+    };
+  }, [clave]);
+
+  return clave ? (TEXTURAS.get(clave) ?? null) : null;
 }
 
 // -----------------------------------------------------------------------------
-// SHADERS GLSL PERSONALIZADOS
+// SHADERS
 // -----------------------------------------------------------------------------
 
 const VERT_ATMOSFERA = `
@@ -380,6 +382,8 @@ void main() {
 }
 `;
 
+// Se dibuja la cara trasera de la esfera: ahí la normal apunta en contra de la vista, por eso el
+// signo. El brillo nace fuerte junto al planeta y llega a cero en el borde, sin aro marcado.
 const FRAG_ATMOSFERA = `
 uniform vec3 uColor;
 uniform float uPower;
@@ -387,9 +391,8 @@ varying vec3 vNormal;
 varying vec3 vViewDir;
 
 void main() {
-  float fresnel = 1.0 - max(0.0, dot(vNormal, vViewDir));
-  float alpha = pow(fresnel, uPower);
-  gl_FragColor = vec4(uColor, alpha * 0.7);
+  float cercania = clamp(-dot(normalize(vNormal), normalize(vViewDir)), 0.0, 1.0);
+  gl_FragColor = vec4(uColor, pow(cercania, uPower) * 0.95);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
@@ -467,19 +470,19 @@ void main() {
   vec3 p = normalize(vPosition);
   float t = uTime * 0.18;
   float n1 = snoise(p * 3.5 + vec3(0.0, t, 0.0));
-  float n2 = snoise(p * 7.5 - vec3(t * 0.7, 0.0, t * 0.7));
+  float n2 = snoise(p * 8.0 - vec3(t * 0.7, 0.0, t * 0.7));
   float turb = (n1 * 0.65 + n2 * 0.35) * 0.5 + 0.5;
 
-  vec3 colDeep = vec3(0.92, 0.22, 0.02);
-  vec3 colMid  = vec3(1.0, 0.68, 0.08);
-  vec3 colHot  = vec3(1.0, 0.98, 0.75);
+  // Valores lineales: colorspace_fragment los aclara, por eso se ven más oscuros aquí.
+  vec3 colDeep = vec3(0.78, 0.10, 0.0);
+  vec3 colMid  = vec3(1.0, 0.36, 0.01);
+  vec3 colHot  = vec3(1.0, 0.82, 0.30);
 
-  vec3 plasma = mix(colDeep, colMid, smoothstep(0.18, 0.65, turb));
-  plasma = mix(plasma, colHot, smoothstep(0.65, 0.95, turb));
+  vec3 plasma = mix(colDeep, colMid, smoothstep(0.2, 0.55, turb));
+  plasma = mix(plasma, colHot, smoothstep(0.55, 0.85, turb));
 
-  float fresnel = 1.0 - max(0.0, dot(vNormal, vViewDir));
-  float limb = pow(fresnel, 1.8);
-  vec3 finalColor = mix(plasma, colHot, limb * 0.75);
+  float borde = 1.0 - max(0.0, dot(normalize(vNormal), normalize(vViewDir)));
+  vec3 finalColor = mix(plasma, vec3(1.0, 0.9, 0.55), pow(borde, 2.4) * 0.8);
 
   gl_FragColor = vec4(finalColor, 1.0);
   #include <tonemapping_fragment>
@@ -487,23 +490,47 @@ void main() {
 }
 `;
 
-// Colores atmosféricos para el halo Rayleigh de cada planeta
+// -----------------------------------------------------------------------------
+// ASPECTO DE CADA PLANETA
+// -----------------------------------------------------------------------------
+
 const HALOS_ATMOSFERA: Record<IdPlaneta, string> = {
   mercurio: "#B8B5AE",
   venus: "#FFE4A0",
   tierra: "#52B2FF",
-  marte: "#FF8C5A",
-  jupiter: "#E8B27A",
+  marte: "#FF9A6A",
+  jupiter: "#F0C090",
   saturno: "#F4DF9E",
   urano: "#7FE5D9",
   neptuno: "#4A82FF",
 };
 
+const COLOR_PLANETA = Object.fromEntries(PLANETAS.map((p) => [p.id, p.color])) as Record<IdPlaneta, string>;
+
+// La cámara mira desde arriba. Sin inclinar el eje se verían los polos, y Júpiter parecería una diana.
+const INCLINACION: Partial<Record<IdPlaneta, [number, number, number]>> = {
+  saturno: [-0.5, 0, 0.16],
+  urano: [-0.55, 0, 1.3],
+};
+const INCLINACION_NORMAL: [number, number, number] = [-0.8, 0, 0.14];
+
+/** Corona plana cuyas coordenadas de textura van del borde interior al exterior. */
+function crearAnilloRadial(interior: number, exterior: number) {
+  const geo = new THREE.RingGeometry(interior, exterior, 72, 1);
+  const pos = geo.getAttribute("position");
+  const uv = geo.getAttribute("uv");
+  for (let i = 0; i < pos.count; i++) {
+    const r = Math.hypot(pos.getX(i), pos.getY(i));
+    uv.setXY(i, (r - interior) / (exterior - interior), 0.5);
+  }
+  return geo;
+}
+
 // -----------------------------------------------------------------------------
-// COMPONENTES 3D
+// COMPONENTES
 // -----------------------------------------------------------------------------
 
-/** Sol 3D con shader de plasma vivo y corona solar suave */
+/** Sol con plasma animado y corona aditiva. */
 export function SolVisual() {
   const solMatRef = useRef<THREE.ShaderMaterial>(null);
   const coronaRef = useRef<THREE.Sprite>(null);
@@ -514,17 +541,18 @@ export function SolVisual() {
         vertexShader: VERT_SOL,
         fragmentShader: FRAG_SOL,
         uniforms: { uTime: { value: 0 } },
+        toneMapped: false,
       }),
     [],
   );
 
-  const coronaTextura = useMemo(() => obtenerTexturaCoronaSolar(), []);
+  const coronaTextura = useMemo(() => textura("corona", crearTexturaCorona), []);
 
-  useFrame((state, dt) => {
+  useFrame((state) => {
     if (solMatRef.current) solMatRef.current.uniforms.uTime.value = state.clock.elapsedTime;
     if (coronaRef.current) {
-      const pulse = 1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.04;
-      coronaRef.current.scale.set(RADIO_SOL * 4.2 * pulse, RADIO_SOL * 4.2 * pulse, 1);
+      const pulso = 1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.03;
+      coronaRef.current.scale.set(RADIO_SOL * 4.2 * pulso, RADIO_SOL * 4.2 * pulso, 1);
     }
   });
 
@@ -534,114 +562,112 @@ export function SolVisual() {
         <sphereGeometry args={[RADIO_SOL, 48, 36]} />
         <primitive object={solMaterial} ref={solMatRef} attach="material" />
       </mesh>
-      {/* Corona solar aditiva (sin aros marrones) */}
       <sprite ref={coronaRef} scale={[RADIO_SOL * 4.2, RADIO_SOL * 4.2, 1]}>
-        <spriteMaterial
-          map={coronaTextura}
-          transparent
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          color={new THREE.Color("#FFBE3B")}
-        />
+        <spriteMaterial map={coronaTextura} transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </sprite>
     </group>
   );
 }
 
-/** Galaxia espiral de fondo construida con un único Points en 1 draw call */
+const NEBULOSAS: Array<{ color: string; posicion: [number, number, number]; escala: number; opacidad: number }> = [
+  { color: "#5636D9", posicion: [-46, -42, -26], escala: 120, opacidad: 0.3 },
+  { color: "#1E7FBF", posicion: [52, -44, 18], escala: 130, opacidad: 0.24 },
+  { color: "#B0389A", posicion: [6, -46, 62], escala: 100, opacidad: 0.17 },
+];
+
+/** Galaxia de fondo: nebulosas difusas y una sola nube de puntos con brazos en espiral. */
 export function GalaxiaEspiral() {
   const puntosRef = useRef<THREE.Points>(null);
+  const brillo = useMemo(() => textura("brillo", crearTexturaBrillo), []);
 
   const { geo, mat } = useMemo(() => {
     const prng = crearPrng(442211);
-    const count = 2500;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
+    const total = 2600;
+    const posiciones = new Float32Array(total * 3);
+    const colores = new Float32Array(total * 3);
 
-    const colorNucleo = new THREE.Color("#FFECA0");
-    const colorBrazos = new THREE.Color("#5CB2FF");
-    const colorExterior = new THREE.Color("#A266E8");
+    const colorNucleo = new THREE.Color("#FFE9B0");
+    const colorBrazos = new THREE.Color("#7CC4FF");
+    const colorExterior = new THREE.Color("#B48CF0");
+    const c = new THREE.Color();
 
-    const brazos = 2;
-    for (let i = 0; i < count; i++) {
-      const brazo = i % brazos;
-      const r = Math.pow(prng(), 1.6) * 110 + 6;
-      const angulo = r * 0.08 + (brazo * Math.PI * 2) / brazos;
+    const brazos = 3;
+    for (let i = 0; i < total; i++) {
+      const r = Math.pow(prng(), 1.5) * 130 + 8;
+      const angulo = r * 0.05 + ((i % brazos) * Math.PI * 2) / brazos;
+      // Suma de dos azares: junta las estrellas cerca del brazo sin dibujar una línea.
+      const dispersion = (prng() + prng() - 1) * (10 + r * 0.42);
+      posiciones[i * 3] = Math.cos(angulo) * r + Math.sin(angulo) * dispersion;
+      posiciones[i * 3 + 1] = -34 + (prng() - 0.5) * 12;
+      posiciones[i * 3 + 2] = Math.sin(angulo) * r - Math.cos(angulo) * dispersion;
 
-      const dispersion = (prng() - 0.5) * (r * 0.22);
-      const x = Math.cos(angulo) * r + Math.sin(angulo) * dispersion;
-      const z = Math.sin(angulo) * r - Math.cos(angulo) * dispersion;
-      const y = (prng() - 0.5) * (8 * Math.exp(-r * 0.02)) - 25;
-
-      positions[i * 3] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-
-      // Color según radio
-      const c = new THREE.Color();
-      if (r < 25) {
-        c.copy(colorNucleo).lerp(colorBrazos, r / 25);
-      } else {
-        const t = Math.min(1, (r - 25) / 80);
-        c.copy(colorBrazos).lerp(colorExterior, t);
-      }
-      colors[i * 3] = c.r;
-      colors[i * 3 + 1] = c.g;
-      colors[i * 3 + 2] = c.b;
+      if (r < 30) c.copy(colorNucleo).lerp(colorBrazos, r / 30);
+      else c.copy(colorBrazos).lerp(colorExterior, Math.min(1, (r - 30) / 90));
+      const intensidad = 0.35 + prng() * 0.65;
+      colores[i * 3] = c.r * intensidad;
+      colores[i * 3 + 1] = c.g * intensidad;
+      colores[i * 3 + 2] = c.b * intensidad;
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    const geometria = new THREE.BufferGeometry();
+    geometria.setAttribute("position", new THREE.BufferAttribute(posiciones, 3));
+    geometria.setAttribute("color", new THREE.BufferAttribute(colores, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 1.5,
+      size: 0.85,
+      map: brillo,
       vertexColors: true,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
+      toneMapped: false,
     });
 
-    return { geo: geometry, mat: material };
-  }, []);
+    return { geo: geometria, mat: material };
+  }, [brillo]);
 
   useFrame((_, dt) => {
-    if (puntosRef.current) puntosRef.current.rotation.y += dt * 0.015;
+    if (puntosRef.current) puntosRef.current.rotation.y += dt * 0.012;
   });
 
-  return <primitive object={new THREE.Points(geo, mat)} ref={puntosRef} />;
+  return (
+    <group>
+      {NEBULOSAS.map((n) => (
+        <sprite key={n.color} position={n.posicion} scale={[n.escala, n.escala, 1]}>
+          <spriteMaterial
+            map={brillo}
+            color={new THREE.Color(n.color)}
+            opacity={n.opacidad}
+            transparent
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </sprite>
+      ))}
+      <points ref={puntosRef} geometry={geo} material={mat} />
+    </group>
+  );
 }
 
 interface PlanetaVisualProps {
   id: IdPlaneta;
   radio: number;
   esObjetivo?: boolean;
-  etiqueta?: boolean;
-  nombre?: string;
-  rotacionY?: number;
-  onPointerDown?: (e: any) => void;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
-/** Planeta con textura equirectangular realista, atmósfera Rayleigh y rotación axial */
-export function PlanetaVisual({
-  id,
-  radio,
-  esObjetivo,
-  etiqueta,
-  nombre,
-  rotacionY = 0,
-  onPointerDown,
-  children,
-}: PlanetaVisualProps) {
+/** Planeta con textura propia, atmósfera y rotación sobre su eje. */
+export function PlanetaVisual({ id, radio, esObjetivo, children }: PlanetaVisualProps) {
   const cuerpoRef = useRef<THREE.Mesh>(null);
   const nubesRef = useRef<THREE.Mesh>(null);
   const aroRef = useRef<THREE.Mesh>(null);
 
-  const textura = useMemo(() => obtenerTexturaPlaneta(id), [id]);
-  const nubesTextura = useMemo(() => (id === "tierra" ? obtenerTexturaNubesTierra() : null), [id]);
-  const anillosTextura = useMemo(() => (id === "saturno" ? obtenerTexturaAnillosSaturno() : null), [id]);
+  const mapa = useTexturaDiferida(`planeta-${id}`, () => crearTexturaPlaneta(id));
+  const nubes = useTexturaDiferida(id === "tierra" ? "nubes" : null, crearTexturaNubes);
+  const anillos = useMemo(() => (id === "saturno" ? textura("anillos", crearTexturaAnillos) : null), [id]);
+  const geoAnillos = useMemo(() => (id === "saturno" ? crearAnilloRadial(radio * 1.28, radio * 2.05) : null), [id, radio]);
 
   const matAtmosfera = useMemo(
     () =>
@@ -650,63 +676,62 @@ export function PlanetaVisual({
         fragmentShader: FRAG_ATMOSFERA,
         uniforms: {
           uColor: { value: new THREE.Color(HALOS_ATMOSFERA[id]) },
-          uPower: { value: 2.2 },
+          uPower: { value: 2.6 },
         },
         transparent: true,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         side: THREE.BackSide,
+        toneMapped: false,
       }),
     [id],
   );
 
   useFrame((state, dt) => {
-    if (cuerpoRef.current) cuerpoRef.current.rotation.y += dt * 0.45;
-    if (nubesRef.current) nubesRef.current.rotation.y += dt * 0.6;
-    if (aroRef.current) {
-      aroRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 4) * 0.12);
-    }
+    if (cuerpoRef.current) cuerpoRef.current.rotation.y += dt * 0.35;
+    if (nubesRef.current) nubesRef.current.rotation.y += dt * 0.45;
+    if (aroRef.current) aroRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 4) * 0.12);
   });
 
   return (
-    <group rotation={[0, rotacionY, 0]}>
-      {/* Esfera del planeta */}
-      <mesh ref={cuerpoRef} onPointerDown={onPointerDown}>
-        <sphereGeometry args={[radio, 36, 28]} />
-        <meshStandardMaterial map={textura} roughness={0.65} metalness={0.05} />
-      </mesh>
+    <group>
+      <group rotation={INCLINACION[id] ?? INCLINACION_NORMAL}>
+        <mesh ref={cuerpoRef}>
+          <sphereGeometry args={[radio, 36, 28]} />
+          {/* La clave rehace el material: pasar de color a textura cambia su programa. */}
+          {mapa ? (
+            <meshStandardMaterial key="textura" map={mapa} roughness={0.8} metalness={0} />
+          ) : (
+            <meshStandardMaterial key="color" color={COLOR_PLANETA[id]} roughness={0.8} metalness={0} />
+          )}
+        </mesh>
 
-      {/* Halo de atmósfera Rayleigh */}
-      <mesh scale={[1.12, 1.12, 1.12]}>
+        {nubes ? (
+          <mesh ref={nubesRef} scale={1.02}>
+            <sphereGeometry args={[radio, 32, 24]} />
+            <meshStandardMaterial map={nubes} transparent opacity={0.8} depthWrite={false} roughness={1} />
+          </mesh>
+        ) : null}
+
+        {geoAnillos && anillos ? (
+          <mesh geometry={geoAnillos} rotation={[-Math.PI / 2, 0, 0]}>
+            <meshBasicMaterial map={anillos} side={THREE.DoubleSide} transparent depthWrite={false} />
+          </mesh>
+        ) : null}
+
+        {id === "urano" ? (
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[radio * 1.4, radio * 1.52, 48]} />
+            <meshBasicMaterial color="#BDF3EC" side={THREE.DoubleSide} transparent opacity={0.45} depthWrite={false} />
+          </mesh>
+        ) : null}
+      </group>
+
+      <mesh scale={1.16}>
         <sphereGeometry args={[radio, 24, 20]} />
         <primitive object={matAtmosfera} attach="material" />
       </mesh>
 
-      {/* Capa de nubes giratoria para la Tierra */}
-      {id === "tierra" && nubesTextura ? (
-        <mesh ref={nubesRef} scale={[1.025, 1.025, 1.025]}>
-          <sphereGeometry args={[radio, 32, 24]} />
-          <meshStandardMaterial map={nubesTextura} transparent opacity={0.65} depthWrite={false} />
-        </mesh>
-      ) : null}
-
-      {/* Anillos de Saturno con canal alfa y división de Cassini */}
-      {id === "saturno" && anillosTextura ? (
-        <mesh rotation={[-Math.PI / 2.3, 0, 0]}>
-          <ringGeometry args={[radio * 1.3, radio * 2.2, 54]} />
-          <meshStandardMaterial map={anillosTextura} side={THREE.DoubleSide} transparent opacity={0.88} />
-        </mesh>
-      ) : null}
-
-      {/* Anillos inclinados tenues de Urano */}
-      {id === "urano" ? (
-        <mesh rotation={[-Math.PI / 1.18, 0, 0]}>
-          <ringGeometry args={[radio * 1.35, radio * 1.55, 40]} />
-          <meshBasicMaterial color="#9AEAE2" side={THREE.DoubleSide} transparent opacity={0.35} />
-        </mesh>
-      ) : null}
-
-      {/* Aro indicador de objetivo actual */}
       {esObjetivo ? (
         <mesh ref={aroRef} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[radio + 1, radio + 1.35, 48]} />
@@ -719,43 +744,35 @@ export function PlanetaVisual({
   );
 }
 
-/** Cohete explorador modelado con Obra y propulsión animada */
-export function CoheteVisual({ velocidad = 0 }: { velocidad?: number }) {
+/** Cohete con llama que crece con la velocidad. */
+export function CoheteVisual({ velocidad }: { velocidad?: RefObject<THREE.Vector3> }) {
   const llamaRef = useRef<THREE.Group>(null);
-  const chispasPropulsionRef = useRef<THREE.Points>(null);
+  const chispasRef = useRef<THREE.Points>(null);
 
   const { naveGeo, naveMat } = useMemo(() => {
     const o = new Obra();
-    // Fuselaje principal blanco estilizado
     o.cilindro(0.42, 0.58, 1.6, 16, "#F7F4FF", [0, 0, 0]);
-    // Ojiva / cono frontal rojo
     o.cono(0.42, 0.85, 16, "#E85D5D", [0, 1.22, 0]);
-    // Ventana de cabina con visor dorado de astronauta adentro
-    o.esfera(0.26, "#25CFE0", [0, 0.35, 0.42], [1, 1, 0.7], 2);
-    o.esfera(0.12, "#FFC928", [0, 0.35, 0.45], [1, 1, 1], 1);
-    // Aletas estabilizadoras
+    o.cilindro(0.59, 0.59, 0.14, 16, "#E85D5D", [0, -0.4, 0]);
+    // Con el cohete acostado, el lado -Z de la pieza es el que mira a la cámara.
+    o.esfera(0.3, "#25CFE0", [0, 0.32, -0.34], [1, 1, 0.75], 2);
+    o.esfera(0.15, "#FFC928", [0, 0.32, -0.5], [1, 1, 0.6], 1);
     for (let i = 0; i < 3; i++) {
-      const rot = (i * Math.PI * 2) / 3;
-      o.caja(1.4, 0.5, 0.08, "#5636D9", [0, -0.65, 0], [0, rot, 0]);
+      o.caja(1.4, 0.5, 0.08, "#5636D9", [0, -0.65, 0], [0, (i * Math.PI * 2) / 3, 0]);
     }
-    // Tobera metálica
     o.cilindro(0.32, 0.25, 0.35, 12, "#4B4453", [0, -0.92, 0]);
 
-    const geo = o.geometria();
-    const mat = new THREE.MeshStandardMaterial({
-      vertexColors: true,
-      roughness: 0.35,
-      metalness: 0.15,
-    });
-    return { naveGeo: geo, naveMat: mat };
+    return {
+      naveGeo: o.geometria(),
+      naveMat: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.15 }),
+    };
   }, []);
 
-  // Partículas de estela de propulsión
   const { estelaGeo, estelaMat } = useMemo(() => {
-    const count = 30;
-    const pos = new Float32Array(count * 3);
+    const total = 30;
+    const pos = new Float32Array(total * 3);
     const prng = crearPrng(999);
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < total; i++) {
       pos[i * 3] = (prng() - 0.5) * 0.4;
       pos[i * 3 + 1] = -1.2 - prng() * 1.6;
       pos[i * 3 + 2] = (prng() - 0.5) * 0.4;
@@ -763,123 +780,104 @@ export function CoheteVisual({ velocidad = 0 }: { velocidad?: number }) {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const m = new THREE.PointsMaterial({
-      size: 0.35,
+      size: 0.3,
+      map: textura("brillo", crearTexturaBrillo),
       color: new THREE.Color("#FFA439"),
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     return { estelaGeo: g, estelaMat: m };
   }, []);
 
-  useFrame((state) => {
-    const ahora = state.clock.elapsedTime;
+  useFrame((state, delta) => {
+    const dt = Math.min(delta, 0.05);
+    const rapidez = velocidad?.current.length() ?? 0;
+    const fuerza = Math.min(1.5, 0.45 + rapidez * 0.12);
+
     if (llamaRef.current) {
-      const pulse = 1 + Math.sin(ahora * 35) * 0.18;
-      const fuerza = Math.min(1.5, Math.max(0.4, 0.5 + velocidad * 0.2));
-      llamaRef.current.scale.set(pulse, fuerza * pulse, pulse);
+      const pulso = 1 + Math.sin(state.clock.elapsedTime * 35) * 0.18;
+      llamaRef.current.scale.set(pulso, fuerza * pulso, pulso);
     }
-    if (chispasPropulsionRef.current) {
-      const posAttr = chispasPropulsionRef.current.geometry.getAttribute("position") as THREE.BufferAttribute;
-      const arr = posAttr.array as Float32Array;
+    if (chispasRef.current) {
+      chispasRef.current.visible = rapidez > 0.5;
+      const atributo = chispasRef.current.geometry.getAttribute("position") as THREE.BufferAttribute;
+      const arr = atributo.array as Float32Array;
       for (let i = 0; i < arr.length / 3; i++) {
-        arr[i * 3 + 1] -= 0.12;
+        arr[i * 3 + 1] -= dt * (3 + rapidez * 0.8);
         if (arr[i * 3 + 1] < -2.8) arr[i * 3 + 1] = -1.2;
       }
-      posAttr.needsUpdate = true;
+      atributo.needsUpdate = true;
     }
   });
 
   return (
-    // Rotamos para que la ojiva (+Y en local) apunte hacia el frente de avance (+Z en mundo)
+    // La ojiva está en +Y: se acuesta para que apunte hacia +Z, que es el frente de avance.
     <group rotation={[Math.PI / 2, 0, 0]} scale={1.15}>
       <mesh geometry={naveGeo} material={naveMat} />
 
-      {/* Llama multicapa animada */}
       <group ref={llamaRef} position={[0, -1.05, 0]}>
-        {/* Envolvente exterior naranja */}
         <mesh position={[0, -0.6, 0]} rotation={[Math.PI, 0, 0]}>
           <coneGeometry args={[0.34, 1.2, 14]} />
           <meshBasicMaterial color="#FF7A18" transparent opacity={0.85} blending={THREE.AdditiveBlending} depthWrite={false} />
         </mesh>
-        {/* Núcleo interior blanco-azul */}
         <mesh position={[0, -0.4, 0]} rotation={[Math.PI, 0, 0]}>
           <coneGeometry args={[0.18, 0.8, 12]} />
           <meshBasicMaterial color="#A8F5FF" transparent opacity={0.95} blending={THREE.AdditiveBlending} depthWrite={false} />
         </mesh>
       </group>
 
-      {/* Chispas de escape */}
-      <primitive object={new THREE.Points(estelaGeo, estelaMat)} ref={chispasPropulsionRef} />
+      <points ref={chispasRef} geometry={estelaGeo} material={estelaMat} />
     </group>
   );
 }
 
-/** Estrella de 5 puntas biselada en oro brillante con rotación suave */
-export function EstrellaMoneda3D({ position }: { position: [number, number, number] | THREE.Vector3 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+function crearGeometriaEstrella() {
+  const figura = new THREE.Shape();
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? 0.62 : 0.28;
+    const a = (i * Math.PI) / 5 + Math.PI / 2;
+    if (i === 0) figura.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+    else figura.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+  }
+  figura.closePath();
+  const geo = new THREE.ExtrudeGeometry(figura, { depth: 0.14, bevelEnabled: true, bevelSegments: 2, bevelSize: 0.05, bevelThickness: 0.05 });
+  geo.center();
+  return geo;
+}
 
-  const starGeo = useMemo(() => {
-    const shape = new THREE.Shape();
-    const puntos = 5;
-    const rExt = 0.55;
-    const rInt = 0.26;
-    for (let i = 0; i < puntos * 2; i++) {
-      const r = i % 2 === 0 ? rExt : rInt;
-      const a = (i * Math.PI) / puntos - Math.PI / 2;
-      const x = Math.cos(a) * r;
-      const y = Math.sin(a) * r;
-      if (i === 0) shape.moveTo(x, y);
-      else shape.lineTo(x, y);
-    }
-    shape.closePath();
-
-    return new THREE.ExtrudeGeometry(shape, {
-      depth: 0.16,
-      bevelEnabled: true,
-      bevelSegments: 2,
-      bevelSize: 0.05,
-      bevelThickness: 0.05,
-    });
-  }, []);
-
-  useFrame((_, dt) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += dt * 2.2;
-    }
-  });
+/** Estrella dorada. Se inclina hacia la cámara; quien la usa decide cómo gira. */
+export function EstrellaMoneda3D({ position }: { position: THREE.Vector3 }) {
+  const geo = useMemo(() => crearGeometriaEstrella(), []);
 
   return (
-    <mesh ref={meshRef} position={position} geometry={starGeo}>
+    <mesh position={position} rotation={[-0.96, 0, 0]} geometry={geo}>
       <meshStandardMaterial color="#FFD700" emissive="#FFB800" emissiveIntensity={0.65} roughness={0.25} metalness={0.4} />
     </mesh>
   );
 }
 
-/** Asteroide irregular facetado con cráteres */
-export function Asteroide3D({ scale = 1 }: { scale?: number }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+/** Roca irregular. El relieve sale del ruido: así los vértices repetidos se mueven juntos y no hay grietas. */
+function crearGeometriaAsteroide() {
+  const geo = new THREE.IcosahedronGeometry(1, 2);
+  const pos = geo.getAttribute("position");
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    v.multiplyScalar(0.82 + fractal(v.x * 1.5, v.y * 1.5, v.z * 1.5, 3) * 0.42);
+    pos.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
 
-  const geo = useMemo(() => {
-    const g = new THREE.DodecahedronGeometry(1, 1);
-    const pos = g.getAttribute("position");
-    const prng = crearPrng(777);
-    for (let i = 0; i < pos.count; i++) {
-      const v = new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
-      const dist = v.length();
-      const n = (prng() - 0.5) * 0.28;
-      v.setLength(dist + n);
-      pos.setXYZ(i, v.x, v.y, v.z);
-    }
-    g.computeVertexNormals();
-    return g;
-  }, []);
+export function Asteroide3D() {
+  const geo = useMemo(() => crearGeometriaAsteroide(), []);
 
   return (
-    <mesh ref={meshRef} geometry={geo} scale={scale}>
-      <meshStandardMaterial color="#6E6779" roughness={0.9} metalness={0.1} flatShading />
+    <mesh geometry={geo}>
+      <meshStandardMaterial color="#7A7385" roughness={0.9} metalness={0.1} flatShading />
     </mesh>
   );
 }
-
