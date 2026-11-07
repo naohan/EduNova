@@ -22,7 +22,7 @@ export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
     passiveDesc: "Gana +50 NovaCoins extras en casillas de Recompensa y Cooperación.",
     activeName: "Escudo Guardián",
     activeDesc: "Activa un escudo que absorbe el siguiente error sin perder vidas.",
-    activeIcon: "Escudo",
+    activeShort: "Un error gratis",
   },
   explorador: {
     id: "explorador",
@@ -41,8 +41,8 @@ export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
     passiveName: "Paso Firme",
     passiveDesc: "Comienza con 4 corazones de vida máxima y recupera energía rápido.",
     activeName: "Brújula de la Suerte",
-    activeDesc: "Permite volver a tirar el dado si no te gusta el número obtenido.",
-    activeIcon: "Brújula",
+    activeDesc: "Te da una pista antes de responder.",
+    activeShort: "Una pista",
   },
   cientifico: {
     id: "cientifico",
@@ -62,7 +62,7 @@ export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
     passiveDesc: "Otorga +50% de XP adicional y revela pistas de la Mascota Robot.",
     activeName: "Hipótesis Cuántica",
     activeDesc: "Elimina una opción incorrecta en la pregunta actual para asegurar el acierto.",
-    activeIcon: "Frasco",
+    activeShort: "Quita una opción",
   },
   gamer: {
     id: "gamer",
@@ -81,8 +81,8 @@ export const CHARACTER_PROFILES: Record<CharacterClass, CharacterProfile> = {
     passiveName: "Combo Supernova",
     passiveDesc: "Cada 2 aciertos consecutivos duplica las NovaCoins ganadas (x2 Combo).",
     activeName: "Turbo Boost",
-    activeDesc: "Añade +2 casillas a tu tirada de dados para llegar a la casilla deseada.",
-    activeIcon: "⚡",
+    activeDesc: "Avanza dos casillas más en tu tirada. Solo una vez por nivel.",
+    activeShort: "+2 casillas",
   },
 };
 

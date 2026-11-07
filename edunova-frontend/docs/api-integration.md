@@ -60,18 +60,26 @@ Para iniciar sesión hay una pantalla en `/login` (`lib/auth.ts`). Por código: 
 | `/estudiante/progreso` | **Conectada** (porcentaje general) | `getStudentProfile` |
 | `/estudiante/ruta` | **Conectada** | `listUnits`: lo que el docente publica en Studio aparece en "De tu docente" |
 | `/estudiante/leccion` | `teoria` | **Conectada:** la frase de apertura de cada edad sale de `getUnit("unit-solar-system")` (`LeccionPorEdad.tsx`); el cuerpo sigue local en `ageContent.ts`. Si el servidor falla, se usa el respaldo local, que copia la semilla del backend |
-| `/estudiante/aventuras` (Piloto, Ordena, Doctor) | **Conectada** | `completeMission` al terminar, con `guardarMision` para funcionar sin red |
+| `/estudiante/aventuras` (Piloto, Ordena, Doctor) | **Conectada** | Cada intento registra `LAB_3D` con `registrarEvento`; al terminar, `completeMission` con `guardarMision` para funcionar sin red |
 | `/estudiante/flashcards` | **Conectada** | `getUnit` → `stages.practice.flashcards`, unidas a un mazo local |
 | `/estudiante/explorar` (Sistema Solar) | **Conectada** | `getUnit` para las misiones y `completeMission` al completarlas (`useSolarMissions.ts`) |
 | `/estudiante/cuerpo` | **Conectada** | `completeMission` al aprobar un quiz o completar una misión |
 | `/estudiante/evaluaciones/foto` | **Conectada** | `analyzeHandwrittenPhoto` y `submitReasoning`, que guarda la nota para el docente y suma el bono. La imagen no se envía: el análisis simulado no la usa |
-| `/estudiante/duelo` | — | `validateDuelQuestion`, `getGhostOpponent`, `reportDuelResult` |
-| `/estudiante/ligas` | **Conectada** | `getLeaderboard` y `getStudentProfile` |
+| `/estudiante/duelo` | **Conectada** | `getDuelOpponentQuestions` (IA segura en backend), `validateDuelQuestion` y `reportDuelResult`, que guarda los premios al terminar |
+| `/estudiante/valle` | **Conectada** | Mapa 3D con respaldo en 2D. `listUnits` alimenta las balizas de Escuela y Tu casa y las preguntas de los guías, que usan `Pregunta` y registran `QUIZ` |
+| `/estudiante/jugar` | Estática | Puerta al valle, tablero, duelo, aventuras, ligas y tienda |
+| `/estudiante/juegos` | **Conectada** | `listUnits` da las preguntas del aula, que van a la sala al crearla. Cada intento propio registra `GAME` con `registrarEvento`; sin unidades usa el banco local |
+| `/estudiante/ligas` | **Conectada** | `getLeaderboard` y `getLeaderboardAroundMe` |
 | `/estudiante/tienda` | **Conectada** | `getShopItems`, `buyItem`, `toggleItem` (piden sesión de estudiante) |
 | `/docente`, `/docente/resultados`, `/docente/competencias`, `/docente/reportes`, `/docente/estudiante/[id]` | **Conectadas** | `useAula.ts`: `getClassAnalytics` y `getClassStudents`, con sesión de docente. Sin sesión muestran los datos fijos |
 | `/docente/evaluacion` | **Conectada** | `getClassAssessments` y `overrideAssessment` (`RevisionNotasIA.tsx`) |
-| Studio (subir PDF) | **Conectada** | `ingestDocument` + `approveRubric` |
+| Studio (subir PDF) | **Conectada** | Pide sesión de docente. `ingestDocument` manda el archivo real a Gemini y `approveRubric` publica |
+| `/estudiante/unidades` | **Conectada** | `listUnits`: historia por nivel, lectura fácil con pictogramas y quiz. Cada respuesta va a `sendEvents` |
+| `/estudiante/diagnostico` | **Conectada** | `getDiagnosticQuestions` y `submitDiagnostic`: el nivel de lectura va separado de la edad |
+| `/familia/saberes` | **Conectada** | `createFamilyDraft`, `publishFamilyUnit`, `listFamilyRoutes` y `assignFamilyRoute`. Las lecciones de familia solo las ven ese estudiante y su familia |
+| `/etica` | Estática | Cómo se usa la IA. Si cambia qué se envía a terceros, hay que actualizarla |
 | `/familia` | **Conectada** | `getStudentProfile`, `getBenchmark`, `getFamilyExplanation`, `getPassport`. El pacto es de solo lectura, con una meta fija |
+| `/familia/saberes` | **Conectada** | `createFamilyDraft`, `listFamilyUnits`, `publishFamilyUnit`: lecciones familiares aprobadas por el tutor |
 
 ## Modo sin internet
 `public/sw.js` guarda inicio, lección, flashcards y práctica (347 KB comprimidos, el plan pide menos de 500 KB). `lib/api/offline-queue.ts` guarda lo ganado sin red y lo envía al volver internet; usa `guardarMision` y `guardarProgreso` en vez de llamar directo a `completeMission` o `syncProgress`.
@@ -83,6 +91,6 @@ El backend sigue el **Plan Maestro**, no los datos fijos de `data.ts`:
 
 1. **Dominio, no notas.** El backend devuelve **% de dominio por criterio de rúbrica**, no notas sobre 20. No existen notas, evolución semanal (`classroomWeekly`), bimestres, `topicComparison`, `strategyAnalysis` ni la ficha `rosaRecord`. Esas tarjetas deben mostrar el % de dominio o quedar con datos fijos. Además, los criterios del backend son de las unidades de prueba (por ejemplo "Qué es el Sistema Solar"), no "Cantidad" ni "Regularidad" de `competenciaMastery`.
 2. **Solo alias.** Las vistas de estudiantes deben mostrar el nombre sin apellido (Safe-Play del plan). El backend ya devuelve solo el alias.
-3. **La rúbrica no se muestra al estudiante.** Hoy `getUnit` la incluye en la respuesta; no la pintes en pantallas de estudiante.
-4. **La IA es simulada.** Las respuestas de foto, ingesta y "explicar en casa" son fijas, con una espera de 1 s. La foto siempre analiza la hoja de "1/3 + 1/4".
+3. **La rúbrica no se muestra al estudiante.** El backend se la quita a `listUnits` y `getUnit` cuando quien pide es un estudiante.
+4. **Dónde hay IA real.** La ingesta, "explicar en casa" y las preguntas del rival en el duelo llaman a Gemini desde el backend; si falla, responden con respaldo y `usedFallback: true`. El rival solo recibe curso y tema, nunca datos ni preguntas escritas por niños. La foto y la verificación de preguntas del duelo siguen simuladas.
 5. **Ids.** Los ids del backend son `u-student-1` y `unit-solar-system`, no `"1"` ni `"sistema-solar"`.

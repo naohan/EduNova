@@ -1,45 +1,48 @@
-import Link from "next/link";
-import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
-import { insignias, estudiante } from "@/components/estudiante/data";
 import Image from "next/image";
+import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
+import { insignias } from "@/components/estudiante/data";
 import { NombreAlumno } from "@/components/estudiante/NombreAlumno";
+import { ResumenPuntos } from "@/components/estudiante/ResumenPuntos";
+import { Mosaico } from "@/components/estudiante/shared/kit";
+import { BrainIcon, ChartBarIcon, LockIcon } from "@/components/ui/icons";
 
 export default function Page() {
   return (
     <EstudianteLayout>
       <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
-        <header className="mb-6">
-          <p className="text-sm text-[#5B5678]">Mis logros</p>
-          <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
-            Insignias de <NombreAlumno />
+        <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-[family-name:var(--font-fredoka)] text-3xl font-bold text-[#17164F]">
+            <NombreAlumno />
           </h1>
+          <ResumenPuntos />
         </header>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {insignias.map((b) => (
-            <div
-              key={b.id}
-              className={`rounded-2xl border p-4 text-center ${
-                b.obtenida
-                  ? "border-[#E8E0FF] bg-white"
-                  : "border-dashed border-[#E8E0FF] bg-[#F7F4FF] opacity-60"
-              }`}
-            >
-              <Image src={b.img} alt="" width={64} height={64} className={`mx-auto h-14 w-14 object-contain ${b.obtenida ? "" : "opacity-40 grayscale"}`} />
-              <div className="mt-2 text-sm font-bold text-[#17164F]">{b.nombre}</div>
-              <div className="mt-1 text-[11px] text-[#5B5678]">
-                {b.obtenida ? "Obtenida" : "Por desbloquear"}
-              </div>
-            </div>
-          ))}
-        </div>
+        <nav aria-label="Tu avance" className="grid grid-cols-2 gap-3">
+          <Mosaico href="/estudiante/progreso" etiqueta="Mi progreso" seccion="cooperar">
+            <ChartBarIcon weight="duotone" className="h-20 w-20 text-[#1B8A4F]" aria-hidden />
+          </Mosaico>
+          <Mosaico href="/estudiante/habilidades" etiqueta="Habilidades" seccion="magia">
+            <BrainIcon weight="duotone" className="h-20 w-20 text-[#5636D9]" aria-hidden />
+          </Mosaico>
+        </nav>
 
-        <Link
-          href="/estudiante/progreso"
-          className="mt-6 inline-flex text-sm font-semibold text-[#5636D9]"
-        >
-          ← Ver progreso completo
-        </Link>
+        <ul aria-label="Insignias" className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {insignias.map((b) => (
+            <li key={b.id} className="relative flex flex-col items-center gap-1 rounded-2xl bg-white p-3 text-center">
+              <Image
+                src={b.img}
+                alt=""
+                width={64}
+                height={64}
+                className={`h-14 w-14 object-contain ${b.obtenida ? "" : "opacity-30 grayscale"}`}
+              />
+              <span className="text-sm font-bold text-[#17164F]">{b.nombre}</span>
+              {b.obtenida ? null : (
+                <LockIcon weight="fill" className="absolute right-2 top-2 h-5 w-5 text-[#5B5678]" aria-label="Por desbloquear" />
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
     </EstudianteLayout>
   );

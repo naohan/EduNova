@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
+import { BotonSalir, BotonVoz } from "@/components/estudiante/shared/kit";
 import { unidadActual } from "@/components/estudiante/data";
 import { HipotesisCard } from "@/components/estudiante/solar/HipotesisCard";
 import { MissionReward } from "@/components/estudiante/solar/MissionReward";
@@ -38,40 +39,17 @@ export default function Page() {
   return (
     <EstudianteLayout>
       <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-        <header className="mb-4">
-          <p className="text-xs text-[#5B5678]">
-            {unidadActual.titulo} › Explora en 3D
-          </p>
-          <h1 className="font-[family-name:var(--font-fredoka)] text-xl font-semibold text-[#17164F] sm:text-2xl">
-            Exploración interactiva
+        <header className="mb-4 flex items-center gap-3">
+          <h1 className="min-w-0 flex-1 font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F] sm:text-3xl">
+            {unidadActual.titulo}
           </h1>
-          <p className="mt-1 text-xs text-[#5B5678]">
-            Arrastra para girar, acerca con la rueda del ratón y toca un planeta.
-          </p>
+          <BotonVoz texto="Arrastra para girar, acerca con la rueda del ratón y toca un planeta." etiqueta="Cómo se usa" />
+          <BotonSalir href="/estudiante/ruta" etiqueta="Salir" />
         </header>
 
         <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
           <aside className="hidden space-y-2 lg:block">
-            {[
-              { href: "/estudiante/leccion", label: "¿Qué es?" },
-              { href: "/estudiante/leccion", label: "Componentes" },
-              { href: "/estudiante/explorar", label: "Explora en 3D", on: true },
-              { href: "/estudiante/practica", label: "Practica" },
-            ].map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`block rounded-xl px-3 py-2.5 text-sm font-medium ${
-                  item.on
-                    ? "bg-[#5636D9] text-white"
-                    : "border border-[#E8E0FF] bg-white text-[#17164F]"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-
-            <div className="mt-4 rounded-2xl border border-[#E8E0FF] bg-white p-4">
+            <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
               <div className="mb-2 flex items-center gap-2">
                 <PlanetDot color={actual.color} />
                 <h2 className="font-bold text-[#17164F]">{actual.name}</h2>

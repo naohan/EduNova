@@ -11,9 +11,6 @@ export default function Page() {
         <h1 className="font-[family-name:var(--font-fredoka)] text-3xl font-semibold text-[#17164F]">
           {desafio.titulo}
         </h1>
-        <p className="mt-2 text-[#5B5678]">
-          Demuestra lo que aprendiste del Sistema Solar
-        </p>
 
         <div className="mt-6 grid w-full grid-cols-3 gap-3">
           <Info label="Preguntas" value={String(desafio.preguntas)} />
@@ -23,15 +20,12 @@ export default function Page() {
 
         <Link
           href="/estudiante/logro"
-          className="mt-8 w-full rounded-2xl bg-[#5636D9] py-4 text-sm font-bold text-white"
+          className="btn-tactil tactil-juego mt-8 w-full py-4 text-xl text-[#17164F]"
         >
-          Comenzar desafío
+          ¡Empezar!
         </Link>
-        <Link
-          href="/estudiante/practica"
-          className="mt-3 text-sm font-semibold text-[#5636D9]"
-        >
-          Seguir practicando
+        <Link href="/estudiante/practica" className="mt-3 p-2 font-bold text-[#17164F]">
+          Practicar
         </Link>
       </div>
     </EstudianteLayout>

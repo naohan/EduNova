@@ -45,7 +45,7 @@ export type CharacterProfile = {
   passiveDesc: string;
   activeName: string;
   activeDesc: string;
-  activeIcon: string;
+  activeShort: string;
 };
 
 export type GameLevel = {
@@ -128,6 +128,7 @@ export type CreateRoomBody = {
   hostName: string;
   avatarId: string;
   characterClass?: CharacterClass;
+  unitQuestions?: QuizQuestion[];
 };
 
 export type JoinRoomBody = {

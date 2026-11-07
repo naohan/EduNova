@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { RubricCriterion } from "@/lib/api/edunova-contract";
-import { approveRubric, ingestDocument } from "@/lib/api/client";
+import type { AgeTier, RubricCriterion } from "@/lib/api/edunova-contract";
+import { approveRubric, ingestDocument, pictogramUrl, shareUnitWithFamilies } from "@/lib/api/client";
+import { useSessionUser } from "@/lib/api/use-session";
 import {
   aBorrador,
   borradorDeEjemplo,
   esArchivoDeTexto,
   labNombre,
+  leerBase64,
+  motivoDeRechazo,
   tituloDesdeArchivo,
   type Borrador,
 } from "./studioData";
@@ -28,6 +31,12 @@ const columnas: { campo: "topicName" | "evaluationCriterion" | "suggestedActivit
   { campo: "suggestedActivity", label: "Actividad sugerida" },
 ];
 
+const edades: { tier: AgeTier; label: string }[] = [
+  { tier: "EXPLORADOR_7_9", label: "7 a 9 años" },
+  { tier: "AVENTURERO_10_12", label: "10 a 12 años" },
+  { tier: "CREADOR_13_15", label: "13 a 15 años" },
+];
+
 const MAX_TEXTO = 200_000;
 
 const inputCls =
@@ -36,14 +45,19 @@ const botonCls = "rounded-xl bg-[#5636D9] px-5 py-3 text-sm font-bold text-white
 
 /** HU-01: subir material, revisar la rúbrica y publicar. La IA nunca publica sin este clic del docente. */
 export function StudioWizard() {
+  const usuario = useSessionUser();
   const [paso, setPaso] = useState<Paso>("subir");
   const [archivo, setArchivo] = useState<File | null>(null);
   const [titulo, setTitulo] = useState("");
   const [texto, setTexto] = useState("");
+  const [dondeViven, setDondeViven] = useState("");
   const [borrador, setBorrador] = useState<Borrador | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [motivoEjemplo, setMotivoEjemplo] = useState("");
+  const [compartidoFamilias, setCompartidoFamilias] = useState(false);
+  const [guardandoCompartir, setGuardandoCompartir] = useState(false);
+  const [errorCompartir, setErrorCompartir] = useState<string | null>(null);
 
   const rubricaCompleta = borrador?.rubrica.every((c) => columnas.every(({ campo }) => c[campo].trim())) ?? false;
 
@@ -53,11 +67,27 @@ export function StudioWizard() {
       setError("Sube un archivo o pega el texto de tu clase.");
       return;
     }
+    const rechazo = archivo ? motivoDeRechazo(archivo) : null;
+    if (rechazo) {
+      setError(rechazo);
+      return;
+    }
     setError(null);
     setOcupado(true);
-    const contenido = archivo && esArchivoDeTexto(archivo) ? await archivo.text() : "";
+    const esTexto = archivo ? esArchivoDeTexto(archivo) : false;
+    const contenido = archivo && esTexto ? await archivo.text() : "";
     const textoFinal = `${texto} ${contenido}`.trim().slice(0, MAX_TEXTO);
-    const r = await ingestDocument({ title: tituloFinal || undefined, text: textoFinal });
+    const r = await ingestDocument({
+      title: titulo.trim() || undefined,
+      text: textoFinal,
+      localContext: dondeViven.trim().slice(0, 80) || undefined,
+      ...(archivo && !esTexto ? { fileBase64: await leerBase64(archivo), mimeType: archivo.type } : {}),
+    });
+    if (!r.ok && (r.status === 401 || r.status === 403 || r.status === 413 || r.status === 415)) {
+      setError(r.status === 413 ? "El archivo pesa demasiado. Prueba con una versión más liviana." : r.error);
+      setOcupado(false);
+      return;
+    }
     const recibido = r.ok ? aBorrador(r.data) : null;
     setBorrador(recibido ?? borradorDeEjemplo(tituloFinal, textoFinal));
     if (!recibido) {
@@ -89,13 +119,41 @@ export function StudioWizard() {
     else setError(`No se pudo publicar: ${r.error}. La unidad sigue en borrador; puedes reintentar.`);
   }
 
+  async function cambiarCompartir(nuevoValor: boolean) {
+    if (!borrador) return;
+    setGuardandoCompartir(true);
+    setErrorCompartir(null);
+    const r = await shareUnitWithFamilies(borrador.id, nuevoValor);
+    setGuardandoCompartir(false);
+    if (r.ok) {
+      setCompartidoFamilias(nuevoValor);
+    } else {
+      setErrorCompartir(r.error || "No se pudo actualizar el estado para familias.");
+    }
+  }
+
   function reiniciar() {
     setPaso("subir");
     setArchivo(null);
     setTitulo("");
     setTexto("");
+    setDondeViven("");
     setBorrador(null);
     setError(null);
+    setCompartidoFamilias(false);
+    setErrorCompartir(null);
+  }
+
+  if (usuario !== undefined && usuario?.role !== "TEACHER") {
+    return (
+      <section className="rounded-2xl border border-[#E8E0FF] bg-white p-6 text-center">
+        <h2 className="font-bold text-[#17164F]">Inicia sesión como docente</h2>
+        <p className="mt-1 text-sm text-[#5B5678]">Solo un docente puede crear y publicar unidades.</p>
+        <Link href="/login" className={`${botonCls} mt-4 inline-block`}>
+          Iniciar sesión
+        </Link>
+      </section>
+    );
   }
 
   return (
@@ -130,15 +188,26 @@ export function StudioWizard() {
               <FilePlusIcon className="mx-auto h-7 w-7 text-[#5636D9]" aria-hidden />
             </span>
             <span className="mt-2 block text-sm font-bold text-[#17164F]">
-              {archivo ? archivo.name : "Elige un PDF, presentación, imagen o texto"}
+              {archivo ? archivo.name : "Elige un PDF, una imagen o un archivo de texto"}
             </span>
             <input
               type="file"
-              accept=".pdf,.ppt,.pptx,.txt,.md,image/*"
+              accept=".pdf,.txt,.md,image/png,image/jpeg,image/webp"
               className="sr-only"
               onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
             />
           </label>
+          <div className="flex items-center justify-between text-xs text-[#5B5678]">
+            <span>Recomendación: no subas material con datos personales.</span>
+            <Link
+              href="/etica"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#5636D9] underline hover:text-[#4324bd]"
+            >
+              Uso ético de la IA
+            </Link>
+          </div>
           <label className="block">
             <span className="text-xs font-medium text-[#5B5678]">Título de la unidad (opcional)</span>
             <input
@@ -147,6 +216,19 @@ export function StudioWizard() {
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Ej: Sistema Solar"
             />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-[#5B5678]">¿Dónde viven tus estudiantes? (opcional)</span>
+            <input
+              className={`${inputCls} mt-1`}
+              value={dondeViven}
+              maxLength={80}
+              onChange={(e) => setDondeViven(e.target.value)}
+              placeholder="zona rural de Puno"
+            />
+            <span className="mt-1 block text-xs text-[#5B5678]">
+              No escribas el nombre de la escuela ni de personas.
+            </span>
           </label>
           <label className="block">
             <span className="text-xs font-medium text-[#5B5678]">O pega el texto de tu clase</span>
@@ -158,8 +240,13 @@ export function StudioWizard() {
             />
           </label>
           <button type="button" onClick={analizar} disabled={ocupado} className={botonCls}>
-            {ocupado ? "Analizando material…" : "Analizar material"}
+            {ocupado ? "Leyendo tu material con IA…" : "Analizar material"}
           </button>
+          {ocupado ? (
+            <p role="status" className="text-sm text-[#5B5678]">
+              Puede tardar hasta un minuto. La IA arma un borrador; tú decides qué se publica.
+            </p>
+          ) : null}
         </section>
       ) : null}
 
@@ -168,6 +255,17 @@ export function StudioWizard() {
           {borrador.sinConexion ? (
             <p role="status" className="rounded-xl bg-[#FEF3C7] px-4 py-3 text-sm text-[#92400E]">
               No se pudo analizar en el servidor ({motivoEjemplo}): este es un ejemplo y no se guardará.
+            </p>
+          ) : null}
+          {!borrador.sinConexion && !borrador.modeloIa ? (
+            <p role="status" className="rounded-xl bg-[#FEF3C7] px-4 py-3 text-sm text-[#92400E]">
+              No se usó la IA ({borrador.avisoIa ?? "no disponible"}): este contenido es un ejemplo, no sale de tu material.
+              Puedes intentarlo otra vez.
+            </p>
+          ) : null}
+          {borrador.modeloIa ? (
+            <p role="status" className="rounded-xl bg-[#F2EEFF] px-4 py-3 text-sm text-[#17164F]">
+              Borrador generado con IA a partir de tu material. Revísalo: nada llega a tus estudiantes sin tu aprobación.
             </p>
           ) : null}
 
@@ -186,6 +284,75 @@ export function StudioWizard() {
                 >
                   <span className="font-semibold text-[#17164F]">{s.titulo}</span>
                   <span className="text-xs text-[#5636D9]">{labNombre[s.lab]}</span>
+                  {borrador.modeloIa && s.textos ? (
+                    <details className="w-full text-sm text-[#17164F]/85">
+                      <summary className="cursor-pointer font-semibold text-[#5636D9]">
+                        Ver textos por edad, {s.tarjetas} tarjetas y {s.preguntas} preguntas
+                      </summary>
+                      <dl className="mt-2 space-y-2">
+                        {edades.map((e) => (
+                          <div key={e.tier}>
+                            <dt className="text-xs font-bold text-[#5B5678]">{e.label}</dt>
+                            <dd>{s.textos?.[e.tier]}</dd>
+                          </div>
+                        ))}
+                        {s.lecturaFacil ? (
+                          <div>
+                            <dt className="text-xs font-bold text-[#5B5678]">Lectura fácil (con pictogramas)</dt>
+                            <dd className="rounded-lg border border-[#E8E0FF] bg-[#FAF9FF] p-2 text-xs leading-relaxed text-[#17164F]">
+                              {s.lecturaFacil}
+                            </dd>
+                            {s.pictogramas?.length ? (
+                              <dd className="mt-2">
+                                <div className="flex flex-wrap gap-2">
+                                  {s.pictogramas.map((p) => (
+                                    <span key={p.id} className="flex w-16 flex-col items-center text-center text-[11px] text-[#17164F]">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={pictogramUrl(p.id)} alt={p.word} className="h-10 w-10 object-contain" />
+                                      {p.word}
+                                    </span>
+                                  ))}
+                                </div>
+                                <p className="mt-1 text-[11px] text-[#5B5678]">
+                                  Pictogramas: Sergio Palao. Origen: ARASAAC (arasaac.org). Licencia: CC BY-NC-SA. Propiedad: Gobierno de Aragón.
+                                </p>
+                              </dd>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {s.listaPreguntas && s.listaPreguntas.length > 0 ? (
+                          <div>
+                            <dt className="text-xs font-bold text-[#5B5678]">Preguntas y revisión de errores</dt>
+                            <dd className="mt-1 space-y-2">
+                              {s.listaPreguntas.map((q, qIdx) => (
+                                <div key={q.id || qIdx} className="rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] p-3 text-xs">
+                                  <p className="font-bold text-[#17164F]">{q.prompt}</p>
+                                  <ul className="mt-2 space-y-1">
+                                    {q.options.map((opt, optIdx) => {
+                                      const esCorrecta = optIdx === q.answerIndex;
+                                      const errorDesc = q.mistakes?.[optIdx];
+                                      return (
+                                        <li key={optIdx} className="rounded-lg border border-[#E8E0FF] bg-white p-2">
+                                          <div className="font-semibold text-[#17164F]">
+                                            {opt} {esCorrecta ? <span className="font-bold text-[#127A43]">(Opción correcta)</span> : null}
+                                          </div>
+                                          {!esCorrecta && errorDesc ? (
+                                            <p className="mt-0.5 text-[#92400E]">
+                                              Confusión prevista: {errorDesc}
+                                            </p>
+                                          ) : null}
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
+                              ))}
+                            </dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    </details>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -260,8 +427,42 @@ export function StudioWizard() {
               ? "Era un ejemplo: esta unidad no se guardó ni llegó a los estudiantes."
               : `«${borrador.titulo}» ya está disponible para el aula ${borrador.aula}.`}
           </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <Link href="/estudiante/leccion" className={botonCls}>
+
+          {/* Un ejemplo sin conexión no se guardó: no hay nada que compartir. */}
+          {borrador && !borrador.sinConexion ? (
+          <div className="mx-auto mt-5 max-w-md rounded-xl border border-[#E8E0FF] bg-[#FAF9FF] p-4 text-left">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <label htmlFor="compartir-familias-toggle" className="block text-sm font-bold text-[#17164F]">
+                  Compartir con familias
+                </label>
+                <span className="block text-xs text-[#5B5678]">
+                  Permite que las familias usen esta ruta desde Saberes de casa.
+                </span>
+              </div>
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  id="compartir-familias-toggle"
+                  type="checkbox"
+                  aria-label="Compartir con familias"
+                  checked={compartidoFamilias}
+                  disabled={guardandoCompartir}
+                  onChange={(e) => cambiarCompartir(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="h-6 w-11 rounded-full bg-[#E8E0FF] transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#5636D9] peer-checked:after:translate-x-full peer-focus:ring-2 peer-focus:ring-[#5636D9]/25 peer-disabled:opacity-50" />
+              </label>
+            </div>
+            {errorCompartir ? (
+              <p role="alert" className="mt-3 rounded-lg bg-[#FEE2E2] px-3 py-2 text-xs text-[#991B1B]">
+                {errorCompartir}
+              </p>
+            ) : null}
+          </div>
+          ) : null}
+
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <Link href="/estudiante/unidades" className={botonCls}>
               Ver como estudiante
             </Link>
             <button

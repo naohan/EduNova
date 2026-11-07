@@ -5,6 +5,14 @@
 export type AgeTier = 'EXPLORADOR_7_9' | 'AVENTURERO_10_12' | 'CREADOR_13_15';
 export type UserRole = 'STUDENT' | 'TEACHER' | 'FAMILY_TUTOR';
 export type LearningContext = 'SCHOOL_CLASSROOM' | 'INDEPENDENT_HOME' | 'EXTERNAL_INSTITUTION';
+export type FamilyCategory =
+  | 'CAMPO_Y_LUGAR'
+  | 'SALUD_Y_PLANTAS'
+  | 'COCINA'
+  | 'OFICIOS_Y_HOGAR'
+  | 'AHORRO'
+  | 'IDIOMAS'
+  | 'OTRO';
 export type Lab3DType =
   | 'SOLAR_SYSTEM'
   | 'HUMAN_BODY'
@@ -41,6 +49,16 @@ export interface Flashcard {
   image?: string;
 }
 
+export interface UnitQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+  answerIndex: number;
+  hint: string;
+  rubricCriterionId: string;
+  mistakes?: string[];
+}
+
 export interface SubtopicNode {
   id: string;
   order: number;
@@ -55,10 +73,15 @@ export interface SubtopicNode {
     rewardCoins: number;
   };
   stages: {
-    discover: { storyTextByAge: Record<AgeTier, string>; audioUrl: string };
+    discover: {
+      storyTextByAge: Record<AgeTier, string>;
+      audioUrl: string;
+      easyReadText?: string;
+      pictograms?: Array<{ word: string; id: number }>;
+    };
     practice: { flashcards: Flashcard[]; gameMode: string };
     demonstrate: {
-      questions: unknown[];
+      questions: UnitQuestion[];
       acceptsHandwrittenPhoto: boolean;
       reasoningBonusXP: number;
     };
@@ -73,6 +96,25 @@ export interface LearningUnit {
   classroomCode: string;
   subtopics: SubtopicNode[];
   rubric: RubricCriterion[];
+  familyStudentId?: string;
+  familyCategory?: FamilyCategory;
+  safetyNote?: string;
+  sharedWithFamilies?: boolean;
+  sourceUnitId?: string;
+}
+
+export interface SharedFamilyRoute {
+  id: string;
+  title: string;
+  familyCategory?: FamilyCategory;
+  subtopicsCount: number;
+}
+
+export interface FamilyDraftResponse {
+  unit: LearningUnit;
+  usedFallback: boolean;
+  aiNotice?: string;
+  safetyNotice?: string; // el servidor quitó cantidades o promesas de cura
 }
 
 export interface GamificationAndBenchmarkProfile {
@@ -91,6 +133,11 @@ export interface GamificationAndBenchmarkProfile {
   badges: string[];
   equippedItems: string[]; // ids de accesorios del avatar
   ownedItems?: string[]; // ids de accesorios comprados
+  diagnosticTier?: AgeTier;
+  diagnosedAt?: string;
+  dailyBonusDate?: string;
+  dailyBonusPoints?: number;
+  effortStreak?: number;
 }
 
 // Fila pública de una liga. Safe-Play: nada de saldo, racha ni vínculos familiares de otros niños.
@@ -101,6 +148,19 @@ export interface LeaderboardEntry {
   masteryPoints: number;
   effortPoints: number;
   division: GamificationAndBenchmarkProfile['leagues']['division'];
+}
+
+export interface LeaderboardAroundMeResponse {
+  rows: LeaderboardEntry[];
+  myPosition: number;
+  total: number;
+}
+
+export interface EventsBatchResponse {
+  accepted: number;
+  duplicates: number;
+  rejected: number;
+  effortBonus: number;
 }
 
 // ---- Tienda del avatar (HU-06) ----
@@ -163,9 +223,30 @@ export interface HypothesisReview {
 export interface ExplainableAlert {
   id: string;
   classId: string;
+  kind: 'TOPIC' | 'INACTIVITY';
   message: string; // "34% del aula comprende el numerador pero falla al hallar el denominador común"
   affectedPercent: number;
-  rubricCriterionId: string;
+  rubricCriterionId?: string;
+  suggestedAction: string;
+  affectedAliases: string[];
+  attendedAt?: string;
+  commonMistake?: { text: string; students: number };
+}
+
+// ---- Datos de proceso: de aquí salen el dominio (BKT), las alertas y los talentos ----
+export type EventActivity = 'FLASHCARD' | 'QUIZ' | 'LAB_3D' | 'GAME';
+
+export interface LearningEvent {
+  id: string; // lo genera el cliente: reenviar sin conexión no duplica la evidencia
+  activity: EventActivity;
+  correct: boolean;
+  subtopicId?: string; // define a qué criterios de la rúbrica aporta evidencia
+  questionId?: string;
+  attempt: number; // 1 = primer intento; solo este mide dominio
+  hintsUsed: number;
+  timeMs: number;
+  occurredAt: string;
+  selectedOption?: number;
 }
 
 // ---- Dominio por criterio de rúbrica (RF-02) ----
@@ -190,6 +271,7 @@ export interface ClassStudent {
   studentId: string;
   alias: string;
   ageTier?: AgeTier;
+  diagnosticTier?: AgeTier;
   streakDays: number;
   division: GamificationAndBenchmarkProfile['leagues']['division'];
   overallMasteryPercent: number;
@@ -197,13 +279,27 @@ export interface ClassStudent {
   mastery: CriterionMastery[];
 }
 
+export interface DiagnosticQuestion {
+  id: string;
+  tier: AgeTier;
+  prompt: string;
+  options: string[];
+}
+
+export interface DiagnosticResult {
+  diagnosticTier: AgeTier;
+  correctCount: number;
+  total: number;
+}
+
 // Radar de Talentos (RF-04): sugerencias exploratorias, nunca etiquetas clínicas.
 export interface TalentSignal {
   studentId: string;
   alias: string;
-  creativity: number; // calidad de preguntas creadas en Duelo
-  collaboration: number; // ayudas en Tablero
-  logic: number; // Labs 3D
+  logic?: number; // sin misiones 3D no hay evidencia
+  perseverance?: number; // sin fallos no hay de qué sobreponerse
+  autonomy: number;
+  evidenceCount: number;
 }
 
 export interface ClassAnalytics {
@@ -239,12 +335,13 @@ export interface LabMissionComplete {
 // GET  /api/units/:id?ageTier=...        -> LearningUnit
 // POST /api/progress/sync                -> { synced: number }
 // POST /api/labs/complete-mission        body: LabMissionComplete
-// POST /api/ai/ingest-document           -> LearningUnit (status DRAFT)
+// POST /api/ai/ingest-document           -> LearningUnit (status DRAFT), solo docente
+// POST /api/events  body: { events }     -> EventsBatchResponse ({ accepted, duplicates, rejected, effortBonus }), solo estudiante
 // PUT  /api/teacher/approve-rubric       -> LearningUnit (status PUBLISHED)
 // POST /api/ai/analyze-handwritten-photo -> HandwrittenAnalysis
 // POST /api/ai/validate-duel-question    -> { valid: boolean; reason: string }
 // POST /api/ai/family-home-explainer     -> { explanation: string }
-// GET  /api/leagues/leaderboard          -> LeaderboardEntry[]
+// GET  /api/leagues/leaderboard          -> LeaderboardEntry[] o LeaderboardAroundMeResponse (con around=me)
 // GET  /api/shop/items                   -> ShopItem[]
 // POST /api/shop/buy    body: { itemId } -> Inventory  (estudiante con sesión)
 // POST /api/shop/equip  body: { itemId } -> Inventory  (estudiante con sesión; alterna puesto/quitado)

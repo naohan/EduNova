@@ -78,7 +78,14 @@ export default function Page() {
                 {initials(e.nombre)}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate font-semibold text-[#17164F]">{e.nombre}</div>
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-semibold text-[#17164F]">{e.nombre}</span>
+                  {e.lecturasTier && (
+                    <span className="rounded-full bg-[#EDE9FE] px-2 py-0.5 text-xs font-semibold text-[#5636D9]">
+                      {e.lecturasTier}
+                    </span>
+                  )}
+                </div>
                 <div className="text-sm text-[#5B5678]">{Math.round(e.nota)}/20</div>
               </div>
               <span
@@ -117,6 +124,11 @@ export default function Page() {
                         {initials(e.nombre)}
                       </div>
                       <span className="font-medium text-[#17164F]">{e.nombre}</span>
+                      {e.lecturasTier && (
+                        <span className="rounded-full bg-[#EDE9FE] px-2 py-0.5 text-xs font-semibold text-[#5636D9]">
+                          {e.lecturasTier}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-semibold">{e.nota.toFixed(1)}/20</td>

@@ -2,16 +2,24 @@
 
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
-import {
-  estudiante,
-  unidadesProgreso,
-  competencias,
-  reforzar,
-  insignias,
-} from "@/components/estudiante/data";
+import { estudiante, unidadesProgreso, competencias, reforzar } from "@/components/estudiante/data";
+import { BotonSalir } from "@/components/estudiante/shared/kit";
 import { usePerfilAlumno } from "@/components/estudiante/usePerfilAlumno";
-import Image from "next/image";
 import { TargetIcon } from "@/components/ui/icons";
+
+function Barra({ nombre, pct, color }: { nombre: string; pct: number; color: string }) {
+  return (
+    <li>
+      <div className="mb-1 flex justify-between gap-3 font-bold text-[#17164F]">
+        <span className="min-w-0 truncate">{nombre}</span>
+        <span>{pct}%</span>
+      </div>
+      <div className="h-3 overflow-hidden rounded-full bg-[#E8E0FF]">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+      </div>
+    </li>
+  );
+}
 
 export default function Page() {
   const perfil = usePerfilAlumno();
@@ -21,149 +29,54 @@ export default function Page() {
 
   return (
     <EstudianteLayout>
-      <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-        <header className="mb-5">
-          <p className="text-sm text-[#5B5678]">Mi progreso</p>
-          <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
-            Resumen personal
-          </h1>
+      <div className="mx-auto max-w-xl p-4 sm:p-6 lg:p-8">
+        <header className="mb-5 flex items-center justify-between gap-3">
+          <h1 className="font-[family-name:var(--font-fredoka)] text-3xl font-bold text-[#17164F]">Mi progreso</h1>
+          <BotonSalir href="/estudiante/logros" etiqueta="Volver al perfil" />
         </header>
 
-        {/* Tabs visual */}
-        <div className="mb-5 flex gap-2 overflow-x-auto">
-          {["Resumen", "Competencias", "Habilidades", "Historial"].map((t, i) => (
-            <span
-              key={t}
-              className={`shrink-0 rounded-xl px-3.5 py-2 text-sm font-medium ${
-                i === 0
-                  ? "bg-[#5636D9] text-white"
-                  : "border border-[#E8E0FF] bg-white text-[#5B5678]"
-              }`}
-            >
-              {t}
-            </span>
+        <div className="relative mx-auto h-44 w-44">
+          <svg viewBox="0 0 120 120" className="h-full w-full" role="img" aria-label={`${pct}% completado`}>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#E3F8EC" strokeWidth="12" />
+            <circle
+              cx="60"
+              cy="60"
+              r="45"
+              fill="none"
+              stroke="#2DBE70"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeDasharray={`${dash} ${circ}`}
+              transform="rotate(-90 60 60)"
+            />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center font-[family-name:var(--font-fredoka)] text-4xl font-bold text-[#17164F]">
+            {pct}%
+          </span>
+        </div>
+
+        <ul className="mt-6 space-y-4 rounded-2xl bg-white p-4">
+          {unidadesProgreso.map((u) => (
+            <Barra key={u.nombre} nombre={u.nombre} pct={u.pct} color="#2DBE70" />
           ))}
-        </div>
+        </ul>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Donut */}
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
-            <h2 className="mb-3 text-sm font-semibold text-[#17164F]">Progreso general</h2>
-            <div className="relative mx-auto h-36 w-36">
-              <svg viewBox="0 0 120 120" className="h-full w-full" role="img" aria-label={`${pct}%`}>
-                <circle cx="60" cy="60" r="45" fill="none" stroke="#E8E0FF" strokeWidth="10" />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="45"
-                  fill="none"
-                  stroke="#5636D9"
-                  strokeWidth="10"
-                  strokeLinecap="round"
-                  strokeDasharray={`${dash} ${circ}`}
-                  transform="rotate(-90 60 60)"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-[#17164F]">{pct}%</span>
-                <span className="text-[11px] text-[#5B5678]">8 de 11 temas</span>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-              <Mini n="9" l="Completos" c="text-[#127A43]" />
-              <Mini n="2" l="En proceso" c="text-[#FFC928]" />
-              <Mini n="0" l="Pendientes" c="text-[#C62828]" />
-            </div>
-          </div>
+        {reforzar.length ? (
+          <Link href="/estudiante/flashcards" className="card-tactil tactil-refuerzo-suave mt-4 items-center gap-3 p-4">
+            <TargetIcon weight="fill" className="h-8 w-8 shrink-0 text-[#D9583F]" aria-hidden />
+            <span className="min-w-0 flex-1 font-bold text-[#17164F]">{reforzar[0]}</span>
+          </Link>
+        ) : null}
 
-          {/* Units */}
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
-            <h2 className="mb-3 text-sm font-semibold text-[#17164F]">Progreso por unidad</h2>
-            <ul className="space-y-3">
-              {unidadesProgreso.map((u) => (
-                <li key={u.nombre}>
-                  <div className="mb-1 flex justify-between text-xs">
-                    <span className="font-medium text-[#17164F]">{u.nombre}</span>
-                    <span className="text-[#5B5678]">{u.pct}%</span>
-                  </div>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-[#E8E0FF]">
-                    <div
-                      className="h-full rounded-full bg-[#2DBE70]"
-                      style={{ width: `${u.pct}%` }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Competencies */}
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
-            <h2 className="mb-3 text-sm font-semibold text-[#17164F]">Mis competencias</h2>
-            <ul className="space-y-3">
-              {competencias.map((c) => (
-                <li key={c.nombre}>
-                  <div className="mb-1 flex justify-between text-xs">
-                    <span className="font-medium text-[#17164F]">{c.nombre}</span>
-                    <span className="text-[#5636D9] font-bold">{c.pct}%</span>
-                  </div>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-[#E8E0FF]">
-                    <div
-                      className="h-full rounded-full bg-[#5636D9]"
-                      style={{ width: `${c.pct}%` }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border border-[#FFF0C2] bg-[#FFFBEB] p-5">
-            <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#92400E]">
-              <TargetIcon weight="duotone" className="mr-1 inline h-4 w-4 align-[-3px] text-[#5636D9]" aria-hidden /> Para reforzar
-            </h2>
-            <ul className="space-y-2">
-              {reforzar.map((r) => (
-                <li key={r} className="text-sm text-[#78350F]">
-                  • {r}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-[#17164F]">Insignias recientes</h2>
-              <Link href="/estudiante/logros" className="text-sm font-semibold text-[#5636D9]">
-                Ver todas
-              </Link>
-            </div>
-            <div className="flex gap-2">
-              {insignias.slice(0, 4).map((b) => (
-                <div
-                  key={b.id}
-                  className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${
-                    b.obtenida ? "bg-[#F2EEFF]" : "bg-gray-100 opacity-40"
-                  }`}
-                >
-                  <Image src={b.img} alt={b.nombre} width={40} height={40} className="h-8 w-8 object-contain" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <details className="mt-4 rounded-2xl bg-white p-4">
+          <summary className="cursor-pointer font-bold text-[#17164F]">Mis competencias</summary>
+          <ul className="mt-3 space-y-4">
+            {competencias.map((c) => (
+              <Barra key={c.nombre} nombre={c.nombre} pct={c.pct} color="#5636D9" />
+            ))}
+          </ul>
+        </details>
       </div>
     </EstudianteLayout>
-  );
-}
-
-function Mini({ n, l, c }: { n: string; l: string; c: string }) {
-  return (
-    <div className="rounded-xl bg-[#F7F4FF] p-2">
-      <div className={`text-lg font-bold ${c}`}>{n}</div>
-      <div className="text-[10px] text-[#5B5678]">{l}</div>
-    </div>
   );
 }

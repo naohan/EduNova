@@ -141,6 +141,11 @@ export default function Page() {
                       {initials(e.nombre)}
                     </div>
                     <span className="font-medium text-[#17164F]">{e.nombre}</span>
+                    {e.lecturasTier && (
+                      <span className="rounded-full bg-[#EDE9FE] px-2 py-0.5 text-[11px] font-semibold text-[#5636D9]">
+                        {e.lecturasTier}
+                      </span>
+                    )}
                   </Link>
                 </td>
                 <td className="px-2 py-2 font-semibold tabular-nums">{e.nota.toFixed(1)}</td>

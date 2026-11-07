@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Html, Stars } from "@react-three/drei";
 import * as THREE from "three";
-import { PLANETAS, type IdPlaneta } from "./espacioData";
+import { PLANETAS, RADIO_SOL, type IdPlaneta } from "./espacioData";
 import { HtmlInicial } from "./HtmlInicial";
+import { GalaxiaEspiral, PlanetaVisual, SolVisual } from "./espacioVisual";
 
 type Props = {
   orden: IdPlaneta[];
@@ -118,11 +119,11 @@ function Mundo({ orden, bandeja, colocados, onSoltar }: Props) {
       <directionalLight position={[0, 12, 14]} intensity={1.2} />
       <pointLight position={[0, 6, 0]} intensity={2.2} decay={0} color="#FFF2DD" />
       <Stars radius={90} depth={30} count={1500} factor={3.5} fade speed={0.5} />
+      <GalaxiaEspiral />
 
-      <mesh>
-        <sphereGeometry args={[2.1, 36, 28]} />
-        <meshBasicMaterial color="#FDB813" />
-      </mesh>
+      <group scale={2.1 / RADIO_SOL}>
+        <SolVisual />
+      </group>
       <Html center position={[0, 2.8, 0]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
         <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white">Sol</span>
       </Html>
@@ -151,26 +152,18 @@ function Mundo({ orden, bandeja, colocados, onSoltar }: Props) {
               if (g) planetas.current.set(id, g);
             }}
           >
-            <mesh>
-              <sphereGeometry args={[radio, 28, 22]} />
-              <meshStandardMaterial color={datos.color} roughness={0.7} />
-            </mesh>
-            {id === "saturno" ? (
-              <mesh rotation={[-Math.PI / 2.4, 0, 0]}>
-                <ringGeometry args={[radio * 1.3, radio * 1.9, 40]} />
-                <meshStandardMaterial color="#D9C48C" side={THREE.DoubleSide} />
+            <PlanetaVisual id={id} radio={radio}>
+              {/* Zona de agarre más grande que el planeta, para dedos pequeños. */}
+              <mesh onPointerDown={(e) => agarrar(id, e)}>
+                <sphereGeometry args={[1.5, 12, 10]} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
-            ) : null}
-            {/* Zona de agarre más grande que el planeta, para dedos pequeños. */}
-            <mesh onPointerDown={(e) => agarrar(id, e)}>
-              <sphereGeometry args={[1.5, 12, 10]} />
-              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-            </mesh>
-            <Html center position={[0, 0, radio + 0.9]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
-              <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-white">
-                {datos.nombre}
-              </span>
-            </Html>
+              <Html center position={[0, 0, radio + 0.9]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
+                <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-white">
+                  {datos.nombre}
+                </span>
+              </Html>
+            </PlanetaVisual>
           </group>
         );
       })}
@@ -180,8 +173,8 @@ function Mundo({ orden, bandeja, colocados, onSoltar }: Props) {
 
 export default function OrdenaEscena(props: Props) {
   return (
-    <div className="h-full w-full touch-none select-none">
-      <Canvas camera={{ position: [0, 30, 16], fov: 45 }} dpr={[1, 1.75]}>
+    <div className="isolate h-full w-full touch-none select-none">
+      <Canvas camera={{ position: [0, 30, 16], fov: 45 }} dpr={[1, 1.5]}>
         <color attach="background" args={["#07061F"]} />
         <HtmlInicial />
         <Mundo {...props} />

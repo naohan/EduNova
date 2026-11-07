@@ -29,13 +29,22 @@ function estadoDe(percent: number): Estado {
   return percent >= EN_PROCESO_DESDE ? "En proceso" : "En inicio";
 }
 
+function lecturasTierLabel(tier?: string): string | undefined {
+  if (tier === "EXPLORADOR_7_9") return "Lecturas: Explorador";
+  if (tier === "AVENTURERO_10_12") return "Lecturas: Aventurero";
+  if (tier === "CREADOR_13_15") return "Lecturas: Creador";
+  return undefined;
+}
+
 function aEstudiante(s: ClassStudent): Estudiante {
+  const tieneAjuste = Boolean(s.diagnosticTier && s.ageTier && s.diagnosticTier !== s.ageTier);
   return {
     id: s.studentId,
     nombre: s.alias,
     nota: notaDe(s.overallMasteryPercent),
     progreso: s.overallMasteryPercent,
     estado: estadoDe(s.overallMasteryPercent),
+    lecturasTier: tieneAjuste ? lecturasTierLabel(s.diagnosticTier) : undefined,
     competencias: s.mastery.map((m) => ({
       nombre: m.topicName,
       nota: notaDe(m.masteryPercent),
@@ -67,9 +76,12 @@ const alertasEjemplo: ExplainableAlert[] = [
   {
     id: "ejemplo-fracciones",
     classId: "EDU-402",
+    kind: "TOPIC",
     message: "34% del aula comprende el numerador pero falla al hallar el denominador común en sumas heterogéneas.",
     affectedPercent: 34,
     rubricCriterionId: "rc-frac-1",
+    suggestedAction: "Repasa «Fracciones heterogéneas» en grupo pequeño con Gloria, Mateo. Empieza por una unidad o actividad de refuerzo.",
+    affectedAliases: ["Gloria", "Mateo"],
   },
 ];
 

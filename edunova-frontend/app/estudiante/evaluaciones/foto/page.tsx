@@ -1,21 +1,17 @@
-import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
 import { NotebookPhotoScanner } from "@/components/estudiante/NotebookPhotoScanner";
+import { BotonSalir, BotonVoz } from "@/components/estudiante/shared/kit";
 
 export default function Page() {
   return (
-    <EstudianteLayout>
-      <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
-        <header className="mb-5">
-          <Link href="/estudiante/evaluaciones" className="text-sm text-[#5B5678]">
-            ‹ Evaluaciones
-          </Link>
-          <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
+    <EstudianteLayout foco>
+      <div className="mx-auto max-w-2xl p-4 sm:p-6">
+        <header className="mb-5 flex items-center gap-3">
+          <h1 className="min-w-0 flex-1 font-[family-name:var(--font-fredoka)] text-2xl font-bold text-[#17164F] sm:text-3xl">
             Foto de tu cuaderno
           </h1>
-          <p className="mt-1 text-sm text-[#5B5678]">
-            Resuelve el ejercicio en papel y tómale una foto. Revisamos tus pasos, no solo el resultado.
-          </p>
+          <BotonVoz texto="Resuelve el ejercicio en papel y tómale una foto. Revisamos tus pasos, no solo el resultado. Si explicas cómo lo hiciste, ganas puntos extra." />
+          <BotonSalir href="/estudiante/evaluaciones" etiqueta="Salir" />
         </header>
         <NotebookPhotoScanner />
       </div>

@@ -3,15 +3,23 @@ import type {
   BenchmarkResult,
   ClassAnalytics,
   ClassStudent,
+  DiagnosticQuestion,
+  DiagnosticResult,
+  EventsBatchResponse,
   ExplainableAlert,
+  FamilyCategory,
+  FamilyDraftResponse,
   GamificationAndBenchmarkProfile,
   HandwrittenAnalysis,
   HypothesisReview,
   Inventory,
   LabMissionComplete,
+  LeaderboardAroundMeResponse,
   LeaderboardEntry,
+  LearningEvent,
   LearningUnit,
   RubricCriterion,
+  SharedFamilyRoute,
   ShopItem,
   StudentProfile,
   User,
@@ -29,6 +37,8 @@ const TIMEOUT_MS = 4000;
 // Las escrituras tardan más: con la base en Render una ingesta toma unos 3,5 s. Si se cortara a los 4 s,
 // la pantalla daría por fallida una operación que el servidor sí completa.
 const WRITE_TIMEOUT_MS = 10000;
+// La IA lee el material completo: el servidor corta a los 45 s y responde con el respaldo.
+const AI_TIMEOUT_MS = 50000;
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -71,7 +81,8 @@ async function request<T>(
 }
 
 // ---- Tipos de respuesta que el contrato compartido no define ----
-export type IngestedUnit = LearningUnit & { usedFallback: boolean };
+export type IngestedUnit = LearningUnit & { usedFallback: boolean; aiModel?: string; aiNotice?: string };
+export type IngestInput = { title?: string; text: string; fileBase64?: string; mimeType?: string; localContext?: string };
 export interface GhostOpponent {
   alias: string;
   institutionName: string;
@@ -111,16 +122,20 @@ export function demoLogout() {
 // ---- Unidades y docente ----
 export const listUnits = () => request<LearningUnit[]>("GET", "/units");
 export const getUnit = (unitId: string) => request<LearningUnit>("GET", `/units/${encodeURIComponent(unitId)}`);
-export const ingestDocument = (input: { title?: string; text: string }) =>
-  request<IngestedUnit>("POST", "/ai/ingest-document", input, WRITE_TIMEOUT_MS);
+export const ingestDocument = (input: IngestInput) =>
+  request<IngestedUnit>("POST", "/ai/ingest-document", input, AI_TIMEOUT_MS);
 export const approveRubric = (unitId: string, rubric?: RubricCriterion[]) =>
   request<LearningUnit>("PUT", "/teacher/approve-rubric", { unitId, rubric }, WRITE_TIMEOUT_MS);
+export const shareUnitWithFamilies = (unitId: string, shared: boolean) =>
+  request<LearningUnit>("PUT", `/teacher/units/${encodeURIComponent(unitId)}/share`, { shared }, WRITE_TIMEOUT_MS);
 
 // ---- Estudiante ----
 export const getStudentProfile = (studentId: string) =>
   request<StudentProfile>("GET", `/students/${encodeURIComponent(studentId)}/profile`);
-export const completeMission = (input: Omit<LabMissionComplete, "type"> & { studentId: string }) =>
+export const completeMission = (input: Omit<LabMissionComplete, "type"> & { studentId: string; firstTry?: boolean }) =>
   request<GamificationAndBenchmarkProfile>("POST", "/labs/complete-mission", { type: "LAB_MISSION_COMPLETE", ...input }, WRITE_TIMEOUT_MS);
+export const sendEvents = (events: LearningEvent[]) =>
+  request<EventsBatchResponse>("POST", "/events", { events }, WRITE_TIMEOUT_MS);
 export const syncProgress = (studentId: string, events: Array<{ xp?: number; coins?: number }>) =>
   request<{ synced: number }>("POST", "/progress/sync", { studentId, events }, WRITE_TIMEOUT_MS);
 export const analyzeHandwrittenPhoto = (input: { imageBase64?: string; explanation?: string }) =>
@@ -130,23 +145,57 @@ export const submitReasoning = (input: { studentId: string; analysis: Handwritte
   request<AssessmentRecord>("POST", "/assess/submit-reasoning", input, WRITE_TIMEOUT_MS);
 export const validateHypothesis = (hypothesis: string, labType?: string) =>
   request<HypothesisReview>("POST", "/ai/validate-hypothesis", { hypothesis, labType });
+export const getDiagnosticQuestions = () =>
+  request<DiagnosticQuestion[]>("GET", "/diagnostic/questions");
+export const submitDiagnostic = (answers: Array<{ questionId: string; optionIndex: number }>) =>
+  request<DiagnosticResult>("POST", "/diagnostic/submit", { answers }, WRITE_TIMEOUT_MS);
 
 // ---- Juegos y ligas ----
 export const getLeaderboard = (league: "mastery" | "effort" = "mastery") =>
   request<LeaderboardEntry[]>("GET", `/leagues/leaderboard?league=${league}`);
+export const getLeaderboardAroundMe = (league: "mastery" | "effort" = "mastery") =>
+  request<LeaderboardAroundMeResponse>("GET", `/leagues/leaderboard?league=${league}&around=me`);
 export const getShopItems = () => request<ShopItem[]>("GET", "/shop/items");
 export const buyItem = (itemId: string) => request<Inventory>("POST", "/shop/buy", { itemId }, WRITE_TIMEOUT_MS);
 export const toggleItem = (itemId: string) => request<Inventory>("POST", "/shop/equip", { itemId }, WRITE_TIMEOUT_MS);
+export interface DuelOpponentQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  correctAnswer: string;
+  explanation?: string;
+}
+export interface DuelOpponentQuestionsResponse {
+  questions: DuelOpponentQuestion[];
+  usedFallback: boolean;
+}
+export const getDuelOpponentQuestions = (params: {
+  course: string;
+  topic: string;
+  count?: number;
+  alternativesCount?: number;
+}) =>
+  request<DuelOpponentQuestionsResponse>("POST", "/ai/duel-opponent-questions", params, 20000);
 export const validateDuelQuestion = (question: string, topic?: string) =>
   request<{ valid: boolean; reason: string }>("POST", "/ai/validate-duel-question", { question, topic });
 export const getGhostOpponent = (ageTier?: string) =>
   request<GhostOpponent>("GET", `/duel/ghost-opponent${ageTier ? `?ageTier=${ageTier}` : ""}`);
 export const reportDuelResult = (input: { studentId: string; won: boolean; questionsCreated?: number }) =>
-  request<{ xp: number; coins: number; profile: GamificationAndBenchmarkProfile }>("POST", "/duel/result", input);
+  request<{ xp: number; coins: number; profile: GamificationAndBenchmarkProfile }>("POST", "/duel/result", input, WRITE_TIMEOUT_MS);
 
 // ---- Familia y benchmark ----
 export const getFamilyExplanation = (topic?: string) =>
-  request<{ explanation: string }>("POST", "/ai/family-home-explainer", { topic });
+  request<{ explanation: string }>("POST", "/ai/family-home-explainer", { topic }, 15000);
+export const createFamilyDraft = (input: { category: FamilyCategory; text: string; title?: string }) =>
+  request<FamilyDraftResponse>("POST", "/family/units/draft", input, 35000);
+export const listFamilyUnits = () =>
+  request<LearningUnit[]>("GET", "/family/units");
+export const publishFamilyUnit = (unitId: string) =>
+  request<LearningUnit>("PUT", `/family/units/${encodeURIComponent(unitId)}/publish`, {}, WRITE_TIMEOUT_MS);
+export const listFamilyRoutes = () =>
+  request<SharedFamilyRoute[]>("GET", "/family/routes");
+export const assignFamilyRoute = (routeId: string) =>
+  request<LearningUnit>("POST", `/family/routes/${encodeURIComponent(routeId)}/assign`, {}, WRITE_TIMEOUT_MS);
 export const getBenchmark = (studentId: string) =>
   request<BenchmarkResult>("GET", `/benchmark/external/${encodeURIComponent(studentId)}`);
 export const getPassport = (studentId: string) =>
@@ -163,3 +212,12 @@ export const getClassAssessments = (classCode: string) =>
   request<AssessmentRecord[]>("GET", `/classes/${encodeURIComponent(classCode)}/assessments`);
 export const overrideAssessment = (assessmentId: string, score: number | null) =>
   request<AssessmentRecord>("PUT", `/teacher/assessments/${encodeURIComponent(assessmentId)}/override`, { score }, WRITE_TIMEOUT_MS);
+// Pasa por nuestro backend: el navegador del niño no llama a terceros.
+export const pictogramUrl = (id: number) => `/backend/api/pictograms/${id}`;
+export const markAlertAttended = (alertId: string) =>
+  request<{ ok: boolean; alertId: string; attendedAt: string }>(
+    "PUT",
+    `/teacher/alerts/${encodeURIComponent(alertId)}/attended`,
+    undefined,
+    WRITE_TIMEOUT_MS,
+  );

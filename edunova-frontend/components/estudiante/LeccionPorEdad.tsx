@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useAgeTier } from "@/lib/age-tier";
 import { getUnit } from "@/lib/api/client";
 import { useApi } from "@/lib/api/use-api";
 import { hipotesisCreador, modoPorEdad } from "./ageContent";
-import { rutaPasos } from "./data";
 import { StoryPlayer } from "./StoryPlayer";
-import Image from "next/image";
+import { Mosaico } from "./shared/kit";
 
 // Unidad del backend de la que sale la frase de apertura (primer subtema).
 const UNIT_ID = "unit-solar-system";
@@ -34,11 +32,6 @@ export function LeccionPorEdad() {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#F2EEFF] px-4 py-2.5">
-        <div className="text-sm font-bold text-[#5636D9]">{modo.etiqueta}</div>
-        <div className="text-xs text-[#17164F]/70">{modo.descripcion}</div>
-      </div>
-
       <StoryPlayer key={tier} text={texto} prominent={tier === "EXPLORADOR_7_9"} />
 
       <article className="rounded-2xl border border-[#E8E0FF] bg-white p-5">
@@ -56,49 +49,10 @@ export function LeccionPorEdad() {
         </div>
       </article>
 
-      {tier === "EXPLORADOR_7_9" ? (
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/estudiante/explorar"
-            className="flex flex-col items-center gap-1 rounded-2xl bg-[#EAF6FF] py-5 text-center text-base font-bold text-[#17164F]"
-          >
-            <Image src="/assets/juego ludico/icon_planeta.png" alt="" width={269} height={194} className="h-12 w-auto" />
-            Mira los planetas
-          </Link>
-          <Link
-            href="/estudiante/practica"
-            className="flex flex-col items-center gap-1 rounded-2xl bg-[#E9F9F0] py-5 text-center text-base font-bold text-[#17164F]"
-          >
-            <Image src="/assets/juego ludico/icon_dado.png" alt="" width={170} height={173} className="h-12 w-auto" />
-            ¡A jugar!
-          </Link>
-        </div>
-      ) : null}
-
-      {tier === "AVENTURERO_10_12" ? (
-        <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
-          <div className="mb-3 text-sm font-bold text-[#17164F]">Tu ruta</div>
-          <ol className="space-y-2">
-            {rutaPasos.map((paso, i) => (
-              <li key={paso.id}>
-                <Link
-                  href={paso.href}
-                  className="flex items-center gap-3 rounded-xl bg-[#F7F4FF] px-3 py-2.5 text-sm"
-                >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#5636D9] text-xs font-bold text-white">
-                    {i + 1}
-                  </span>
-                  <span className="font-semibold text-[#17164F]">{paso.titulo}</span>
-                  <span className="text-xs text-[#5B5678]">{paso.desc}</span>
-                </Link>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-3 text-xs text-[#17164F]/70">
-            Reto guiado: encuentra la Tierra entre los planetas en el explorador 3D.
-          </p>
-        </div>
-      ) : null}
+      <div className="grid grid-cols-2 gap-3">
+        <Mosaico href="/estudiante/explorar" etiqueta="Planetas" descripcion="Mira los planetas en 3D" seccion="explorar" imagen="/assets/juego ludico/icon_planeta.png" />
+        <Mosaico href="/estudiante/practica" etiqueta="¡A jugar!" descripcion="Practica con una pregunta" seccion="juego" imagen="/assets/juego ludico/icon_dado.png" />
+      </div>
 
       {tier === "CREADOR_13_15" ? (
         <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">

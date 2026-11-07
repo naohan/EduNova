@@ -18,7 +18,6 @@ export default function Page() {
         <h1 className="mt-4 font-[family-name:var(--font-fredoka)] text-3xl font-semibold text-[#17164F]">
           {logro.titulo}
         </h1>
-        <p className="mt-2 text-[#5B5678]">Gran trabajo explorando el Sistema Solar</p>
 
         <div className="mt-6 grid w-full grid-cols-2 gap-3">
           <div className="rounded-2xl border border-[#E8E0FF] bg-white p-4">
@@ -43,12 +42,12 @@ export default function Page() {
 
         <Link
           href="/estudiante/progreso"
-          className="mt-8 w-full rounded-2xl bg-[#5636D9] py-4 text-sm font-bold text-white"
+          className="btn-tactil tactil-cooperar mt-8 w-full py-4 text-lg text-[#17164F]"
         >
-          Ver mi progreso
+          Mi progreso
         </Link>
-        <Link href="/estudiante" className="mt-3 text-sm font-semibold text-[#5636D9]">
-          Volver al inicio
+        <Link href="/estudiante" className="mt-3 p-2 font-bold text-[#17164F]">
+          Inicio
         </Link>
       </div>
     </EstudianteLayout>

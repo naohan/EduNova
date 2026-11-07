@@ -1,6 +1,17 @@
-import type { Lab3DType, LearningUnit, RubricCriterion } from "@/lib/api/edunova-contract";
+import type { IngestedUnit } from "@/lib/api/client";
+import type { AgeTier, Lab3DType, RubricCriterion, UnitQuestion } from "@/lib/api/edunova-contract";
 
-export type SubtemaBorrador = { id: string; titulo: string; lab: Lab3DType };
+export type SubtemaBorrador = {
+  id: string;
+  titulo: string;
+  lab: Lab3DType;
+  textos?: Record<AgeTier, string>;
+  lecturaFacil?: string;
+  pictogramas?: Array<{ word: string; id: number }>;
+  tarjetas: number;
+  preguntas: number;
+  listaPreguntas?: UnitQuestion[];
+};
 
 /** Lo que el docente revisa antes de publicar. */
 export type Borrador = {
@@ -11,6 +22,10 @@ export type Borrador = {
   rubrica: RubricCriterion[];
   /** true si el servidor no respondió y es el ejemplo local: no se guarda en ningún lado. */
   sinConexion: boolean;
+  /** Modelo que leyó el material. Sin esto, es contenido de ejemplo, no el del docente. */
+  modeloIa?: string;
+  /** Por qué no se pudo usar la IA. */
+  avisoIa?: string;
 };
 
 export const labNombre: Record<Lab3DType, string> = {
@@ -31,8 +46,29 @@ export function esArchivoDeTexto(archivo: File) {
   return archivo.type.startsWith("text/") || /\.(txt|md)$/i.test(archivo.name);
 }
 
+const TIPOS_PARA_IA = ["application/pdf", "image/png", "image/jpeg", "image/webp"];
+/** Base64 ocupa un tercio más y el servidor acepta 10 MB por petición. */
+export const MAX_ARCHIVO_BYTES = 7 * 1024 * 1024;
+
+export function motivoDeRechazo(archivo: File) {
+  if (esArchivoDeTexto(archivo)) return null;
+  if (!TIPOS_PARA_IA.includes(archivo.type)) return "Ese formato no se puede leer. Guárdalo como PDF o imagen.";
+  if (archivo.size > MAX_ARCHIVO_BYTES) return "El archivo pesa más de 7 MB. Prueba con una versión más liviana.";
+  return null;
+}
+
+/** Contenido del archivo en base64, sin el prefijo data:. */
+export function leerBase64(archivo: File) {
+  return new Promise<string>((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = () => resolve(String(lector.result).split(",")[1] ?? "");
+    lector.onerror = () => reject(new Error("No se pudo leer el archivo"));
+    lector.readAsDataURL(archivo);
+  });
+}
+
 /** Devuelve null si la respuesta del servidor llega incompleta. */
-export function aBorrador(unidad: LearningUnit): Borrador | null {
+export function aBorrador(unidad: IngestedUnit): Borrador | null {
   if (!unidad?.id || !Array.isArray(unidad.subtopics) || !Array.isArray(unidad.rubric)) return null;
   return {
     id: unidad.id,
@@ -42,9 +78,17 @@ export function aBorrador(unidad: LearningUnit): Borrador | null {
       id: s.id,
       titulo: s.title,
       lab: s.lab3DIntegration?.type ?? "NONE",
+      textos: s.stages?.discover?.storyTextByAge,
+      lecturaFacil: s.stages?.discover?.easyReadText,
+      pictogramas: s.stages?.discover?.pictograms,
+      tarjetas: s.stages?.practice?.flashcards?.length ?? 0,
+      preguntas: s.stages?.demonstrate?.questions?.length ?? 0,
+      listaPreguntas: s.stages?.demonstrate?.questions,
     })),
     rubrica: unidad.rubric,
     sinConexion: false,
+    modeloIa: unidad.aiModel,
+    avisoIa: unidad.aiNotice,
   };
 }
 
@@ -66,9 +110,9 @@ export function borradorDeEjemplo(titulo: string, texto: string): Borrador {
       titulo: titulo || "Sistema Solar",
       aula: "EDU-402",
       subtemas: [
-        { id: "ej-1", titulo: "1. ¿Qué es el Sistema Solar?", lab: "SOLAR_SYSTEM" },
-        { id: "ej-2", titulo: "2. Los planetas rocosos", lab: "SOLAR_SYSTEM" },
-        { id: "ej-3", titulo: "3. Los gigantes gaseosos", lab: "SOLAR_SYSTEM" },
+        { id: "ej-1", titulo: "1. ¿Qué es el Sistema Solar?", lab: "SOLAR_SYSTEM", tarjetas: 0, preguntas: 0 },
+        { id: "ej-2", titulo: "2. Los planetas rocosos", lab: "SOLAR_SYSTEM", tarjetas: 0, preguntas: 0 },
+        { id: "ej-3", titulo: "3. Los gigantes gaseosos", lab: "SOLAR_SYSTEM", tarjetas: 0, preguntas: 0 },
       ],
       rubrica: [
         criterio("ej-r1", "ej-1", "¿Qué es el Sistema Solar?", "Explorar modelo 3D"),
@@ -82,7 +126,7 @@ export function borradorDeEjemplo(titulo: string, texto: string): Borrador {
     id: "ejemplo-fracciones",
     titulo: titulo || "Mundo de las Fracciones",
     aula: "EDU-402",
-    subtemas: [{ id: "ej-1", titulo: "1. ¿Qué es una fracción?", lab: "NONE" }],
+    subtemas: [{ id: "ej-1", titulo: "1. ¿Qué es una fracción?", lab: "NONE", tarjetas: 0, preguntas: 0 }],
     rubrica: [
       {
         ...criterio("ej-r1", "ej-1", "Suma de fracciones", "Resolver problema contextualizado"),

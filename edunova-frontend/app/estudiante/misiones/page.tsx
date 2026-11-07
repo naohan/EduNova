@@ -1,24 +1,23 @@
 import Link from "next/link";
 import { EstudianteLayout } from "@/components/estudiante/EstudianteLayout";
+import { TituloPantalla } from "@/components/estudiante/shared/kit";
+import { LockIcon, PlayIcon } from "@/components/ui/icons";
 
 const misiones = [
   {
     titulo: "Explora el Sistema Solar",
-    desc: "Completa Descubre + Practica + Demuestra",
     pct: 65,
     href: "/estudiante/ruta",
     estado: "En curso",
   },
   {
     titulo: "Desafío final espacial",
-    desc: "10 preguntas en 12 minutos, +200 puntos",
     pct: 0,
     href: "/estudiante/desafio",
     estado: "Disponible",
   },
   {
     titulo: "Insignia Explorador espacial",
-    desc: "Gana 9/10 o más en el desafío",
     pct: 0,
     href: "/estudiante/logro",
     estado: "Bloqueada",
@@ -29,37 +28,31 @@ export default function Page() {
   return (
     <EstudianteLayout>
       <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
-        <header className="mb-6">
-          <p className="text-sm text-[#5B5678]">Misiones</p>
-          <h1 className="font-[family-name:var(--font-fredoka)] text-2xl font-semibold text-[#17164F]">
-            Tus misiones activas
-          </h1>
-        </header>
+        <TituloPantalla>Retos</TituloPantalla>
 
         <div className="space-y-3">
-          {misiones.map((m) => (
-            <Link
-              key={m.titulo}
-              href={m.href}
-              className="block rounded-2xl border border-[#E8E0FF] bg-white p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-bold text-[#17164F]">{m.titulo}</h2>
-                  <p className="mt-1 text-sm text-[#5B5678]">{m.desc}</p>
-                </div>
-                <span className="rounded-full bg-[#F2EEFF] px-2.5 py-1 text-[11px] font-bold text-[#5636D9]">
-                  {m.estado}
+          {misiones.map((m) => {
+            const bloqueada = m.estado === "Bloqueada";
+            return (
+              <Link key={m.titulo} href={m.href} className="card-tactil tactil-cooperar-suave items-center gap-3 p-4">
+                <span className="min-w-0 flex-1">
+                  <span className="block font-[family-name:var(--font-fredoka)] text-lg font-bold text-[#17164F]">{m.titulo}</span>
+                  {m.pct > 0 ? (
+                    <span className="mt-2 block h-3 overflow-hidden rounded-full bg-white" aria-hidden>
+                      <span className="block h-full rounded-full bg-[#2DBE70]" style={{ width: `${m.pct}%` }} />
+                    </span>
+                  ) : null}
                 </span>
-              </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E8E0FF]">
-                <div
-                  className="h-full rounded-full bg-[#5636D9]"
-                  style={{ width: `${m.pct}%` }}
-                />
-              </div>
-            </Link>
-          ))}
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#2DBE70] text-[#17164F]">
+                  {bloqueada ? (
+                    <LockIcon weight="fill" className="h-6 w-6" aria-label="Bloqueada" />
+                  ) : (
+                    <PlayIcon weight="fill" className="h-6 w-6" aria-hidden />
+                  )}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </EstudianteLayout>

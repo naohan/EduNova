@@ -132,26 +132,23 @@ export function Dice3D({ value, rolling, canRoll, onRoll, accentColor = "#5636D9
         type="button"
         disabled={!canRoll || rolling || internalRolling}
         onClick={handleRoll}
-        className={`btn-tactil mt-4 px-6 py-2.5 text-xs sm:text-sm font-black transition-all ${
+        aria-label={canRoll ? "Lanzar dado" : "Espera tu turno"}
+        className={`btn-tactil mt-4 w-full gap-2 px-6 py-3 text-base font-black transition-all ${
           canRoll && !rolling && !internalRolling
             ? "tactil-juego"
-            : "border-slate-300 bg-white/20 text-white/50 cursor-not-allowed"
+            : "border-slate-300 bg-[#E8E0FF] text-[#17164F]/60 cursor-not-allowed"
         }`}
       >
         <Image
           src="/assets/juego ludico/icon_dado.png"
           alt=""
-          width={20}
-          height={20}
-          className="h-5 w-5 object-contain"
+          width={28}
+          height={28}
+          className="h-7 w-7 object-contain"
           aria-hidden
         />
         <span>
-          {internalRolling || rolling
-            ? "Lanzando dado..."
-            : canRoll
-              ? "Lanzar dado 3D"
-              : "Turno del compañero"}
+          {internalRolling || rolling ? "..." : canRoll ? "Lanzar" : "Espera"}
         </span>
       </button>
     </div>

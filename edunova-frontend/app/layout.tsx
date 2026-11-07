@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fredoka, Nunito } from "next/font/google";
+import { Atkinson_Hyperlegible, Fredoka, Nunito } from "next/font/google";
 import { RegistrarServiceWorker } from "@/components/ui/RegistrarServiceWorker";
 import "./globals.css";
 
@@ -13,6 +13,14 @@ const fredoka = Fredoka({
   variable: "--font-fredoka",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+});
+
+const atkinson = Atkinson_Hyperlegible({
+  variable: "--font-atkinson",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  // Solo se descarga si el estudiante la elige: en datos móviles cada fuente cuesta.
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -29,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${nunito.variable} ${fredoka.variable} ${atkinson.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
         {children}

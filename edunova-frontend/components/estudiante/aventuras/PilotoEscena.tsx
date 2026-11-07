@@ -6,6 +6,14 @@ import { Html, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { LIMITE_MUNDO, PLANETAS, RADIO_SOL, posicionDe, type ConfigPiloto, type IdPlaneta } from "./espacioData";
 import { HtmlInicial } from "./HtmlInicial";
+import {
+  Asteroide3D,
+  CoheteVisual,
+  EstrellaMoneda3D,
+  GalaxiaEspiral,
+  PlanetaVisual,
+  SolVisual,
+} from "./espacioVisual";
 
 type Props = {
   config: ConfigPiloto;
@@ -35,11 +43,28 @@ const TECLAS: Record<string, [number, number]> = {
   KeyD: [1, 0],
 };
 
+function crearPrng(semilla = 123456789) {
+  let s = semilla >>> 0;
+  return () => {
+    s = (s ^ (s << 13)) >>> 0;
+    s = (s ^ (s >>> 17)) >>> 0;
+    s = (s ^ (s << 5)) >>> 0;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+const prngEstrellas = crearPrng(314159);
 function puntoAlAzar() {
-  const angulo = Math.random() * Math.PI * 2;
-  const radio = 9 + Math.random() * (LIMITE_MUNDO - 12);
+  const angulo = prngEstrellas() * Math.PI * 2;
+  const radio = 9 + prngEstrellas() * (LIMITE_MUNDO - 12);
   return new THREE.Vector3(Math.cos(angulo) * radio, 0, Math.sin(angulo) * radio);
 }
+
+const prngChispas = crearPrng(271828);
+const PUNTOS_ESTRELLA = Array.from({ length: TOTAL_ESTRELLAS }, puntoAlAzar);
+const DIRECCION_CHISPAS = Array.from({ length: TOTAL_CHISPAS }, () =>
+  new THREE.Vector3(prngChispas() - 0.5, prngChispas() * 0.8, prngChispas() - 0.5).normalize(),
+);
 
 // Objetos de trabajo de cada cuadro: crearlos en el bucle generaría basura 60 veces por segundo.
 const PLANO = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -48,89 +73,19 @@ const deseo = new THREE.Vector3();
 const auxiliar = new THREE.Vector3();
 const matriz = new THREE.Object3D();
 
-const PUNTOS_ESTRELLA = Array.from({ length: TOTAL_ESTRELLAS }, puntoAlAzar);
-const DIRECCION_CHISPAS = Array.from({ length: TOTAL_CHISPAS }, () =>
-  new THREE.Vector3(Math.random() - 0.5, Math.random() * 0.8, Math.random() - 0.5).normalize(),
-);
-
 /** Quita la parte de la velocidad que va contra la superficie: la nave rodea el obstáculo sin trabarse. */
 function deslizar(velocidad: THREE.Vector3, normal: THREE.Vector3) {
   const contra = velocidad.dot(normal);
   if (contra < 0) velocidad.addScaledVector(normal, -contra);
 }
 
-function Planeta({ id, etiqueta, esObjetivo }: { id: IdPlaneta; etiqueta: boolean; esObjetivo: boolean }) {
-  const planeta = PLANETAS.find((p) => p.id === id)!;
-  const [x, z] = posicionDe(planeta);
-  const cuerpo = useRef<THREE.Mesh>(null);
-  const aro = useRef<THREE.Mesh>(null);
-
-  useFrame((estado, dt) => {
-    if (cuerpo.current) cuerpo.current.rotation.y += dt * 0.5;
-    if (aro.current) aro.current.scale.setScalar(1 + Math.sin(estado.clock.elapsedTime * 4) * 0.12);
-  });
-
-  return (
-    <group position={[x, 0, z]}>
-      <mesh ref={cuerpo}>
-        <sphereGeometry args={[planeta.radio, 32, 24]} />
-        <meshStandardMaterial color={planeta.color} roughness={0.7} />
-      </mesh>
-      {id === "saturno" ? (
-        <mesh rotation={[-Math.PI / 2.3, 0, 0]}>
-          <ringGeometry args={[planeta.radio * 1.35, planeta.radio * 2, 48]} />
-          <meshStandardMaterial color="#D9C48C" side={THREE.DoubleSide} transparent opacity={0.8} />
-        </mesh>
-      ) : null}
-      {esObjetivo ? (
-        <mesh ref={aro} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[planeta.radio + 1, planeta.radio + 1.35, 48]} />
-          <meshBasicMaterial color="#FFC928" side={THREE.DoubleSide} />
-        </mesh>
-      ) : null}
-      {etiqueta ? (
-        <Html center position={[0, planeta.radio + 1.2, 0]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
-          <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-white">
-            {planeta.nombre}
-          </span>
-        </Html>
-      ) : null}
-    </group>
-  );
-}
-
-function Cohete() {
-  return (
-    <group rotation={[Math.PI / 2, 0, 0]} scale={1.15}>
-      <mesh>
-        <cylinderGeometry args={[0.42, 0.55, 1.7, 16]} />
-        <meshStandardMaterial color="#F7F4FF" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 1.2, 0]}>
-        <coneGeometry args={[0.42, 0.8, 16]} />
-        <meshStandardMaterial color="#E85D5D" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 0.3, 0.4]}>
-        <sphereGeometry args={[0.2, 12, 12]} />
-        <meshStandardMaterial color="#25CFE0" emissive="#25CFE0" emissiveIntensity={0.6} />
-      </mesh>
-      {[0, 1, 2].map((i) => (
-        <mesh key={i} rotation={[0, (i * Math.PI * 2) / 3, 0]} position={[0, -0.75, 0]}>
-          <boxGeometry args={[1.5, 0.5, 0.08]} />
-          <meshStandardMaterial color="#5636D9" />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
 function Mundo({ config, objetivo, celebracion, onPlaneta, onEstrella, onChoque, marcador }: Props) {
   const nave = useRef<THREE.Group>(null);
-  const llama = useRef<THREE.Mesh>(null);
   const flecha = useRef<THREE.Group>(null);
   const estrellas = useRef<THREE.Group>(null);
   const rocas = useRef<THREE.Group>(null);
   const chispas = useRef<THREE.InstancedMesh>(null);
+  const ondaCelebracion = useRef<THREE.Mesh>(null);
 
   const velocidad = useRef(new THREE.Vector3());
   const posicion = useRef(INICIO.clone());
@@ -242,10 +197,6 @@ function Mundo({ config, objetivo, celebracion, onPlaneta, onEstrella, onChoque,
       nave.current.position.y = Math.sin(ahora * 3) * 0.15;
       nave.current.rotation.z = aturdido ? Math.sin(ahora * 30) * 0.3 : 0;
     }
-    if (llama.current) {
-      const fuerza = Math.min(1, vel.length() / config.velocidad);
-      llama.current.scale.set(1, 0.3 + fuerza * (1.2 + Math.sin(ahora * 40) * 0.25), 1);
-    }
 
     if (flecha.current) {
       const destino = PLANETAS.find((p) => p.id === eventos.current.objetivo);
@@ -294,59 +245,73 @@ function Mundo({ config, objetivo, celebracion, onPlaneta, onEstrella, onChoque,
       }
     }
 
+    if (ondaCelebracion.current) {
+      const t = ahora - inicioChispas.current;
+      ondaCelebracion.current.visible = t >= 0 && t < 1.3;
+      if (ondaCelebracion.current.visible) {
+        const s = 1 + t * 14;
+        ondaCelebracion.current.position.copy(pos);
+        ondaCelebracion.current.scale.set(s, s, 1);
+        (ondaCelebracion.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.85 * (1 - t / 1.3));
+      }
+    }
+
     estado.camera.position.lerp(auxiliar.copy(pos).add(CAMARA), 1 - Math.exp(-dt * 4));
     estado.camera.lookAt(pos);
   });
 
   return (
     <>
-      <ambientLight intensity={0.5} color="#B8C4FF" />
-      <pointLight position={[0, 8, 0]} intensity={2.4} decay={0} color="#FFF2DD" />
-      <Stars radius={110} depth={40} count={2200} factor={4} fade speed={0.6} />
+      <ambientLight intensity={0.65} color="#C4D0FF" />
+      <pointLight position={[0, 8, 0]} intensity={2.6} decay={0} color="#FFF2DD" />
+      <Stars radius={120} depth={40} count={1800} factor={4} fade speed={0.5} />
+      <GalaxiaEspiral />
 
-      <mesh>
-        <sphereGeometry args={[RADIO_SOL, 40, 32]} />
-        <meshBasicMaterial color="#FDB813" />
-      </mesh>
-      <mesh>
-        <sphereGeometry args={[RADIO_SOL * 1.35, 32, 24]} />
-        <meshBasicMaterial color="#FF9E2C" transparent opacity={0.22} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
+      <SolVisual />
 
       {PLANETAS.map((p) => (
         <mesh key={p.id} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[p.orbita - 0.05, p.orbita + 0.05, 128]} />
-          <meshBasicMaterial color="#FFFFFF" transparent opacity={0.13} side={THREE.DoubleSide} />
+          <ringGeometry args={[p.orbita - 0.06, p.orbita + 0.06, 128]} />
+          <meshBasicMaterial color="#FFFFFF" transparent opacity={0.16} side={THREE.DoubleSide} />
         </mesh>
       ))}
-      {PLANETAS.map((p) => (
-        <Planeta key={p.id} id={p.id} etiqueta={config.etiquetas} esObjetivo={config.flecha && objetivo === p.id} />
-      ))}
+      {PLANETAS.map((p) => {
+        const [x, z] = posicionDe(p);
+        return (
+          <group key={p.id} position={[x, 0, z]}>
+            <PlanetaVisual
+              id={p.id}
+              radio={p.radio}
+              esObjetivo={config.flecha && objetivo === p.id}
+            >
+              {config.etiquetas ? (
+                <Html center position={[0, 0, -(p.radio + 1.1)]} zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
+                  <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-white">
+                    {p.nombre}
+                  </span>
+                </Html>
+              ) : null}
+            </PlanetaVisual>
+          </group>
+        );
+      })}
 
       <group ref={estrellas}>
         {PUNTOS_ESTRELLA.map((inicio, i) => (
-          <mesh key={i} position={inicio}>
-            <octahedronGeometry args={[0.55]} />
-            <meshStandardMaterial color="#FFC928" emissive="#FFC928" emissiveIntensity={0.7} />
-          </mesh>
+          <EstrellaMoneda3D key={i} position={inicio} />
         ))}
       </group>
 
       <group ref={rocas}>
         {asteroides.map((a, i) => (
-          <mesh key={i} scale={a.tamano}>
-            <dodecahedronGeometry args={[1]} />
-            <meshStandardMaterial color="#6B6478" roughness={1} flatShading />
-          </mesh>
+          <group key={i} scale={a.tamano}>
+            <Asteroide3D />
+          </group>
         ))}
       </group>
 
       <group ref={nave} position={INICIO}>
-        <Cohete />
-        <mesh ref={llama} position={[0, 0, -1.3]} rotation={[-Math.PI / 2, 0, 0]}>
-          <coneGeometry args={[0.32, 1.3, 12]} />
-          <meshBasicMaterial color="#FF8A3D" />
-        </mesh>
+        <CoheteVisual velocidad={velocidad} />
       </group>
 
       <group ref={flecha} visible={false}>
@@ -355,6 +320,11 @@ function Mundo({ config, objetivo, celebracion, onPlaneta, onEstrella, onChoque,
           <meshBasicMaterial color="#FFC928" />
         </mesh>
       </group>
+
+      <mesh ref={ondaCelebracion} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <ringGeometry args={[0.5, 0.7, 48]} />
+        <meshBasicMaterial color="#FFD700" transparent opacity={0.8} side={THREE.DoubleSide} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </mesh>
 
       <instancedMesh ref={chispas} args={[undefined, undefined, TOTAL_CHISPAS]} visible={false}>
         <octahedronGeometry args={[1]} />
@@ -366,8 +336,8 @@ function Mundo({ config, objetivo, celebracion, onPlaneta, onEstrella, onChoque,
 
 export default function PilotoEscena(props: Props) {
   return (
-    <div className="h-full w-full touch-none select-none">
-      <Canvas camera={{ position: [9, 24, 25], fov: 50, far: 400 }} dpr={[1, 1.75]} gl={{ antialias: true }}>
+    <div className="isolate h-full w-full touch-none select-none">
+      <Canvas camera={{ position: [9, 24, 25], fov: 50, far: 400 }} dpr={[1, 1.5]} gl={{ antialias: true }}>
         <color attach="background" args={["#07061F"]} />
         <HtmlInicial />
         <Mundo {...props} />

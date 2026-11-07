@@ -98,8 +98,8 @@ Entra como Gloria.
 | OK | Código | Pasos | Resultado esperado |
 |---|---|---|---|
 | [ ] | E-01 | Abre `/estudiante` | Saluda con "¡Hola, Gloria!" y muestra racha y puntos |
-| [ ] | E-02 | Cambia a Explorador, Aventurero y Creador arriba | La interfaz cambia en cada modo |
-| [ ] | E-03 | Recorre el menú lateral completo | Todas las pantallas abren sin error |
+| [ ] | E-02 | Abre el engranaje de arriba a la derecha y cambia a Explorador, Aventurero y Creador | La interfaz cambia en cada modo |
+| [ ] | E-03 | Recorre los 5 lugares del menú (Inicio, Aprender, Juegos, Aula, Perfil) y entra a cada mosaico | Todas las pantallas abren sin error |
 | [ ] | E-04 | Abre `/estudiante/ruta` | Aparecen las cuatro áreas |
 | [ ] | E-05 | Entra a cada área | Abre su mapa o laboratorio |
 | [ ] | E-06 | Abre `/estudiante/leccion` y usa "Escuchar explicación" | La voz lee el texto |
@@ -135,9 +135,25 @@ Los modelos 3D tardan unos segundos. Prueba con buena conexión.
 | [ ] | J-05 | Juega hasta terminar | Muestra el resultado final sin trabarse |
 | [ ] | J-06 | Prueba los botones de música y efectos | Se activan y se silencian |
 | [ ] | J-07 | Abre `/estudiante/juegos/casillas` | Lista los tipos de casilla |
-| [ ] | J-08 | Abre `/estudiante/duelo` y completa un duelo | Muestra el resultado |
+| [ ] | J-08 | Abre `/estudiante/duelo` y completa un duelo | Muestra el resultado y, al abrir Inicio, los puntos subieron |
 | [ ] | J-09 | Crea una pregunta en el duelo | La valida y permite continuar |
 | [ ] | J-10 | Abre `/estudiante/flashcards` y voltea varias tarjetas | Se voltean y avanzan |
+| [ ] | J-11 | Con una unidad publicada en tu aula, juega el tablero | Las preguntas son las de esa unidad |
+
+### Valle de los Saberes
+
+| OK | Código | Pasos | Resultado esperado |
+|---|---|---|---|
+| [ ] | VA-01 | Abre `/estudiante/jugar` y toca Valle | Carga el mundo 3D. En celular empieza en calidad Ligera |
+| [ ] | VA-02 | Toca el suelo | Aparece un anillo y el explorador camina hasta ahí |
+| [ ] | VA-03 | Desde el centro, toca el cartel de Tu casa | Cruza solo por el puente y llega a la puerta |
+| [ ] | VA-04 | Acércate a cada lugar y toca Entrar | Abre su pantalla. Al volver, apareces junto a ese lugar |
+| [ ] | VA-05 | Cambia entre día, atardecer y noche | La luz cambia suave y de noche se encienden ventanas y faroles |
+| [ ] | VA-06 | Toca Mapa simple y prueba cada lugar | Muestra los 6 lugares y cada uno abre su pantalla |
+| [ ] | VA-07 | Entra como estudiante y mira la Escuela | Muestra una baliza con el número de unidades, en 3D y en el Mapa simple |
+| [ ] | VA-08 | Habla con Maestra Elena, falla y luego acierta | Marca el error, y Siguiente trae otra pregunta |
+| [ ] | VA-09 | En el diálogo toca Ir a esta unidad | Abre esa unidad directamente |
+| [ ] | VA-10 | Abre un diálogo y ciérralo con la X o con Escape | Se cierra y puedes seguir caminando |
 
 ### Tablero entre 2 aparatos
 
@@ -164,11 +180,11 @@ Los modelos 3D tardan unos segundos. Prueba con buena conexión.
 | [ ] | V-02 | Abre Foto de ejercicio y sube `hoja-cuaderno-1.jpg` | Analiza paso a paso y marca el error de la línea 2: `1/3 + 1/4 = 2/7` |
 | [ ] | V-03 | Prueba la foto con la cámara del celular | Permite tomar y subir la foto |
 | [ ] | V-04 | Abre `/estudiante/progreso` y sus pestañas | Muestran datos sin error |
-| [ ] | V-05 | Abre `/estudiante/habilidades` | Muestra el mapa de fortalezas |
+| [ ] | V-05 | Abre `/estudiante/habilidades` | Muestra tus 4 habilidades con su barra |
 | [ ] | V-06 | Haz el test diario de habilidades | Se puede completar y da un resultado |
 | [ ] | V-07 | Abre `/estudiante/logros` | Muestra las insignias obtenidas y las pendientes |
-| [ ] | V-08 | Abre `/estudiante/ligas` | Muestra Liga de Maestría y Liga de Superación |
-| [ ] | V-09 | Abre `/estudiante/tienda` y compra un accesorio | Bajan las NovaCoins y aparece "Ya es tuyo" |
+| [ ] | V-08 | Abre `/estudiante/ligas` y cambia entre Maestría y Superación | Cada botón muestra su liga |
+| [ ] | V-09 | Abre `/estudiante/tienda` y compra un accesorio | Bajan las monedas y aparece el botón "Poner" |
 | [ ] | V-10 | Recarga la tienda | La compra se mantiene |
 | [ ] | V-11 | Intenta comprar algo que no alcanza | No deja comprarlo |
 | [ ] | V-12 | Abre `/estudiante/aula` | Cargan sus accesos |
@@ -212,10 +228,10 @@ Haz estas pruebas en Chrome con la app ya abierta una vez. Usa `npm run build` y
 
 | OK | Código | Pasos | Resultado esperado |
 |---|---|---|---|
-| [ ] | O-01 | Con internet, revisa el aviso arriba | Dice "Online" |
-| [ ] | O-02 | Desconecta el wifi | El aviso cambia a "Modo Offline" |
+| [ ] | O-01 | Con internet, mira arriba a la derecha | No hay aviso de conexión |
+| [ ] | O-02 | Desconecta el wifi | Aparece el aviso "Sin internet" |
 | [ ] | O-03 | Sin internet, abre `/estudiante/leccion` y `/estudiante/flashcards` | Las dos funcionan |
-| [ ] | O-04 | Vuelve a conectar | El aviso regresa a "Online" |
+| [ ] | O-04 | Vuelve a conectar | El aviso desaparece |
 
 ## Prueba de punta a punta
 
@@ -237,6 +253,7 @@ Es el recorrido del demo. Háganlo juntas al final.
 - **Analítica educativa y Reportes** abren la misma página.
 - **Datos de respaldo:** si Render está dormido, la pantalla puede mostrar datos de ejemplo. Abre la dirección de `/api/health`, espera y recarga antes de reportar.
 - **Unidades de prueba:** lo que publiquen queda guardado en la base compartida.
+- **Evidencia de juegos:** con Render en `main`, las respuestas de juegos y laboratorios no se guardan, porque `/api/events` solo existe en `feat/final-internacional`.
 - **La voz** depende del navegador y puede sonar distinta en cada aparato.
 - **El sonido** no se escucha hasta el primer clic en la página.
 
@@ -248,6 +265,7 @@ Es el recorrido del demo. Háganlo juntas al final.
 | Estudiante | | | | |
 | Labs 3D y aventuras | | | | |
 | Juegos | | | | |
+| Valle de los Saberes | | | | |
 | Tablero entre 2 aparatos | | | | |
 | Evaluación, ligas y tienda | | | | |
 | Docente | | | | |

@@ -133,12 +133,12 @@ export const habilidades = [
 ];
 
 export const tiposEvaluacion = [
-  { id: "opcion", nombre: "Selección múltiple", desc: "Evalúa conceptos básicos", icon: ListChecksIcon },
-  { id: "abierta", nombre: "Respuesta abierta", desc: "Explica con tus propias palabras", icon: PencilLineIcon },
-  { id: "pasos", nombre: "Resolución paso a paso", desc: "Muestra cómo llegaste a la respuesta", icon: ListNumbersIcon },
-  { id: "foto", nombre: "Foto de ejercicio", desc: "Sube una imagen de tu procedimiento", icon: CameraIcon },
-  { id: "practica", nombre: "Evaluación práctica", desc: "Resuelve un desafío o simulación", icon: MicroscopeIcon },
-  { id: "pares", nombre: "Evaluación entre pares", desc: "Un compañero revisa con rúbrica", icon: HandshakeIcon },
+  { id: "opcion", corto: "Elegir", nombre: "Selección múltiple", desc: "Evalúa conceptos básicos", icon: ListChecksIcon },
+  { id: "abierta", corto: "Explicar", nombre: "Respuesta abierta", desc: "Explica con tus propias palabras", icon: PencilLineIcon },
+  { id: "pasos", corto: "Paso a paso", nombre: "Resolución paso a paso", desc: "Muestra cómo llegaste a la respuesta", icon: ListNumbersIcon },
+  { id: "foto", corto: "Foto", nombre: "Foto de ejercicio", desc: "Sube una imagen de tu procedimiento", icon: CameraIcon },
+  { id: "practica", corto: "Práctica", nombre: "Evaluación práctica", desc: "Resuelve un desafío o simulación", icon: MicroscopeIcon },
+  { id: "pares", corto: "Con un amigo", nombre: "Evaluación entre pares", desc: "Un compañero revisa con rúbrica", icon: HandshakeIcon },
 ];
 
 export const rutaPasos = [

@@ -210,8 +210,7 @@ export function NotebookPhotoScanner() {
       </section>
 
       <label className="block rounded-2xl border border-[#E8E0FF] bg-white p-5">
-        <span className="text-sm font-bold text-[#17164F]">Explica cómo lo hiciste</span>
-        <span className="mt-0.5 block text-xs text-[#5B5678]">Si lo explicas con tus palabras, ganas puntos extra.</span>
+        <span className="text-base font-bold text-[#17164F]">¿Cómo lo hiciste?</span>
         <textarea
           rows={3}
           value={explicacion}
@@ -225,9 +224,9 @@ export function NotebookPhotoScanner() {
         type="button"
         onClick={analizar}
         disabled={!foto || analizando}
-        className="w-full rounded-2xl bg-[#5636D9] py-4 text-sm font-bold text-white disabled:opacity-50"
+        className="btn-tactil tactil-magia w-full py-4 text-lg text-white"
       >
-        {analizando ? "Revisando tus pasos…" : "Revisar mi procedimiento"}
+        {analizando ? "Revisando..." : "Revisar"}
       </button>
     </div>
   );
